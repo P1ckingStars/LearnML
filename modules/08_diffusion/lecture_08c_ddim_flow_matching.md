@@ -220,7 +220,7 @@ where $x_t = (1-t) x_0 + t x_1$.
 | Property | DDPM | DDIM | Flow Matching (OT-CFM) |
 |----------|------|------|----------------------|
 | Sampling process | Stochastic (SDE) | Deterministic (ODE) | Deterministic (ODE) |
-| Training loss | $\|\varepsilon - \varepsilon_\theta(x_t,t)\|^2$ | Same as DDPM | $\|v_\theta(x_t,t) - (x_1-x_0)\|^2$ |
+| Training loss | $\Vert\varepsilon - \varepsilon_\theta(x_t,t)\Vert^2$ | Same as DDPM | $\Vert v_\theta(x_t,t) - (x_1-x_0)\Vert^2$ |
 | Min. sampling steps | $\sim$1000 for good quality | $\sim$20-50 | $\sim$10-30 |
 | Noise schedule | Required (linear/cosine) | Inherits from DDPM | Not needed |
 | Trajectory shape | Random walk | Curved ODE paths | Near-straight lines |

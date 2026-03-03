@@ -543,10 +543,10 @@ The ELBO gap equals $D_{\text{KL}}(\text{diag approximation} \| \text{true poste
 | Identity | Formula |
 |----------|---------|
 | ELBO (Jensen) | $\log p(x) \geq \mathbb{E}_q[\log p(x,z)/q(z)]$ |
-| ELBO (KL gap) | $\log p(x) = \mathcal{L} + D_{\text{KL}}(q \| p(z \mid x))$ |
-| ELBO decomposition | $\mathcal{L} = \mathbb{E}_q[\log p(x \mid z)] - D_{\text{KL}}(q \| p(z))$ |
+| ELBO (KL gap) | $\log p(x) = \mathcal{L} + D_{\text{KL}}(q \Vert p(z \mid x))$ |
+| ELBO decomposition | $\mathcal{L} = \mathbb{E}_q[\log p(x \mid z)] - D_{\text{KL}}(q \Vert p(z))$ |
 | Reparameterization | $z = \mu + \sigma \odot \epsilon, \; \epsilon \sim \mathcal{N}(0,I)$ |
 | KL (diagonal Gaussian to standard) | $\frac{1}{2}\sum_j(\sigma_j^2 + \mu_j^2 - 1 - \log\sigma_j^2)$ |
 | IWAE bound | $\mathcal{L}_K = \mathbb{E}[\log\frac{1}{K}\sum_k w_k]$, $w_k = p(x,z_k)/q(z_k \mid x)$ |
 | Monotonicity | $\mathcal{L}_1 \leq \mathcal{L}_K \leq \log p(x)$ |
-| ELBO surgery | $\mathbb{E}[D_{\text{KL}}(q(z \mid x) \| p(z))] = I_q(x;z) + D_{\text{KL}}(q(z) \| p(z))$ |
+| ELBO surgery | $\mathbb{E}[D_{\text{KL}}(q(z \mid x) \Vert p(z))] = I_q(x;z) + D_{\text{KL}}(q(z) \Vert p(z))$ |

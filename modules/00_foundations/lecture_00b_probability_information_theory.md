@@ -578,9 +578,9 @@ print(f"I(X; Y) >= I(X; Z)? {mi_xy >= mi_xz - 0.05}")  # allow small estimation 
 
 | Loss Function | Distribution Assumption | Derivation |
 |--------------|------------------------|------------|
-| MSE: $\frac{1}{N}\sum_i \|y_i - \hat{y}_i\|^2$ | $y \sim \mathcal{N}(\hat{y}, I)$ | $-\log p(y|\hat{y}) = \frac{1}{2}\|y-\hat{y}\|^2 + \text{const}$ |
-| Cross-entropy: $-\sum_k y_k \log \hat{y}_k$ | $y \sim \text{Cat}(\hat{\mathbf{y}})$ | $-\log p(y|\hat{\mathbf{y}}) = -\sum_k y_k \log \hat{y}_k$ |
-| Binary CE: $-[y\log\hat{y} + (1-y)\log(1-\hat{y})]$ | $y \sim \text{Ber}(\hat{y})$ | $-\log p(y|\hat{y})$ |
+| MSE: $\frac{1}{N}\sum_i \Vert y_i - \hat{y}_i\Vert^2$ | $y \sim \mathcal{N}(\hat{y}, I)$ | $-\log p(y\vert\hat{y}) = \frac{1}{2}\Vert y-\hat{y}\Vert^2 + \text{const}$ |
+| Cross-entropy: $-\sum_k y_k \log \hat{y}_k$ | $y \sim \text{Cat}(\hat{\mathbf{y}})$ | $-\log p(y\vert\hat{\mathbf{y}}) = -\sum_k y_k \log \hat{y}_k$ |
+| Binary CE: $-[y\log\hat{y} + (1-y)\log(1-\hat{y})]$ | $y \sim \text{Ber}(\hat{y})$ | $-\log p(y\vert\hat{y})$ |
 
 ### 6.2 Regularization as Priors
 

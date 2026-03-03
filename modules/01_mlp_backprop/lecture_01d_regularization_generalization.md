@@ -137,8 +137,8 @@ $$\hat{\theta}_{\text{MAP}} = \arg\max_\theta \left[\log p(D|\theta) + \log p(\t
 
 | Regularization | Prior $p(\theta)$ | Distribution |
 |---|---|---|
-| L2 ($\frac{\lambda}{2}\|\theta\|_2^2$) | $\propto \exp(-\frac{\lambda}{2}\|\theta\|^2)$ | Gaussian: $\theta_j \sim \mathcal{N}(0, 1/\lambda)$ |
-| L1 ($\lambda\|\theta\|_1$) | $\propto \exp(-\lambda\|\theta\|_1)$ | Laplace: $\theta_j \sim \text{Laplace}(0, 1/\lambda)$ |
+| L2 ($\frac{\lambda}{2}\Vert\theta\Vert_2^2$) | $\propto \exp(-\frac{\lambda}{2}\Vert\theta\Vert^2)$ | Gaussian: $\theta_j \sim \mathcal{N}(0, 1/\lambda)$ |
+| L1 ($\lambda\Vert\theta\Vert_1$) | $\propto \exp(-\lambda\Vert\theta\Vert_1)$ | Laplace: $\theta_j \sim \text{Laplace}(0, 1/\lambda)$ |
 
 The Laplace distribution has heavier tails but is more concentrated at zero — encouraging sparsity. The Gaussian prior encourages small weights but does not produce exact zeros.
 

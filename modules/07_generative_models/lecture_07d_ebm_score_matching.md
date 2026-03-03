@@ -684,7 +684,7 @@ if __name__ == "__main__":
 | Aspect | Maximum Likelihood | Score Matching |
 |--------|-------------------|----------------|
 | Requires partition function | Yes | No |
-| Loss function | $-\log p_\theta(x)$ | $\|s_\theta(x) - \nabla_x \log p(x)\|^2$ |
+| Loss function | $-\log p_\theta(x)$ | $\Vert s_\theta(x) - \nabla_x \log p(x)\Vert^2$ |
 | What is learned | Full density $p_\theta(x)$ | Score (gradient of log-density) only |
 | Sampling | Direct (if model allows) | Requires MCMC (Langevin) |
 | Mode coverage | Can miss modes (mode collapse) | Better mode coverage (Fisher divergence) |

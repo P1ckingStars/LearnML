@@ -88,10 +88,10 @@ Therefore $\dim(\text{im}(T)) = r$ and $\dim(\ker(T)) + \dim(\text{im}(T)) = k +
 
 | Norm | Definition | Use |
 |------|-----------|-----|
-| $\|\mathbf{x}\|_1 = \sum_i |x_i|$ | ℓ₁ norm | Sparsity-inducing regularization (L1) |
-| $\|\mathbf{x}\|_2 = \sqrt{\sum_i x_i^2}$ | ℓ₂ norm | Weight decay, gradient clipping |
-| $\|X\|_F = \sqrt{\sum_{i,j} X_{ij}^2}$ | Frobenius norm | Matrix regularization |
-| $\|X\|_2 = \sigma_1(X)$ | Spectral norm | Spectral normalization in GANs |
+| $\Vert\mathbf{x}\Vert_1 = \sum_i \vert x_i\vert$ | ℓ₁ norm | Sparsity-inducing regularization (L1) |
+| $\Vert\mathbf{x}\Vert_2 = \sqrt{\sum_i x_i^2}$ | ℓ₂ norm | Weight decay, gradient clipping |
+| $\Vert X\Vert_F = \sqrt{\sum_{i,j} X_{ij}^2}$ | Frobenius norm | Matrix regularization |
+| $\Vert X\Vert_2 = \sigma_1(X)$ | Spectral norm | Spectral normalization in GANs |
 
 **Cauchy-Schwarz inequality:** $|\langle \mathbf{x}, \mathbf{y} \rangle| \le \|\mathbf{x}\|_2 \|\mathbf{y}\|_2$, with equality iff $\mathbf{x}$ and $\mathbf{y}$ are linearly dependent.
 

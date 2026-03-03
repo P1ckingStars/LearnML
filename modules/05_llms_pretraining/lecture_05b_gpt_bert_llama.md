@@ -101,7 +101,7 @@ The GPT family (GPT-1, GPT-2, GPT-3) uses a decoder-only Transformer with the fo
 | Attention heads $H$ | 12 |
 | Head dimension $d_k = d_{\text{model}} / H$ | 64 |
 | FFN inner dimension $d_{\text{ff}}$ | 3072 ($= 4 \times d_{\text{model}}$) |
-| Vocabulary size $|\mathcal{V}|$ | 50257 |
+| Vocabulary size $\vert\mathcal{V}\vert$ | 50257 |
 | Max sequence length $T$ | 1024 |
 | Activation | GELU |
 | Normalization | Pre-LayerNorm |
@@ -167,7 +167,7 @@ Thus, BERT defines a set of pseudo-conditionals that do not arise from any singl
 | Model dimension $d_{\text{model}}$ | 768 |
 | Attention heads $H$ | 12 |
 | FFN inner dimension $d_{\text{ff}}$ | 3072 |
-| Vocabulary size $|\mathcal{V}|$ | 30522 (WordPiece) |
+| Vocabulary size $\vert\mathcal{V}\vert$ | 30522 (WordPiece) |
 | Max sequence length $T$ | 512 |
 | Activation | GELU |
 | Normalization | Post-LayerNorm |
