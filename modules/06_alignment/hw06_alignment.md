@@ -295,6 +295,7 @@ def grpo_step(
   - An LLM-as-judge reward.
 
 - **(b)** (10 pts) Train the same base model with GRPO for a comparable number of effective training examples as DPO. Log and plot:
+
   - Mean reward per iteration
   - Mean KL divergence per iteration
   - Group advantage statistics (mean, std)

@@ -114,8 +114,8 @@ This document defines all notation used throughout the course. When in doubt, re
 
 | Notation | Meaning |
 |----------|---------|
-| * | Convolution operator |
-| ⋆ | Cross-correlation (used interchangeably with * in deep learning) |
+| \* | Convolution operator |
+| ⋆ | Cross-correlation (used interchangeably with \* in deep learning) |
 | Cᵢₙ, Cₒᵤₜ | Number of input/output channels |
 | k | Kernel size |
 | s | Stride |

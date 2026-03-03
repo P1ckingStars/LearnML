@@ -520,7 +520,7 @@ softmax(x_i / T)_j = exp(x_j / T) / sum_k exp(x_k / T)
 
 To backpropagate through z ~ N(mu, sigma^2):
 
-z = mu + sigma * epsilon, where epsilon ~ N(0, 1)
+`z = mu + sigma * epsilon`, where epsilon ~ N(0, 1)
 
 Generalizes to any location-scale family. For other distributions, use the Gumbel-Softmax trick (discrete) or normalizing flows (complex continuous).
 

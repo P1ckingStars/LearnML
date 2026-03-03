@@ -145,10 +145,10 @@ The ability of a model to perform well on unseen data from the same distribution
 A technique to simulate larger batch sizes by accumulating gradients over multiple forward-backward passes before performing an optimizer step. The loss is divided by the number of accumulation steps to maintain correct gradient magnitude.
 
 **Gradient Clipping.**
-Constraining gradient magnitude to prevent exploding gradients. Norm clipping scales the gradient vector to have maximum norm c: g <- g * min(1, c/||g||). Value clipping truncates individual gradient components to [-c, c]. Norm clipping is more common.
+Constraining gradient magnitude to prevent exploding gradients. Norm clipping scales the gradient vector to have maximum norm c: `g <- g * min(1, c/||g||)`. Value clipping truncates individual gradient components to [-c, c]. Norm clipping is more common.
 
 **Gradient Descent.**
-An optimization algorithm that iteratively updates parameters in the direction of the negative gradient: theta_{t+1} = theta_t - alpha * nabla L(theta_t). Stochastic gradient descent (SGD) approximates the full gradient with a mini-batch estimate.
+An optimization algorithm that iteratively updates parameters in the direction of the negative gradient: `theta_{t+1} = theta_t - alpha * nabla L(theta_t)`. Stochastic gradient descent (SGD) approximates the full gradient with a mini-batch estimate.
 
 **Ground Truth.**
 The correct or reference label for a data point. In supervised learning, ground truth labels define the target that the model is trained to predict.
@@ -200,10 +200,10 @@ See Distillation.
 An unobserved variable in a probabilistic model that captures hidden structure in the data. In VAEs, the latent variable z encodes the underlying factors of variation. The relationship p(x) = integral p(x|z)p(z)dz connects observed and latent spaces.
 
 **Layer Normalization.**
-Normalizes activations across the feature dimension for each individual example: y = (x - mu) / sigma * gamma + beta, where mu and sigma are computed per-example across features. Unlike batch normalization, independent of batch size; standard in transformers.
+Normalizes activations across the feature dimension for each individual example: `y = (x - mu) / sigma * gamma + beta`, where mu and sigma are computed per-example across features. Unlike batch normalization, independent of batch size; standard in transformers.
 
 **Learning Rate.**
-The step size in gradient descent: theta_{t+1} = theta_t - alpha * g_t. The most important hyperparameter in deep learning. Too large causes divergence; too small causes slow convergence. Typically scheduled (warmup, cosine decay, etc.) rather than kept constant.
+The step size in gradient descent: `theta_{t+1} = theta_t - alpha * g_t`. The most important hyperparameter in deep learning. Too large causes divergence; too small causes slow convergence. Typically scheduled (warmup, cosine decay, etc.) rather than kept constant.
 
 **Learning Rate Schedule.**
 A predetermined or adaptive rule for changing the learning rate during training. Common schedules: linear warmup + cosine decay (transformers), step decay (CNNs), one-cycle (super-convergence). Warmup prevents early instability with adaptive optimizers.
@@ -299,13 +299,13 @@ A method for aligning language models with human preferences. Process: (1) colle
 An activation function defined as ReLU(x) = max(0, x). Gradient is 1 for x > 0 and 0 for x < 0 (undefined at 0). Advantages: fast computation, mitigates vanishing gradients. Disadvantage: "dying ReLU" problem where neurons can become permanently inactive.
 
 **Reparameterization Trick.**
-A technique for backpropagating through stochastic sampling. Instead of sampling z ~ N(mu, sigma^2) directly, express z = mu + sigma * epsilon where epsilon ~ N(0, 1). This moves the stochasticity to a fixed distribution, allowing gradients to flow through mu and sigma.
+A technique for backpropagating through stochastic sampling. Instead of sampling z ~ N(mu, sigma^2) directly, express `z = mu + sigma * epsilon` where epsilon ~ N(0, 1). This moves the stochasticity to a fixed distribution, allowing gradients to flow through mu and sigma.
 
 **Residual Connection (Skip Connection).**
 An additive shortcut that bypasses one or more layers: y = F(x) + x. Enables training of very deep networks by providing gradient highways. Central to ResNets, transformers, and virtually all modern deep architectures.
 
 **RMSNorm (Root Mean Square Normalization).**
-A simplification of layer normalization that normalizes by the RMS of activations without centering: y = x / RMS(x) * gamma. Slightly faster than LayerNorm; used in LLaMA, PaLM, and other modern LLMs.
+A simplification of layer normalization that normalizes by the RMS of activations without centering: `y = x / RMS(x) * gamma`. Slightly faster than LayerNorm; used in LLaMA, PaLM, and other modern LLMs.
 
 **RoPE (Rotary Position Embedding).**
 A positional encoding that applies rotation matrices to query and key vectors based on their positions. The dot product between rotated queries and keys depends only on the relative position, encoding relative positional information while being compatible with efficient attention implementations.

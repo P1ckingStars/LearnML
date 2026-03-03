@@ -17,7 +17,7 @@ By the end of this lecture, you will be able to:
 
 ### 2.1 The Reasoning Gap
 
-Standard LLM prompting asks for a direct answer: "What is 127 * 43?" $\to$ "5461." This works for simple questions but fails on multi-step reasoning:
+Standard LLM prompting asks for a direct answer: "What is 127 × 43?" $\to$ "5461." This works for simple questions but fails on multi-step reasoning:
 
 - Arithmetic with many digits
 - Multi-hop logical deduction
