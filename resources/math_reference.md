@@ -542,9 +542,9 @@ Relevant for kernel methods, neural tangent kernels, and infinite-width limits.
 
 A complete inner product space. Key example: L^2(X, mu) = {f : integral |f|^2 d mu < inf}.
 
-**Reproducing Kernel Hilbert Space (RKHS):** A Hilbert space H of functions f: X -> R such that evaluation functionals f |-> f(x) are continuous. By the Riesz representation theorem, there exists a kernel k: X x X -> R such that:
+**Reproducing Kernel Hilbert Space (RKHS):** A Hilbert space H of functions f: X → R such that evaluation functionals f ↦ f(x) are continuous. By the Riesz representation theorem, there exists a kernel k: X × X → R such that:
 - k(x, .) in H for all x
-- f(x) = <f, k(x, .)>_H (reproducing property)
+- f(x) = ⟨f, k(x, .)⟩_H (reproducing property)
 - k is symmetric and positive semi-definite
 
 **Representer Theorem:** For regularized empirical risk minimization in an RKHS:
@@ -563,6 +563,6 @@ The solution has the form f*(x) = sum_i alpha_i k(x_i, x).
 
 In the infinite-width limit, a neural network trained with gradient descent is equivalent to kernel regression with the NTK:
 
-K_NTK(x, x') = E_{theta ~ init}[<nabla_theta f(x; theta), nabla_theta f(x'; theta)>]
+K_NTK(x, x') = E_{theta ~ init}[⟨∇_theta f(x; theta), ∇_theta f(x'; theta)⟩]
 
 The NTK is constant during training in the infinite-width limit (lazy training regime).

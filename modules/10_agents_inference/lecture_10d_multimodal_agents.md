@@ -1248,11 +1248,11 @@ Performance of different agents on SWE-bench Lite (300 real GitHub issues):
 
 | Agent | Resolved (%) | Avg. Steps | Avg. Cost |
 |-------|-------------|-----------|-----------|
-| GPT-4 (direct) | 1.7% | 1 | $0.10 \vert
-| SWE-agent (GPT-4) | 18.0% | 25 | $1.50 \vert
-| SWE-agent (Claude 3.5) | 33.6% | 22 | $1.20 \vert
-| Agentless (Claude 3.5) | 27.3% | 3 | $0.30 \vert
-| OpenHands (Claude 3.5) | 41.7% | 30 | $2.00 \vert
+| GPT-4 (direct) | 1.7% | 1 | \$0.10 |
+| SWE-agent (GPT-4) | 18.0% | 25 | \$1.50 |
+| SWE-agent (Claude 3.5) | 33.6% | 22 | \$1.20 |
+| Agentless (Claude 3.5) | 27.3% | 3 | \$0.30 |
+| OpenHands (Claude 3.5) | 41.7% | 30 | \$2.00 |
 
 Key observations:
 - Direct prompting is almost useless for real code tasks (1.7%).

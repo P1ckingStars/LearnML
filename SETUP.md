@@ -8,7 +8,7 @@
 
 ### Cloud Options
 If you lack a local GPU:
-- **Google Colab Pro** ($10/month): T4/A100, sufficient for most homeworks
+- **Google Colab Pro** (\$10/month): T4/A100, sufficient for most homeworks
 - **Lambda Labs**: A10/A100 on-demand
 - **RunPod**: Good for longer training runs
 - **University cluster**: Check with your department

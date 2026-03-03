@@ -233,7 +233,7 @@ Implement and evaluate tree search methods for mathematical reasoning.
 3. **Reproducibility**: Include a `README.md` with instructions for running all experiments. All random seeds should be fixed for reproducibility. Include a script that runs all experiments end-to-end.
 
 4. **Compute Budget**: This homework is designed to be completable with access to:
-   - A free-tier API (e.g., OpenAI API with ~$20 of credits, or an open-source model running locally).
+   - A free-tier API (e.g., OpenAI API with ~\$20 of credits, or an open-source model running locally).
    - A single GPU with 16GB VRAM for the reward model training.
    - If you lack API access, you may use a locally running model (e.g., Llama 3 8B via Ollama) and note the model used.
 
