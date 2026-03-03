@@ -146,6 +146,7 @@ Compute: O(BLH N log L) with parallel scan
 $$M_{k,j} = \begin{cases} C_k^T \left(\prod_{i=j+1}^{k} \text{diag}(\bar{A}_i)\right) \bar{B}_j & \text{if } k \geq j \\ 0 & \text{if } k < j \end{cases}$$
 
 This matrix is:
+
 - **Causal**: lower-triangular (zero above the diagonal).
 - **Low-rank per entry**: each entry is a product of $N$-dimensional vectors (rank $\leq N$).
 - **Semiseparable**: a matrix where every submatrix of the lower-triangular part has rank $\leq N$.
@@ -267,6 +268,7 @@ Total FLOPs per token: ≈ 12D² + 4DEN per layer
 | Total inference memory | $O(n_{layers} \cdot L \cdot D)$ | $O(n_{layers} \cdot D \cdot N)$ |
 
 For typical values ($D = 2048, N = 16, L = 8192$):
+
 - Transformer KV cache: $\sim 128$ MB per layer
 - Mamba state: $\sim 0.25$ MB per layer (512x smaller)
 
@@ -281,7 +283,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
-
 
 class SelectiveSSM(nn.Module):
     """
@@ -533,7 +534,6 @@ class MambaBlock(nn.Module):
 
         return y
 
-
 class RMSNorm(nn.Module):
     """Root Mean Square Layer Normalization."""
     def __init__(self, d_model: int, eps: float = 1e-6):
@@ -627,7 +627,6 @@ class MambaLM(nn.Module):
             input_ids = torch.cat([input_ids, next_token], dim=1)
         return input_ids
 
-
 def count_parameters(model):
     """Count total and trainable parameters."""
     total = sum(p.numel() for p in model.parameters())
@@ -635,7 +634,6 @@ def count_parameters(model):
     print(f"Total parameters:     {total:>12,}")
     print(f"Trainable parameters: {trainable:>12,}")
     return total
-
 
 # Demo
 if __name__ == "__main__":
@@ -757,6 +755,7 @@ Mamba-2 (Dao and Gu, 2024) introduces the **State Space Duality (SSD)** framewor
 3. The SSD framework interpolates between pure SSM ($N$ small) and full attention ($N = L$).
 
 The Mamba-2 architecture modifies the original Mamba block by:
+
 - Using **multi-head** SSMs (analogous to multi-head attention).
 - Replacing the parallel scan with a **chunk-wise** algorithm that processes the sequence in blocks of size $Q$ and uses matmuls within each block.
 - Achieving 2--8x speedup over Mamba-1 with equivalent or better quality.

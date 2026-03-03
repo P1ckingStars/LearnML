@@ -11,6 +11,7 @@
 This homework covers the core mathematical and implementation aspects of convolutional neural networks. Part A tests your ability to derive and prove fundamental CNN properties. Part B requires building and training CNNs from scratch, conducting ablation studies, and analyzing the results.
 
 **Grading:**
+
 - Part A (Mathematical Derivations): 50%
 - Part B (Implementation): 50%
 
@@ -23,6 +24,7 @@ This homework covers the core mathematical and implementation aspects of convolu
 ### Problem A1: Convolution Output Dimensions (8 points)
 
 **(a)** (4 points) Derive the output spatial dimension formula for a 2D convolution with:
+
 - Input size: $H_{\text{in}} \times W_{\text{in}}$
 - Kernel size: $k_h \times k_w$
 - Padding: $(p_h, p_w)$ (possibly asymmetric: $p_h^{\text{top}}, p_h^{\text{bottom}}, p_w^{\text{left}}, p_w^{\text{right}}$)
@@ -32,6 +34,7 @@ This homework covers the core mathematical and implementation aspects of convolu
 Show all steps. Your formula should handle the fully general case with asymmetric padding.
 
 **(b)** (2 points) Compute the output size for the following specific configuration:
+
 - Input: $32 \times 32$
 - Kernel: $5 \times 5$
 - Padding: 2
@@ -111,6 +114,7 @@ Layer 7: Conv(k=3, s=1, d=4, p=4)
 **(a)** (8 points) Derive the complete backward pass for Batch Normalization from scratch.
 
 Given:
+
 - Mini-batch: $\{x_1, \ldots, x_m\}$
 - Forward: $\mu = \frac{1}{m}\sum x_i$, $\sigma^2 = \frac{1}{m}\sum(x_i - \mu)^2$, $\hat{x}_i = \frac{x_i - \mu}{\sqrt{\sigma^2 + \epsilon}}$, $y_i = \gamma \hat{x}_i + \beta$
 
@@ -158,6 +162,7 @@ class ManualConv2d:
 ```
 
 **Deliverables:**
+
 1. Working implementation with forward and backward passes.
 2. Verification: show that your implementation matches `nn.Conv2d` and `autograd` to within floating-point precision.
 3. Benchmark: compare wall-clock time of your implementation vs. `nn.Conv2d` for input size (8, 64, 32, 32) with 128 output channels and 3x3 kernel.
@@ -169,6 +174,7 @@ class ManualConv2d:
 Implement ResNet-18 from scratch and train on CIFAR-100.
 
 **Requirements:**
+
 1. Implement `BasicBlock` and `ResNet` classes without using `torchvision.models`.
 2. Adapt the architecture for CIFAR-100 (32x32 images): use a 3x3 stem instead of 7x7+maxpool.
 3. Training recipe:
@@ -179,6 +185,7 @@ Implement ResNet-18 from scratch and train on CIFAR-100.
 4. Target accuracy: >= 76% on CIFAR-100 test set.
 
 **Deliverables:**
+
 1. Complete code for model, training, and evaluation.
 2. Training and test accuracy/loss curves.
 3. Final test accuracy and comparison with published baselines.
@@ -191,12 +198,14 @@ Implement ResNet-18 from scratch and train on CIFAR-100.
 Implement Batch Normalization without using `nn.BatchNorm2d` or any built-in normalization.
 
 **Requirements:**
+
 1. Forward pass with proper handling of training vs. eval modes.
 2. Running statistics with configurable momentum.
 3. Backward pass implemented manually (not using autograd for BN gradients).
 4. Verify against `nn.BatchNorm2d` for both forward and backward passes.
 
 **Deliverables:**
+
 1. Working implementation.
 2. Numerical verification (max absolute error for forward and backward).
 3. Train your ResNet-18 from Problem B2 with your custom BN and verify that accuracy is comparable.
@@ -215,6 +224,7 @@ Using your ResNet-18 from Problem B2, compare four normalization strategies:
 For each, train on CIFAR-100 with the same hyperparameters (except you may need to reduce the learning rate for the no-normalization case).
 
 **Deliverables:**
+
 1. Training curves (loss and accuracy) for all four methods on the same plot.
 2. Final test accuracies in a table.
 3. For each method, measure and plot the mean and standard deviation of activations at layers {4, 8, 12, 16} during training (at epochs {1, 10, 50, 200}).
@@ -227,6 +237,7 @@ For each, train on CIFAR-100 with the same hyperparameters (except you may need 
 Compare your ResNet-18 with a "PlainNet-18" (same architecture but all skip connections removed).
 
 **Deliverables:**
+
 1. Training and test curves for both models.
 2. **Gradient norm visualization:** At initialization and after epochs {1, 10, 50}, compute and plot the L2 norm of the gradient with respect to each convolutional layer's weights. Show that the plain network exhibits gradient vanishing while ResNet does not.
 3. **Loss landscape visualization (bonus, +2 points):** For both trained models, plot the loss along a random direction in parameter space (1D slice). Show that ResNet's landscape is smoother.
@@ -242,6 +253,7 @@ Using your trained ResNet-18:
 3. Apply gradient-based visualization (e.g., vanilla gradient or Grad-CAM) to show which regions of the input the model focuses on for a given prediction.
 
 **Deliverables:**
+
 1. Figure with first-layer filters.
 2. Figure with feature maps at multiple depths.
 3. Figure with gradient visualization for 3 sample images.
@@ -267,11 +279,13 @@ Using your trained ResNet-18:
 ## Grading Rubric
 
 ### Part A (50 points total)
+
 - **Correctness (30 points):** Mathematical statements are correct, proofs are valid.
 - **Rigor (10 points):** All steps are justified, no hand-waving.
 - **Clarity (10 points):** Well-organized, clearly written, proper notation.
 
 ### Part B (50 points total)
+
 - **Correctness (25 points):** Code runs, produces correct results, matches baselines.
 - **Completeness (15 points):** All deliverables present, all experiments conducted.
 - **Analysis (10 points):** Thoughtful discussion of results, proper visualization.

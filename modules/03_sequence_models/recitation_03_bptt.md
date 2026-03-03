@@ -19,6 +19,7 @@ This recitation provides a hands-on, step-by-step walkthrough of Backpropagation
 ### 1.1 Setup
 
 Consider a single-layer vanilla RNN with:
+
 - Input dimension $d$
 - Hidden dimension $n$
 - Output dimension $m$
@@ -131,6 +132,7 @@ for t = T, T-1, ..., 1:
 ### 2.1 The Problem with Full BPTT
 
 For a sequence of length $T$:
+
 - **Memory**: $O(T \cdot n)$ to store all hidden states.
 - **Computation**: $O(T \cdot n^2)$ for the backward pass.
 
@@ -168,6 +170,7 @@ The hidden state $h$ is carried forward across chunks (maintaining the RNN's mem
 ### 2.3 Why Detaching is Necessary
 
 Without `h.detach()`, PyTorch's autograd engine would retain the entire computation graph from the beginning of the sequence. Each `.backward()` call would backpropagate through all previous chunks as well, resulting in:
+
 - $O(\text{num\_chunks\_seen} \times K)$ backward computation instead of $O(K)$.
 - Memory that grows linearly with the number of chunks processed.
 
@@ -279,6 +282,7 @@ Assume MSE loss: $\ell_t = \frac{1}{2}\|o_t - y_t\|^2$, so $\delta o_t = o_t - y
 At $t = 5$ (the last time step):
 
 **Layer 2 backward:**
+
 1. $\delta o_5 = o_5 - y_5$ (shape: $(m,)$).
 2. $\delta h_5^{(2)} = W_{hy}^T \delta o_5$ (shape: $(n,)$). No future contribution since $t=5$ is the last step.
 3. $\delta z_5^{(2)} = \delta h_5^{(2)} \odot (1 - (h_5^{(2)})^2)$ (shape: $(n,)$).
@@ -287,6 +291,7 @@ At $t = 5$ (the last time step):
 6. Propagate to layer 1: $\delta h_5^{(1)} = (W_{xh}^{(2)})^T \delta z_5^{(2)}$.
 
 **Layer 1 backward (at t=5):**
+
 1. $\delta h_5^{(1)}$ comes from layer 2 above.
 2. $\delta z_5^{(1)} = \delta h_5^{(1)} \odot (1 - (h_5^{(1)})^2)$.
 3. Accumulate: $\Delta W_{hh}^{(1)} \mathrel{+}= \delta z_5^{(1)} (h_4^{(1)})^T$, etc.
@@ -443,6 +448,7 @@ This is the fundamental advantage of the LSTM: the additive cell state update pr
 ### 5.1 Hidden State Detaching
 
 **The problem:**
+
 ```python
 # WRONG: memory leak in truncated BPTT
 hidden = None
@@ -456,6 +462,7 @@ for batch in data_loader:
 ```
 
 **The fix:**
+
 ```python
 # CORRECT: detach hidden state between batches
 hidden = None
@@ -515,7 +522,6 @@ def process_variable_length_batch(
 
     return output, (h_n, c_n), output_lengths
 
-
 # Example usage:
 rnn = nn.LSTM(input_size=10, hidden_size=20, batch_first=True)
 
@@ -532,6 +538,7 @@ print(f"Lengths: {lengths}")                 # tensor([5, 3, 7])
 ```
 
 **Why packing matters:**
+
 1. **Correctness:** Without packing, the RNN processes padding tokens and their hidden states contaminate the output. With packing, the RNN skips padding positions.
 2. **Efficiency:** Packing allows cuDNN to skip computation on padding tokens.
 3. **Final hidden state:** With packing, `h_n` correctly contains the hidden state at the last **real** token of each sequence, not at the last padding position.
@@ -554,7 +561,6 @@ def check_gradient_flow(model):
                   f"{grad.mean().item():>12.8f} {grad.abs().max().item():>12.6f}")
         else:
             print(f"{name:<40} {'None':>12}")
-
 
 # Usage: call after loss.backward() but before optimizer.step()
 # loss.backward()
@@ -723,18 +729,23 @@ mask = create_mask(lengths, max_len=5)
 ## 7. Practice Problems
 
 ### Problem 7.1
+
 Implement full BPTT from scratch (without autograd) for a vanilla RNN with $n = 4$, $d = 3$, $T = 10$, using MSE loss. Compare your gradients with PyTorch autograd. They should agree to within $10^{-6}$.
 
 ### Problem 7.2
+
 Implement truncated BPTT with truncation length $K = 3$ for the same RNN. Train on a sequence classification task and compare convergence speed with full BPTT (using $K = T$).
 
 ### Problem 7.3
+
 For the LSTM from Exercise 4.4, relax the constraint: let $f_t \in \{0.8, 0.9, 0.95, 0.99, 1.0\}$ (constant across time). Compute $\frac{\partial c_{100}}{\partial c_1}$ for each case. Plot the gradient magnitude as a function of $f$ and compare with the vanilla RNN case.
 
 ### Problem 7.4
+
 Implement the gradient flow monitoring function from Lecture 03a, Section 5.3. Apply it to both a vanilla RNN and an LSTM on a sequence copying task ($T = 50$). Plot $\|\delta h_t\|$ as a function of $t$ for both architectures on the same graph. Explain the difference.
 
 ### Problem 7.5
+
 Consider a GRU cell. Derive the backward pass analogous to the LSTM backward pass in Section 3 of this recitation. Identify which term corresponds to the "gradient highway" and compare with the LSTM.
 
 ---
@@ -816,7 +827,6 @@ def manual_bptt(x, y, W_hh, W_xh, W_hy, b_h, b_y, h0):
         'W_hh': dW_hh, 'W_xh': dW_xh, 'W_hy': dW_hy,
         'b_h': db_h, 'b_y': db_y
     }
-
 
 # Verification
 torch.manual_seed(42)

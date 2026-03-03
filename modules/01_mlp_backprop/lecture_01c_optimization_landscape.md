@@ -99,6 +99,7 @@ $$g_t = \frac{1}{|B_t|} \sum_{i \in B_t} \nabla \ell_i(\theta_t)$$
 where $B_t \subset \{1, \ldots, N\}$ is a random mini-batch of size $|B_t| = B$.
 
 **Properties:**
+
 - $\mathbb{E}[g_t] = \nabla \mathcal{L}(\theta_t)$ — unbiased estimator.
 - $\text{Var}[g_t] = \frac{\sigma^2}{B}$ where $\sigma^2$ is the per-sample gradient variance.
 - **Update:** $\theta_{t+1} = \theta_t - \eta \, g_t$
@@ -238,6 +239,7 @@ Return theta, state
 ### 5.1 Why Schedules Matter
 
 A fixed learning rate faces a fundamental tension:
+
 - **Too large:** Training is unstable, loss diverges or oscillates.
 - **Too small:** Training is slow, may get stuck in bad regions.
 - **Just right early, too large late:** After approaching a minimum, the learning rate should decrease to allow convergence.
@@ -269,6 +271,7 @@ Start training with a small learning rate and linearly increase it over the firs
 $$\eta_t = \eta_{\max} \cdot \frac{t}{T_w} \quad \text{for } t \le T_w$$
 
 **Why warmup helps:**
+
 1. **Adam's bias correction is imperfect for the first few steps.** The second moment estimate $v_t$ is noisy when $t$ is small, leading to excessively large updates. Warmup compensates.
 2. **Initial loss landscape exploration.** At initialization, the loss surface may have sharp features. Small steps prevent overshooting into bad regions.
 3. **Batch normalization statistics.** Early BN statistics are noisy; small learning rates reduce sensitivity to this noise.
@@ -278,6 +281,7 @@ Typical warmup: $T_w = 5\%$ to $10\%$ of total training steps, or 1-5 epochs.
 ### 5.5 One-Cycle Policy (Smith & Topin, 2019)
 
 Combines warmup and cosine decay:
+
 1. **Phase 1 (warmup):** Linear increase from $\eta_{\min}$ to $\eta_{\max}$ over $T/2$ steps.
 2. **Phase 2 (annealing):** Cosine decrease from $\eta_{\max}$ to $\eta_{\min}/100$ over $T/2$ steps.
 
@@ -363,6 +367,7 @@ $$\text{Var}[W] = \frac{1}{d_{\text{out}}}$$
 $$\boxed{\text{Var}[W] = \frac{2}{d_{\text{in}} + d_{\text{out}}}}$$
 
 **Distributions used in practice:**
+
 - Uniform: $W_{ij} \sim \mathcal{U}\left(-\sqrt{\frac{6}{d_{\text{in}} + d_{\text{out}}}}, \sqrt{\frac{6}{d_{\text{in}} + d_{\text{out}}}}\right)$
 - Normal: $W_{ij} \sim \mathcal{N}\left(0, \frac{2}{d_{\text{in}} + d_{\text{out}}}\right)$
 
@@ -383,6 +388,7 @@ $$\boxed{\text{Var}[W] = \frac{2}{d_{\text{in}}}}$$
 This is **Kaiming initialization** (fan-in mode). The fan-out version is $\text{Var}[W] = 2/d_{\text{out}}$.
 
 **PyTorch defaults:**
+
 - `nn.Linear` uses Kaiming uniform by default (fan-in mode).
 - `nn.Conv2d` also uses Kaiming uniform.
 
@@ -662,10 +668,12 @@ if __name__ == '__main__':
 ## 10. Connections and Extensions
 
 ### 10.1 Links Within This Module
+
 - **Lecture 01b:** Provides the gradients that optimizers consume.
 - **Lecture 01d:** Regularization techniques interact with optimization (weight decay, dropout noise, BN smoothing).
 
 ### 10.2 Links to Future Modules
+
 - **Module 03 (RNNs):** Gradient clipping is essential due to exploding gradients in long sequences.
 - **Module 05 (Transformers):** Learning rate warmup is critical; AdamW with cosine schedule is the standard recipe.
 - **Module 07 (Scaling Laws):** Batch size and learning rate interact with model size in predictable ways.
@@ -711,17 +719,20 @@ if __name__ == '__main__':
 ### Theory Exercises
 
 **Exercise 3.1.** Derive the Adam update rule from scratch.
+
 - (a) Show that without bias correction, $\mathbb{E}[m_t] = (1 - \beta_1^t) \mathbb{E}[g_t]$.
 - (b) Show that the bias-corrected estimate $\hat{m}_t = m_t / (1 - \beta_1^t)$ is unbiased.
 - (c) Derive the analogous result for $v_t$.
 
 **Exercise 3.2.** Prove that for a quadratic loss $\mathcal{L}(\theta) = \frac{1}{2}\theta^\top A \theta$ with $A \succ 0$:
+
 - (a) Gradient descent with step size $\eta = 2/(\lambda_{\max} + \lambda_{\min})$ converges as $\left(\frac{\kappa - 1}{\kappa + 1}\right)^t$ where $\kappa = \lambda_{\max}/\lambda_{\min}$.
 - (b) Heavy-ball momentum with optimal parameters achieves $\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^t$ — a quadratic improvement in the condition number.
 
 **Exercise 3.3.** Derive the Xavier initialization variance formula for a layer with **tanh** activation, accounting for the fact that $\text{Var}[\tanh(z)] \approx (1 - \frac{2}{3}\text{Var}[z]) \cdot \text{Var}[z]$ for small $\text{Var}[z]$.
 
 **Exercise 3.4.** (Critical batch size) Consider SGD on the loss $\mathcal{L}(\theta) = \frac{1}{N}\sum_i \ell_i(\theta)$ with batch size $B$.
+
 - (a) Show that the update direction variance scales as $\text{Var}[g] = \sigma^2/B$.
 - (b) Argue that the "signal-to-noise ratio" of the gradient is $\|\nabla \mathcal{L}\|^2 B / \sigma^2$.
 - (c) Define the critical batch size as the $B$ where SNR $= 1$, and derive $B_{\text{crit}} = \sigma^2 / \|\nabla \mathcal{L}\|^2$.
@@ -729,6 +740,7 @@ if __name__ == '__main__':
 ### Implementation Exercises
 
 **Exercise 3.5.** Implement Adam from scratch (without using `torch.optim.Adam`):
+
 - Maintain running estimates of $m_t$ and $v_t$ as Python dictionaries keyed by parameter id.
 - Apply bias correction.
 - Verify that your implementation matches `torch.optim.Adam` on a simple problem (should get identical parameter values).
@@ -736,6 +748,7 @@ if __name__ == '__main__':
 **Exercise 3.6.** Implement cosine annealing with warm restarts from scratch. Plot the learning rate schedule for 100 epochs with initial period $T_0 = 10$ and $T_{\text{mult}} = 2$.
 
 **Exercise 3.7.** Run the initialization comparison experiment from Section 8 on MNIST:
+
 - Compare Kaiming, Xavier, orthogonal, and zero initialization for depths 4, 8, 16, 32.
 - Plot: (a) training loss curves, (b) gradient norm per layer at initialization, (c) activation variance per layer at initialization.
 - At what depth does zero initialization completely fail? Why?

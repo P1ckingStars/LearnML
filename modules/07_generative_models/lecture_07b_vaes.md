@@ -36,6 +36,7 @@ A VAE consists of three components:
 | Decoder | $p_\theta(x \mid z)$ | Generative model |
 
 The decoder distribution depends on the data type:
+
 - **Continuous data**: $p_\theta(x \mid z) = \mathcal{N}(f_\theta(z), \sigma^2 I)$ or learned variance.
 - **Binary data**: $p_\theta(x \mid z) = \text{Bernoulli}(\sigma(f_\theta(z)))$ where $\sigma$ is the sigmoid.
 - **Categorical data**: $p_\theta(x \mid z) = \text{Categorical}(\text{softmax}(f_\theta(z)))$.
@@ -200,6 +201,7 @@ Consider the ELBO decomposition:
 $$\mathcal{L} = \underbrace{\mathbb{E}_{q_\phi}[\log p_\theta(x \mid z)]}_{\text{improves with informative } z} - \underbrace{D_{\text{KL}}(q_\phi \| p)}_{\text{penalizes informative } z}$$
 
 Early in training:
+
 1. The decoder $p_\theta(x \mid z)$ has not yet learned to use $z$ effectively.
 2. Increasing KL (by making $q_\phi$ informative) incurs an immediate cost.
 3. The reconstruction benefit from informative $z$ is delayed until the decoder learns.
@@ -208,6 +210,7 @@ Early in training:
 **Theorem 3.5 (Information Preference Property).** If $p_\theta(x \mid z)$ is a sufficiently powerful autoregressive model, then the global optimum of the ELBO satisfies $q_\phi(z \mid x) = p(z)$ and $p_\theta(x \mid z) = p(x)$.
 
 *Proof sketch.* If the decoder can model $p(x)$ exactly without using $z$, then:
+
 - $\mathbb{E}_{q}[\log p_\theta(x \mid z)] = \log p(x)$ regardless of $q$.
 - The ELBO becomes $\log p(x) - D_{\text{KL}}(q \| p)$, maximized when $D_{\text{KL}} = 0$. $\blacksquare$
 
@@ -475,7 +478,6 @@ class VAE(nn.Module):
         z = torch.randn(n_samples, self.latent_dim, device=device)  # [n, d]
         return self.decode(z)  # [n, 3, 64, 64]
 
-
 def vae_loss(
     x: torch.Tensor,
     x_recon: torch.Tensor,
@@ -553,7 +555,6 @@ def kl_annealing_schedule(epoch: int, n_epochs: int, strategy: str = 'linear',
         return min(1.0, 2.0 * position / cycle_length)
     else:
         return 1.0
-
 
 def train_vae(
     model: VAE,
@@ -670,7 +671,6 @@ def latent_traversal(
         images = model.decode(z)  # [n_steps, C, H, W]
 
     return images
-
 
 def visualize_traversals(
     model: VAE,
@@ -837,11 +837,13 @@ class VectorQuantizer(nn.Module):
 ### 6.2 Effect of KL Annealing
 
 Without annealing on a text VAE (Penn Treebank):
+
 - KL collapses to ~0.1 nats within the first epoch.
 - The decoder learns a near-perfect language model ignoring $z$.
 - Generated samples show no latent structure.
 
 With linear annealing over 10 epochs:
+
 - KL gradually rises to ~6-8 nats.
 - The decoder learns to use $z$ for global sentence properties.
 - Interpolations in latent space show smooth transitions.
@@ -857,11 +859,13 @@ where $p_k$ is the fraction of time code $k$ is selected. A well-utilized codebo
 ### 6.4 Latent Space Geometry
 
 In a well-trained VAE:
+
 - The aggregate posterior $q(z) = \frac{1}{N}\sum_i q_\phi(z \mid x^{(i)})$ approximately matches $p(z) = \mathcal{N}(0, I)$.
 - Points sampled from the prior decode to realistic samples.
 - Linear interpolations in latent space yield smooth transitions.
 
 In a poorly trained VAE:
+
 - "Holes" in the latent space: regions where $p(z) > 0$ but no $q_\phi(z \mid x)$ places mass.
 - Sampling from the prior produces artifacts or unrealistic images.
 
@@ -885,6 +889,7 @@ In a poorly trained VAE:
 ### 7.3 VAEs in the Modern Landscape
 
 VAEs are no longer state-of-the-art for pure image generation (diffusion models dominate), but they remain critical for:
+
 - **Representation learning**: Disentangled representations for downstream tasks.
 - **Discrete tokenization**: VQ-VAE variants power image tokenizers in DALL-E, Stable Diffusion (latent space), and video generation.
 - **Drug discovery and molecular generation**: VAEs over molecular graphs.

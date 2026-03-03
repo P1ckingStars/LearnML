@@ -110,6 +110,7 @@ For symmetric **A**: **A** = **Q** **Lambda** **Q**^T with orthogonal **Q**.
 **Singular Value Decomposition:** **A** = **U** **Sigma** **V**^T where **U** in R^{m x m}, **Sigma** in R^{m x n}, **V** in R^{n x n}.
 
 Properties:
+
 - ||**A**||_F = sqrt(sum_i sigma_i^2)
 - ||**A**||_2 = sigma_max(**A**)
 - rank(**A**) = number of nonzero singular values
@@ -118,6 +119,7 @@ Properties:
 ### Positive Definite Matrices
 
 **A** is positive semi-definite (PSD, **A** >= 0) iff:
+
 - **x**^T **A** **x** >= 0 for all **x**
 - All eigenvalues are non-negative
 - There exists **B** such that **A** = **B**^T **B**
@@ -134,20 +136,24 @@ Properties:
 ### Discrete Distributions
 
 **Bernoulli(p):**
+
 - PMF: P(X = k) = p^k (1-p)^{1-k} for k in {0, 1}
 - Mean: p, Variance: p(1-p)
 - Used in: binary classification, dropout, binary latent variables
 
 **Categorical(p_1, ..., p_K):**
+
 - PMF: P(X = k) = p_k for k in {1, ..., K}
 - Mean of one-hot encoding: (p_1, ..., p_K)
 - Used in: multi-class classification, language modeling, discrete VAEs
 
 **Binomial(n, p):**
+
 - PMF: P(X = k) = C(n,k) p^k (1-p)^{n-k}
 - Mean: np, Variance: np(1-p)
 
 **Poisson(lambda):**
+
 - PMF: P(X = k) = lambda^k e^{-lambda} / k!
 - Mean: lambda, Variance: lambda
 - Used in: count data, point processes
@@ -155,6 +161,7 @@ Properties:
 ### Continuous Distributions
 
 **Normal (Gaussian) N(mu, sigma^2):**
+
 - PDF: f(x) = (2 pi sigma^2)^{-1/2} exp(-(x - mu)^2 / (2 sigma^2))
 - Mean: mu, Variance: sigma^2
 - Entropy: (1/2) ln(2 pi e sigma^2)
@@ -163,43 +170,51 @@ Properties:
 - Used in: VAE latent spaces, weight initialization, noise models, diffusion processes
 
 **Multivariate Normal N(**mu**, **Sigma**):**
+
 - PDF: f(**x**) = (2 pi)^{-d/2} |**Sigma**|^{-1/2} exp(-(1/2)(**x** - **mu**)^T **Sigma**^{-1} (**x** - **mu**))
 - Conditional: If [**x**_1; **x**_2] ~ N([**mu**_1; **mu**_2], [**Sigma**_{11}, **Sigma**_{12}; **Sigma**_{21}, **Sigma**_{22}]), then **x**_1 | **x**_2 ~ N(**mu**_1 + **Sigma**_{12} **Sigma**_{22}^{-1}(**x**_2 - **mu**_2), **Sigma**_{11} - **Sigma**_{12} **Sigma**_{22}^{-1} **Sigma**_{21})
 - Entropy: (d/2) ln(2 pi e) + (1/2) ln det(**Sigma**)
-- KL divergence: KL(N_0 || N_1) = (1/2)[tr(**Sigma**_1^{-1} **Sigma**_0) + (**mu**_1 - **mu**_0)^T **Sigma**_1^{-1} (**mu**_1 - **mu**_0) - d + ln(det **Sigma**_1 / det **Sigma**_0)]
+- KL divergence: `KL(N_0 || N_1) = (1/2)[tr(Sigma_1^{-1} Sigma_0) + (mu_1 - mu_0)^T Sigma_1^{-1} (mu_1 - mu_0) - d + ln(det Sigma_1 / det Sigma_0)]`
 
 **Exponential(lambda):**
+
 - PDF: f(x) = lambda e^{-lambda x} for x >= 0
 - Mean: 1/lambda, Variance: 1/lambda^2
 - Memoryless property: P(X > s + t | X > s) = P(X > t)
 
 **Gamma(alpha, beta):**
+
 - PDF: f(x) = beta^alpha / Gamma(alpha) x^{alpha-1} e^{-beta x}
 - Mean: alpha/beta, Variance: alpha/beta^2
 - Special cases: Exponential (alpha=1), Chi-squared (alpha=k/2, beta=1/2)
 
 **Beta(alpha, beta):**
+
 - PDF: f(x) = x^{alpha-1} (1-x)^{beta-1} / B(alpha, beta)
 - Mean: alpha / (alpha + beta)
 - Conjugate prior for Bernoulli likelihood
 - Used in: Bayesian inference, Beta-VAE
 
 **Dirichlet(alpha_1, ..., alpha_K):**
+
 - PDF: f(**x**) = (1/B(**alpha**)) prod_i x_i^{alpha_i - 1} on the simplex
 - Mean: alpha_i / sum_j alpha_j
 - Conjugate prior for Categorical likelihood
 - Used in: topic models (LDA), mixture models
 
 **Laplace(mu, b):**
+
 - PDF: f(x) = (1/2b) exp(-|x - mu| / b)
 - Mean: mu, Variance: 2b^2
 - Heavier tails than Gaussian; corresponds to L1 regularization as a prior
 
 **Student-t(nu):**
+
 - Heavier tails than Gaussian; approaches Gaussian as nu -> infinity
 - Used in: robust regression, uncertainty estimation
 
 **Gumbel(mu, beta):**
+
 - CDF: F(x) = exp(-exp(-(x - mu)/beta))
 - Used in: Gumbel-Softmax trick for differentiable discrete sampling
 
@@ -212,6 +227,7 @@ f(x | theta) = h(x) exp(eta(theta)^T T(x) - A(theta))
 where T(x) is the sufficient statistic, eta(theta) is the natural parameter, A(theta) is the log-partition function, and h(x) is the base measure.
 
 Key properties:
+
 - nabla_eta A(eta) = E[T(X)] (mean of sufficient statistics)
 - nabla^2_eta A(eta) = Cov[T(X)] (and is therefore PSD)
 - Maximum entropy distribution given constraints on E[T(X)]
@@ -229,6 +245,7 @@ Key properties:
 H(X) = -sum_x p(x) log p(x)
 
 Properties:
+
 - H(X) >= 0, with equality iff X is deterministic
 - H(X) <= log |X| (maximized by uniform distribution)
 - H(X, Y) = H(X) + H(Y|X) = H(Y) + H(X|Y)
@@ -247,6 +264,7 @@ Note: Differential entropy can be negative (e.g., for Uniform(0, 1/2), h = -log 
 KL(p || q) = sum_x p(x) log(p(x) / q(x)) = E_p[log(p/q)]
 
 Properties:
+
 - KL(p || q) >= 0 (Gibbs' inequality), with equality iff p = q a.e.
 - NOT symmetric: KL(p || q) != KL(q || p) in general
 - NOT a metric (does not satisfy triangle inequality)
@@ -259,6 +277,7 @@ Properties:
 I(X; Y) = KL(p(x,y) || p(x)p(y)) = H(X) - H(X|Y) = H(Y) - H(Y|X)
 
 Properties:
+
 - I(X; Y) >= 0, with equality iff X, Y independent
 - I(X; Y) = I(Y; X)
 - Data processing inequality: If X -> Y -> Z is a Markov chain, then I(X; Z) <= I(X; Y)
@@ -278,6 +297,7 @@ F(theta) = E_p[nabla_theta log p(x|theta) nabla_theta log p(x|theta)^T]
          = -E_p[nabla^2_theta log p(x|theta)]
 
 Properties:
+
 - F(theta) is PSD
 - Cramer-Rao bound: Var(theta_hat) >= F(theta)^{-1} for unbiased estimators
 - Natural gradient: theta_{t+1} = theta_t - alpha F(theta_t)^{-1} nabla L(theta_t)
@@ -292,6 +312,7 @@ log p(x) = ELBO + KL(q(z|x) || p(z|x))
 where ELBO = E_{q(z|x)}[log p(x|z)] - KL(q(z|x) || p(z))
 
 Since KL >= 0, ELBO <= log p(x). Maximizing ELBO jointly optimizes:
+
 - Reconstruction: E_q[log p(x|z)] (how well we reconstruct x from z)
 - Regularization: -KL(q(z|x) || p(z)) (how close the approximate posterior is to the prior)
 
@@ -308,6 +329,7 @@ phi(E[X]) <= E[phi(X)]
 If phi is concave, the inequality reverses. Equality holds iff X is constant a.s. or phi is linear.
 
 **Applications in ML:**
+
 - Derivation of the ELBO: log E_p[f(z)] >= E_p[log f(z)]
 - EM algorithm: log p(x) >= E_q[log p(x,z)/q(z)]
 - Proving KL(p||q) >= 0: Apply Jensen to the concave log function
@@ -384,7 +406,7 @@ Used to prove: convexity of KL divergence, data processing inequality.
 
 For non-negative reals:
 
-(a_1 + ... + a_n) / n >= (a_1 * ... * a_n)^{1/n}
+`(a_1 + ... + a_n) / n >= (a_1 * ... * a_n)^{1/n}`
 
 ---
 
@@ -397,6 +419,7 @@ A function f is convex iff for all x, y and lambda in [0, 1]:
 f(lambda x + (1-lambda) y) <= lambda f(x) + (1-lambda) f(y)
 
 Equivalent characterizations (for twice-differentiable f):
+
 - f is convex iff nabla^2 f(x) >= 0 (Hessian is PSD) for all x
 - f is convex iff f(y) >= f(x) + nabla f(x)^T (y - x) for all x, y (first-order condition)
 
@@ -440,10 +463,11 @@ theta_{t+1} = theta_t - alpha (m_hat_t / (sqrt(v_hat_t) + epsilon) + lambda thet
 
 **Dual:** max_{lambda >= 0, nu} min_x L(x, lambda, nu)
 
-**Weak duality:** d* <= p* always.
-**Strong duality:** d* = p* under Slater's condition (for convex problems).
+**Weak duality:** d\* <= p\* always.
+**Strong duality:** d\* = p\* under Slater's condition (for convex problems).
 
 **KKT conditions** (necessary for optimality under constraint qualification):
+
 1. Stationarity: nabla_x L = 0
 2. Primal feasibility: g_i(x*) <= 0, h_j(x*) = 0
 3. Dual feasibility: lambda_i >= 0
@@ -458,6 +482,7 @@ theta_{t+1} = theta_t - alpha (m_hat_t / (sqrt(v_hat_t) + epsilon) + lambda thet
 f(x + delta) approximately f(x) + nabla f(x)^T delta + (1/2) delta^T nabla^2 f(x) delta + ...
 
 **Common approximations used in ML:**
+
 - log(1 + x) approximately x - x^2/2 + x^3/3 - ... for |x| < 1
 - exp(x) approximately 1 + x + x^2/2 for small x
 - (1 + x)^n approximately 1 + nx for small x
@@ -517,6 +542,7 @@ These concepts appear in advanced ML theory papers.
 ### Convergence Modes
 
 From strongest to weakest:
+
 1. **Almost sure:** X_n -> X a.s. iff P(lim X_n = X) = 1
 2. **L^p convergence:** E[|X_n - X|^p] -> 0
 3. **In probability:** P(|X_n - X| > epsilon) -> 0 for all epsilon > 0
@@ -543,6 +569,7 @@ Relevant for kernel methods, neural tangent kernels, and infinite-width limits.
 A complete inner product space. Key example: L^2(X, mu) = {f : integral |f|^2 d mu < inf}.
 
 **Reproducing Kernel Hilbert Space (RKHS):** A Hilbert space H of functions f: X → R such that evaluation functionals f ↦ f(x) are continuous. By the Riesz representation theorem, there exists a kernel k: X × X → R such that:
+
 - k(x, .) in H for all x
 - f(x) = ⟨f, k(x, .)⟩_H (reproducing property)
 - k is symmetric and positive semi-definite

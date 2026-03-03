@@ -99,6 +99,7 @@ The standard reward model architecture uses a pretrained language model as a bac
 $$r_\phi(\mathbf{x}, \mathbf{y}) = W_r^\top \mathbf{h}_{\text{last}} + b_r$$
 
 where:
+
 - $\mathbf{h}_{\text{last}} \in \mathbb{R}^d$ is the hidden state at the last token of the response. Shape: $(d,)$.
 - $W_r \in \mathbb{R}^d$ is a learned projection vector. Shape: $(d,)$.
 - $b_r \in \mathbb{R}$ is a scalar bias.
@@ -176,11 +177,13 @@ $$r_{\text{PRM}}(\mathbf{x}, \mathbf{y}) = \sum_{k=1}^{K} r_\phi^{(k)}(\mathbf{x
 where $r_\phi^{(k)}$ evaluates whether step $k$ is correct given the preceding context.
 
 **Advantages of PRMs:**
+
 - Provide denser training signal (reward per step, not just per response).
 - Enable **best-of-N search** at the step level: at each step, sample multiple continuations and select the one with the highest process reward.
 - Lighthill et al. (2023) showed that PRMs significantly outperform ORMs on mathematical reasoning tasks.
 
 **Disadvantages of PRMs:**
+
 - Require step-level annotations, which are expensive.
 - Step decomposition is task-dependent (works well for math, less clear for creative writing).
 
@@ -311,7 +314,6 @@ import torch.nn.functional as F
 from typing import List, Tuple, Dict, Optional
 import math
 
-
 # ── Reward Model Architecture ────────────────────────────────────────
 
 class RewardModel(nn.Module):
@@ -430,7 +432,6 @@ class RewardModel(nn.Module):
         # reward_head is randomly initialized
         return rm
 
-
 # ── Bradley-Terry Loss ───────────────────────────────────────────────
 
 def bradley_terry_loss(
@@ -458,7 +459,6 @@ def bradley_terry_loss(
     loss = -F.logsigmoid(reward_diff).mean()                    # scalar
 
     return loss
-
 
 def compute_rm_metrics(
     rewards_chosen: torch.Tensor,
@@ -492,7 +492,6 @@ def compute_rm_metrics(
         'reward_mean': reward_mean,
         'reward_std': reward_std,
     }
-
 
 # ── Comparison Dataset ───────────────────────────────────────────────
 
@@ -549,7 +548,6 @@ class ComparisonDataset(torch.utils.data.Dataset):
             'rejected_ids': rejected_ids,       # (max_length,)
             'rejected_mask': rejected_mask,     # (max_length,)
         }
-
 
 # ── Training Loop ────────────────────────────────────────────────────
 
@@ -646,7 +644,6 @@ def train_reward_model(
 
     return history
 
-
 @torch.no_grad()
 def evaluate_reward_model(
     model: RewardModel,
@@ -683,7 +680,6 @@ def evaluate_reward_model(
         n += 1
 
     return total_loss / n, total_acc / n
-
 
 # ── Best-of-N Sampling ──────────────────────────────────────────────
 
@@ -743,7 +739,6 @@ def best_of_n_sampling(
 
     return candidates[best_idx].squeeze(0), rewards[best_idx]
 
-
 # ── Demo ─────────────────────────────────────────────────────────────
 
 def demo_reward_model():
@@ -792,7 +787,6 @@ def demo_reward_model():
         print(f"Final val accuracy:   {history['val_acc'][-1]:.4f}")
 
     return history
-
 
 if __name__ == '__main__':
     demo_reward_model()

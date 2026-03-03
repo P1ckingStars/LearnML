@@ -147,6 +147,7 @@ $$\hat{x}_{c,h,w} = \frac{x_{c,h,w} - \mu_{\text{LN}}}{\sqrt{\sigma_{\text{LN}}^
 $$y_{c,h,w} = \gamma_c \hat{x}_{c,h,w} + \beta_c$$
 
 **Key difference from BN:** Statistics are computed per sample, not per batch. This makes LN independent of batch size, suitable for:
+
 - Sequence models (variable-length sequences)
 - Small batch sizes
 - Online/single-sample inference
@@ -258,6 +259,7 @@ $$\eta_t = \eta_{\text{target}} \cdot \frac{t}{T_w} \quad \text{for } t \leq T_w
 **Strategy:** Begin training on small images (e.g., 128x128) and progressively increase resolution (to 224x224 or larger) during training.
 
 **Benefits:**
+
 - Early epochs are computationally cheap (small images = fewer FLOPs).
 - Low-resolution training acts as regularization (the model cannot rely on fine details).
 - Higher resolution in later stages provides fine-grained features.
@@ -388,7 +390,6 @@ class BatchNorm2d(nn.Module):
         y = gamma * x_hat + beta                                # (N, C, H, W)
         return y
 
-
 # --- Verification ---
 torch.manual_seed(42)
 bn_custom = BatchNorm2d(64)
@@ -487,7 +488,6 @@ class GroupNorm2d(nn.Module):
         beta = self.beta.view(1, C, 1, 1)                     # (1, C, 1, 1)
         return gamma * x_hat + beta                             # (N, C, H, W)
 
-
 # --- Compare all normalization methods ---
 torch.manual_seed(0)
 x = torch.randn(4, 32, 8, 8)                                  # (N=4, C=32, H=8, W=8)
@@ -537,7 +537,6 @@ def cutout(x: torch.Tensor, mask_size: int = 16) -> torch.Tensor:
 
     return x                                                    # (N, C, H, W)
 
-
 def mixup(x: torch.Tensor, y: torch.Tensor, alpha: float = 1.0):
     """
     Apply Mixup augmentation.
@@ -559,7 +558,6 @@ def mixup(x: torch.Tensor, y: torch.Tensor, alpha: float = 1.0):
     y_mix = lam * y + (1 - lam) * y[perm]                     # (N, num_classes)
 
     return x_mix, y_mix
-
 
 def cutmix(x: torch.Tensor, y: torch.Tensor, alpha: float = 1.0):
     """
@@ -600,7 +598,6 @@ def cutmix(x: torch.Tensor, y: torch.Tensor, alpha: float = 1.0):
     y_mix = lam_actual * y + (1 - lam_actual) * y[perm]       # (N, num_classes)
 
     return x_mix, y_mix
-
 
 # --- Demo ---
 torch.manual_seed(0)
@@ -643,7 +640,6 @@ def get_lr_schedule(optimizer, warmup_steps: int, total_steps: int):
 
     return optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
-
 # --- Example usage ---
 model = nn.Linear(10, 10)
 optimizer = optim.SGD(model.parameters(), lr=0.1)
@@ -675,6 +671,7 @@ print(f"LR at step 9999: {lrs[9999]:.6f}")    # ~0 (cosine end)
 | IN     | 71.3%                 | 71.1%               | 72.1%          |
 
 **Key observations:**
+
 - BN excels with large batches but degrades dramatically with small batches.
 - GN is nearly batch-size invariant and close to BN's large-batch accuracy.
 - LN works but is slightly worse for CNNs.
@@ -704,15 +701,18 @@ Data augmentation is "free" in terms of FLOPs (same batch size, same forward/bac
 ## 7. Connections and Extensions
 
 ### 7.1 Prior Modules
+
 - **Module 01:** BN changes the loss landscape, interacting with optimizer choice. Adam is less sensitive to BN than SGD.
 - **Lecture 02a:** BN is applied after convolution, before activation.
 - **Lecture 02b:** BN is integral to ResNet — the original ResNet paper uses BN in every residual block.
 
 ### 7.2 Future Modules
+
 - **Module 04 (Transformers):** Layer Normalization is standard in Transformers. Understanding why LN > BN for sequences is critical.
 - **Module 06 (GANs):** Spectral normalization and instance normalization are standard for discriminators and generators.
 
 ### 7.3 Extensions
+
 - **Adaptive Instance Normalization (AdaIN, Huang & Belongie 2017):** Transfers style by adjusting IN statistics — foundational for neural style transfer.
 - **Switchable Normalization (Luo et al., 2019):** Learns to combine BN, LN, IN per layer.
 - **RandAugment (Cubuk et al., 2020):** Automated augmentation policy with only 2 hyperparameters.
@@ -722,10 +722,12 @@ Data augmentation is "free" in terms of FLOPs (same batch size, same forward/bac
 ## 8. Seminal Paper Reading List
 
 ### Required
+
 1. S. Ioffe and C. Szegedy. "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift." *ICML*, 2015.
 2. S. Santurkar, D. Tsipras, A. Ilyas, and A. Madry. "How Does Batch Normalization Help Optimization?" *NeurIPS*, 2018.
 
 ### Recommended
+
 3. J. L. Ba, J. R. Kiros, and G. E. Hinton. "Layer Normalization." *arXiv:1607.06450*, 2016.
 4. Y. Wu and K. He. "Group Normalization." *ECCV*, 2018.
 5. H. Zhang, M. Cisse, Y. N. Dauphin, and D. Lopez-Paz. "mixup: Beyond Empirical Risk Minimization." *ICLR*, 2018.

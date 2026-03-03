@@ -38,6 +38,7 @@ Sohl-Dickstein et al. (2015) introduced diffusion probabilistic models, inspired
 Let $x_0 \sim q(x_0)$ denote data drawn from an unknown distribution (e.g., natural images). We define a discrete-time diffusion process indexed by $t \in \{0, 1, \ldots, T\}$, where $T$ is typically 1000.
 
 **Notation conventions:**
+
 - $\beta_t \in (0, 1)$: variance schedule at timestep $t$
 - $\alpha_t = 1 - \beta_t$
 - $\bar{\alpha}_t = \prod_{s=1}^{t} \alpha_s$: cumulative product of $\alpha$ values
@@ -99,6 +100,7 @@ $$x_t = \sqrt{\bar{\alpha}_t}\, x_0 + \sqrt{1 - \bar{\alpha}_t}\, \varepsilon, \
 $$\text{SNR}(t) = \frac{\bar{\alpha}_t}{1 - \bar{\alpha}_t}$$
 
 As $t$ increases from $0$ to $T$:
+
 - $\bar{\alpha}_t$ decreases from $1$ toward $0$.
 - $\text{SNR}(t)$ decreases from $\infty$ toward $0$.
 - The signal is progressively destroyed and replaced by noise.
@@ -308,7 +310,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-
 def linear_schedule(T: int, beta_start: float = 1e-4, beta_end: float = 0.02) -> torch.Tensor:
     """Linear noise schedule from Ho et al. (2020).
 
@@ -316,7 +317,6 @@ def linear_schedule(T: int, beta_start: float = 1e-4, beta_end: float = 0.02) ->
         betas: (T,) tensor of noise variances
     """
     return torch.linspace(beta_start, beta_end, T)  # (T,)
-
 
 def cosine_schedule(T: int, s: float = 0.008) -> torch.Tensor:
     """Cosine noise schedule from Nichol & Dhariwal (2021).
@@ -482,7 +482,6 @@ class SinusoidalPositionEmbedding(nn.Module):
         emb = torch.cat([emb.sin(), emb.cos()], dim=-1)  # (B, dim)
         return emb
 
-
 class ResBlock(nn.Module):
     """Residual block with time conditioning."""
 
@@ -513,7 +512,6 @@ class ResBlock(nn.Module):
         h = self.norm2(self.conv2(h))             # (B, out_ch, H, W)
         h = F.silu(h)
         return h + self.skip(x)                    # (B, out_ch, H, W)
-
 
 class SimpleUNet(nn.Module):
     """Minimal U-Net for noise prediction on 32x32 images.
@@ -586,7 +584,6 @@ class SimpleUNet(nn.Module):
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-
 
 def train_ddpm(
     epochs: int = 100,
@@ -677,6 +674,7 @@ def train_ddpm(
 ### 7.1 Connection to VAEs
 
 DDPM can be viewed as a hierarchical VAE with $T$ levels of latent variables $x_1, \ldots, x_T$:
+
 - The encoder $q(x_{1:T} \mid x_0)$ is fixed (not learned), unlike a standard VAE.
 - The decoder $p_\theta(x_{0:T})$ is learned.
 - The ELBO decomposes into per-level KL terms, just as in a hierarchical VAE.
@@ -694,6 +692,7 @@ Therefore, $\varepsilon_\theta(x_t, t) \approx -\sqrt{1 - \bar{\alpha}_t}\, \nab
 ### 7.3 Connection to Denoising Autoencoders
 
 Vincent (2011) showed that denoising autoencoders learn the score function. DDPM formalizes this into a principled generative model by:
+
 1. Using a sequence of noise levels rather than a single one.
 2. Providing a well-defined sampling procedure (reverse process).
 3. Connecting training to a variational bound on log-likelihood.

@@ -42,6 +42,7 @@ However, Elman networks proved difficult to train on long sequences. **Bengio, S
 $$h_t = \sigma(W_{hh} h_{t-1} + W_{xh} x_t + b_h)$$
 
 where:
+
 - $W_{hh} \in \mathbb{R}^{n \times n}$ is the hidden-to-hidden (recurrent) weight matrix,
 - $W_{xh} \in \mathbb{R}^{n \times d}$ is the input-to-hidden weight matrix,
 - $b_h \in \mathbb{R}^n$ is the bias vector,
@@ -208,6 +209,7 @@ return {dW_hh, dW_xh, dW_hy, db_h, db_y}
 ```
 
 **Complexity Analysis:**
+
 - Time: $O(T \cdot (n^2 + nd + mn))$ for both forward and backward passes.
 - Space: $O(T \cdot n)$ to store all hidden states (needed for backward pass). This is the main memory bottleneck for long sequences.
 
@@ -291,7 +293,6 @@ class VanillaRNNCell(nn.Module):
         z_t = x_t @ self.W_xh.t() + h_prev @ self.W_hh.t() + self.bias
         h_t = torch.tanh(z_t)  # (B, n)
         return h_t
-
 
 class VanillaRNN(nn.Module):
     """

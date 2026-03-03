@@ -19,6 +19,7 @@ By the end of this lecture, you will be able to:
 ### 2.1 Beyond Normalized Models
 
 All models we have seen so far either:
+
 - Compute $p(x)$ exactly (autoregressive models, normalizing flows).
 - Optimize a lower bound on $\log p(x)$ (VAEs).
 
@@ -145,6 +146,7 @@ The last term is constant w.r.t. $\theta$, so minimizing $D_F$ is equivalent to 
 $$J_{\text{SM}}(\theta) = \mathbb{E}_{p_\text{data}}\left[\frac{1}{2}\|s_\theta(x)\|^2 + \text{tr}(\nabla_x s_\theta(x))\right] \quad \blacksquare$$
 
 **The score matching objective** $J_{\text{SM}}(\theta)$ requires:
+
 1. Computing $s_\theta(x) = \nabla_x \log p_\theta(x)$: one backprop through the energy network.
 2. Computing $\text{tr}(\nabla_x s_\theta(x)) = \sum_j \frac{\partial^2 \log p_\theta}{\partial x_j^2}$: this is the **Laplacian** of $\log p_\theta$, requiring $D$ second derivatives.
 
@@ -462,7 +464,6 @@ def denoising_score_matching_loss(
 
     return loss
 
-
 def train_ncsn(
     model: ScoreNetwork,
     data: torch.Tensor,        # [N, D] training data
@@ -611,7 +612,6 @@ def visualize_score_field(
     plt.xlim(*x_range)
     plt.ylim(*y_range)
 
-
 if __name__ == "__main__":
     torch.manual_seed(42)
 
@@ -696,6 +696,7 @@ if __name__ == "__main__":
 **Rule of thumb**: $\alpha \propto \sigma^2 / \sigma_L^2$ where $\sigma_L$ is the smallest noise level.
 
 Number of function evaluations (NFE) needed for good samples on typical benchmarks:
+
 - 2D toy data: ~1000 NFE
 - CIFAR-10 (NCSN): ~10,000 NFE
 - High-resolution images: ~1000-4000 NFE (with improved methods from Module 08)
@@ -730,6 +731,7 @@ In practice, modern score-based models (NCSN, DDPM) use the score parameterizati
 ### 7.3 EBMs Beyond Generation
 
 Energy-based models have applications beyond generation:
+
 - **Classification**: The energy function provides a natural out-of-distribution detector (Grathwohl et al., 2020 — JEM).
 - **Structured prediction**: Conditional EBMs for structured outputs.
 - **Physics**: Equivariant EBMs for molecular force fields.

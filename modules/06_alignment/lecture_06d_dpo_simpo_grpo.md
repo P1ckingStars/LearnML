@@ -156,6 +156,7 @@ $$\mathbb{E}[r(\mathbf{y}_w) - r(\mathbf{y}_l) \mid \mathbf{y}_w \succ \mathbf{y
 for some constant $c > 0$. The IPO loss enforces that the implicit reward difference equals this target margin $1/(2\beta)$.
 
 **Advantages of IPO over DPO:**
+
 - No assumption about the functional form of preferences.
 - More robust to noisy or intransitive preferences.
 - Simpler gradient dynamics (quadratic loss vs. logistic loss).
@@ -181,6 +182,7 @@ where $\gamma > 0$ is a target margin that encourages a gap between preferred an
 **Why no reference model?** DPO's implicit reward is $r = \beta \log(\pi_\theta / \pi_{\text{ref}})$. SimPO replaces this with $r = (\beta / |\mathbf{y}|) \log \pi_\theta$. The reference model's role in DPO is to prevent the policy from collapsing; in SimPO, the length normalization and the margin $\gamma$ serve this purpose instead.
 
 **Advantages:**
+
 - Halves memory (no reference model needed).
 - Simpler implementation.
 - Empirically competitive with or better than DPO on several benchmarks.
@@ -353,7 +355,6 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import copy
 
-
 # ── Helper: compute sequence log-probability ─────────────────────────
 
 def sequence_log_prob(
@@ -392,7 +393,6 @@ def sequence_log_prob(
 
     return seq_log_prob
 
-
 def sequence_avg_log_prob(
     model: nn.Module,
     input_ids: torch.Tensor,
@@ -427,7 +427,6 @@ def sequence_avg_log_prob(
     # avg_lp shape: (B,)
 
     return avg_lp
-
 
 # ── DPO Loss ─────────────────────────────────────────────────────────
 
@@ -480,7 +479,6 @@ def dpo_loss(
 
     return loss, metrics
 
-
 # ── IPO Loss ─────────────────────────────────────────────────────────
 
 def ipo_loss(
@@ -525,7 +523,6 @@ def ipo_loss(
 
     return loss, metrics
 
-
 # ── SimPO Loss ───────────────────────────────────────────────────────
 
 def simpo_loss(
@@ -569,7 +566,6 @@ def simpo_loss(
     }
 
     return loss, metrics
-
 
 # ── GRPO Loss ────────────────────────────────────────────────────────
 
@@ -626,7 +622,6 @@ def grpo_loss(
         }
 
     return loss, metrics
-
 
 # ── DPO Trainer (complete) ───────────────────────────────────────────
 
@@ -740,7 +735,6 @@ class DPOTrainer:
         metrics['loss'] = loss.item()
         return metrics
 
-
 # ── Demo ─────────────────────────────────────────────────────────────
 
 def demo_dpo():
@@ -793,7 +787,6 @@ def demo_dpo():
                 print(f"  Step {step}: loss={metrics['loss']:.4f}, "
                       f"acc={metrics['accuracy']:.3f}")
         print()
-
 
 if __name__ == '__main__':
     demo_dpo()

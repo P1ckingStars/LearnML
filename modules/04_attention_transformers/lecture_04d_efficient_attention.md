@@ -97,12 +97,14 @@ Layer 2 (local, window $w$): Position $j'$ can attend to all positions within $w
 Therefore, information flows from $j$ to $j'$ (layer 2) and from $j'$ to $i$ (layer 1) in 2 layers. $\blacksquare$
 
 **Definition 3.4 (Longformer Attention).** (Beltagy et al., 2020) Combines:
+
 1. **Local attention**: Sliding window of size $w$ for all tokens.
 2. **Global attention**: Selected tokens (e.g., [CLS], task-specific tokens) attend to and are attended by all other tokens.
 
 Complexity: $O(Tw + T \cdot g)$ where $g$ is the number of global tokens.
 
 **Definition 3.5 (BigBird Attention).** (Zaheer et al., 2020) Combines:
+
 1. Local attention (window $w$).
 2. Global attention ($g$ random or designated tokens).
 3. Random attention ($r$ random connections per token).
@@ -134,6 +136,7 @@ Total: $O(Tmd)$. If $m = O(d)$, this is $O(Td^2)$, which is linear in $T$.
 *Proof.* Step 1: Compute $\phi(k_j)$ for all $j$: $O(Tm)$ (assuming $\phi$ is $O(m)$ per call). Step 2: Compute $\mathbf{S} = \sum_j \phi(k_j) v_j^\top$: each outer product is $O(md)$, summed over $T$ positions: $O(Tmd)$. Step 3: For each query $i$: $\phi(q_i)^\top \mathbf{S}$ is $O(md)$ (vector-matrix product). Over all $T$ queries: $O(Tmd)$. Total: $O(Tmd)$. $\blacksquare$
 
 **Common feature maps:**
+
 - $\phi(x) = \text{elu}(x) + 1$ (Katharopoulos et al., 2020): simple, no additional dimension.
 - Random Fourier Features (Performers, Choromanski et al., 2021): $\phi(x) = \frac{1}{\sqrt{m}} [\sin(\omega_1^\top x), \cos(\omega_1^\top x), \ldots]$ where $\omega_i$ are random.
 
@@ -278,6 +281,7 @@ $$= 2 \times 80 \times 8 \times 128 \times 2 \times B \times T \text{ bytes} = 3
 For $B = 1$, $T = 4096$: $\approx 1.3$ GB. For $B = 32$, $T = 4096$: $\approx 42$ GB.
 
 **Proposition 3.2 (Inference FLOPs with KV Cache).** Generating one token at step $t$ requires:
+
 - Projecting the new token to $Q, K, V$: $O(d^2)$ per layer.
 - Attention: $O(t \cdot d)$ per layer (dot product of new query with $t$ cached keys).
 - FFN: $O(d \cdot d_{\text{ff}})$ per layer.
@@ -657,7 +661,6 @@ class CachedTransformerBlock(nn.Module):
         x = x + self.ffn(self.ln2(x))
         return x, new_cache
 
-
 @torch.no_grad()
 def generate_with_kv_cache(
     model_blocks: nn.ModuleList,    # list of CachedTransformerBlock
@@ -861,6 +864,7 @@ Ring attention (Liu et al., 2023) distributes the FlashAttention computation acr
 ### 7.3 Mixture of Attention Heads
 
 Some architectures mix different attention types across heads:
+
 - Some heads use local attention (efficient, good for syntax).
 - Some heads use global/strided attention (for long-range dependencies).
 - Some heads use linear attention (cheapest, for broad aggregation).

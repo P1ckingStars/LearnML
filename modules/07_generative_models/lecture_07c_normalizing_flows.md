@@ -29,6 +29,7 @@ Start with a simple distribution $z \sim p_Z(z)$ (e.g., standard Gaussian). Appl
 $$p_X(x) = p_Z(f_\theta^{-1}(x)) \left|\det \frac{\partial f_\theta^{-1}}{\partial x}\right|$$
 
 If we design $f_\theta$ so that both $f_\theta^{-1}$ and the Jacobian determinant are efficient to compute, we can:
+
 - Evaluate $\log p_X(x)$ exactly for any $x$.
 - Sample by drawing $z \sim p_Z(z)$ and computing $x = f_\theta(z)$.
 - Train by maximum likelihood.
@@ -96,6 +97,7 @@ This is the key equation for training: it allows exact log-likelihood computatio
 For a general $f: \mathbb{R}^D \to \mathbb{R}^D$, computing $\det J_f$ costs $O(D^3)$ (via LU decomposition). For images with $D = 3 \times 256 \times 256 = 196{,}608$, this is completely intractable.
 
 The central design challenge of normalizing flows is to construct transformations where:
+
 1. $f$ is invertible.
 2. $f^{-1}$ is efficient to compute.
 3. $\det J_f$ is efficient to compute (ideally $O(D)$).
@@ -594,7 +596,6 @@ def make_moons_data(n_samples: int = 10000, noise: float = 0.05) -> torch.Tensor
     data, _ = make_moons(n_samples=n_samples, noise=noise)
     return torch.tensor(data, dtype=torch.float32)  # [N, 2]
 
-
 def make_rings_data(n_samples: int = 10000, noise: float = 0.08) -> torch.Tensor:
     """Generate concentric rings dataset."""
     n_per_ring = n_samples // 2
@@ -607,7 +608,6 @@ def make_rings_data(n_samples: int = 10000, noise: float = 0.08) -> torch.Tensor
     ring2 = torch.stack([r2 * torch.cos(theta), r2 * torch.sin(theta)], dim=1)
 
     return torch.cat([ring1, ring2], dim=0)  # [N, 2]
-
 
 def train_flow(
     model: RealNVP,
@@ -653,7 +653,6 @@ def train_flow(
             print(f"Epoch {epoch+1:4d} | NLL: {avg_nll:.4f}")
 
     return losses
-
 
 def visualize_flow(model: RealNVP, data: torch.Tensor, title: str = "RealNVP"):
     """
@@ -707,7 +706,6 @@ def visualize_flow(model: RealNVP, data: torch.Tensor, title: str = "RealNVP"):
     plt.savefig(f'{title.lower().replace(" ", "_")}.png', dpi=150)
     plt.show()
 
-
 if __name__ == "__main__":
     torch.manual_seed(42)
 
@@ -746,6 +744,7 @@ if __name__ == "__main__":
 On toy 2D distributions, flows have a significant advantage: they compute exact log-likelihoods and can model sharp, multimodal densities. VAEs tend to produce blurred approximations because the Gaussian decoder smooths out modes.
 
 However, on high-dimensional data (images), this advantage narrows:
+
 - Flows require invertibility, constraining the architecture.
 - VAEs allow arbitrary encoder/decoder architectures.
 - Diffusion models (Module 08) offer a middle ground: exact training objective with flexible architecture.
@@ -785,6 +784,7 @@ For reference, autoregressive models (PixelCNN++) achieve ~2.92 bpd on CIFAR-10,
 ### 7.3 Flows in Practice
 
 Normalizing flows are used in:
+
 - **Physics simulations**: Boltzmann generators for molecular dynamics.
 - **Speech synthesis**: WaveGlow, Parallel WaveNet.
 - **Variational inference**: As flexible approximate posteriors in VAEs.

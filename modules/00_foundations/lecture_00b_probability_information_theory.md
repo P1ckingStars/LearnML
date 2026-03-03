@@ -21,6 +21,7 @@ By the end of this lecture, you will be able to:
 ## 1. Motivation
 
 Deep learning is fundamentally a probabilistic endeavor:
+
 - **Training** minimizes cross-entropy loss, which is the negative log-likelihood under the model distribution — an information-theoretic quantity.
 - **Generative models** (VAEs, diffusion models, normalizing flows) explicitly model $p(\mathbf{x})$ or learn to sample from it.
 - **Regularization** corresponds to placing priors on parameters (L2 = Gaussian prior, L1 = Laplace prior).
@@ -37,6 +38,7 @@ A working mastery of probability and information theory is essential for underst
 ### 2.1 Probability Spaces
 
 **Definition (Probability space).** A probability space is a triple $(\Omega, \mathcal{F}, P)$ where:
+
 - $\Omega$ is the *sample space* (set of all possible outcomes).
 - $\mathcal{F}$ is a *sigma-algebra* on $\Omega$ (a collection of subsets closed under complementation and countable unions, containing $\Omega$).
 - $P : \mathcal{F} \to [0, 1]$ is a *probability measure* satisfying $P(\Omega) = 1$ and countable additivity.
@@ -87,6 +89,7 @@ $$\mathbb{E}[X] = \mu, \quad \text{Var}(X) = \sigma^2$$
 $$p(\mathbf{x}) = \frac{1}{(2\pi)^{d/2} |\Sigma|^{1/2}} \exp\!\left(-\frac{1}{2}(\mathbf{x} - \boldsymbol{\mu})^\top \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu})\right)$$
 
 **Key properties:**
+
 - The Gaussian is closed under affine transformations: if $\mathbf{x} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$, then $A\mathbf{x} + \mathbf{b} \sim \mathcal{N}(A\boldsymbol{\mu} + \mathbf{b}, A\Sigma A^\top)$.
 - Marginals and conditionals of a joint Gaussian are also Gaussian.
 - The Gaussian maximizes entropy for a given mean and covariance (proved in Section 3.3).
@@ -101,10 +104,12 @@ $$\mathbb{E}_p[g(X)] = \int g(x)\,p(x)\,dx \quad \text{(continuous)}$$
 $$\mathbb{E}_p[g(X)] = \sum_x g(x)\,p(x) \quad \text{(discrete)}$$
 
 **Key properties (linearity):**
+
 - $\mathbb{E}[\alpha X + \beta Y] = \alpha\,\mathbb{E}[X] + \beta\,\mathbb{E}[Y]$ (always, even if $X$ and $Y$ are dependent)
 - $\mathbb{E}[XY] = \mathbb{E}[X]\,\mathbb{E}[Y]$ only if $X$ and $Y$ are independent.
 
 **Moments:**
+
 - *Mean*: $\mu = \mathbb{E}[X]$ (first moment)
 - *Variance*: $\text{Var}(X) = \mathbb{E}[(X - \mu)^2] = \mathbb{E}[X^2] - (\mathbb{E}[X])^2$ (second central moment)
 - *Covariance*: $\text{Cov}(X, Y) = \mathbb{E}[(X - \mathbb{E}[X])(Y - \mathbb{E}[Y])]$
@@ -184,6 +189,7 @@ $$h(p) = -\int p(x) \log p(x)\,dx$$
 **Interpretation:** $H(p)$ measures the average number of bits (if $\log$ is base 2) or nats (if $\log$ is natural) needed to encode a sample from $p$.
 
 **Properties:**
+
 - $H(p) \ge 0$ for discrete distributions (equality iff $p$ is a point mass).
 - $H(p) \le \log |\mathcal{X}|$ where $|\mathcal{X}|$ is the number of outcomes (maximized by the uniform distribution).
 - Differential entropy can be negative (e.g., for a very peaked continuous distribution).
@@ -235,6 +241,7 @@ Equality holds iff $q(x)/p(x)$ is constant a.e. under $p$, which (together with 
 **Corollary (Gibbs' inequality restated).** $H(p, q) \ge H(p)$ for all $q$, with equality iff $q = p$. This means: to encode samples from $p$, using $p$ itself as the codebook is optimal. Any other distribution $q$ incurs extra cost equal to $\text{KL}(p \| q)$.
 
 **Important property: asymmetry.** $\text{KL}(p \| q) \ne \text{KL}(q \| p)$ in general. The choice matters:
+
 - *Forward KL* $\text{KL}(p \| q)$: mode-covering; $q$ spreads to cover all of $p$'s mass.
 - *Reverse KL* $\text{KL}(q \| p)$: mode-seeking; $q$ concentrates on one mode of $p$.
 
@@ -320,6 +327,7 @@ $$I(X; Y) = \text{KL}\bigl(p(X, Y) \,\|\, p(X)\,p(Y)\bigr) = \mathbb{E}_{p(X,Y)}
 $$I(X; Y) = H(X) - H(X|Y) = H(Y) - H(Y|X) = H(X) + H(Y) - H(X, Y)$$
 
 **Properties:**
+
 - $I(X; Y) \ge 0$ (since KL divergence is non-negative).
 - $I(X; Y) = 0$ iff $X \perp\!\!\!\perp Y$.
 - $I(X; Y) = I(Y; X)$ (symmetric, unlike KL divergence).
@@ -351,6 +359,7 @@ $$\mathcal{I}(\theta) = -\mathbb{E}_{p(\mathbf{x};\theta)}\!\left[\frac{\partial
 **Cramer-Rao bound:** For any unbiased estimator $\hat{\theta}$ of $\theta$: $\text{Var}(\hat{\theta}) \ge \mathcal{I}(\theta)^{-1}$.
 
 **DL connection:**
+
 - The Fisher information matrix is the expected Hessian of the negative log-likelihood. It defines the *natural gradient*: $\tilde{\nabla} L(\theta) = \mathcal{I}(\theta)^{-1} \nabla L(\theta)$, which accounts for the geometry of the parameter space.
 - *Elastic Weight Consolidation* (EWC) for continual learning penalizes deviations from old parameters weighted by the Fisher information: $\mathcal{L}_{\text{EWC}} = \mathcal{L}(\theta) + \frac{\lambda}{2}\sum_i \mathcal{I}_i(\theta^* - \theta_i)^2$.
 - K-FAC (Kronecker-factored approximate curvature) approximates the Fisher for efficient second-order optimization.
@@ -595,6 +604,7 @@ The information bottleneck (Tishby et al., 2000) optimizes:
 $$\min_{p(\mathbf{h}|\mathbf{x})} I(\mathbf{x}; \mathbf{h}) - \beta\,I(\mathbf{h}; y)$$
 
 This trades off compression ($I(\mathbf{x}; \mathbf{h})$ small) with prediction ($I(\mathbf{h}; y)$ large). Shwartz-Ziv & Tishby (2017) conjectured that deep networks undergo two phases:
+
 1. **Fitting phase**: $I(\mathbf{h}; y)$ increases rapidly (learning useful features).
 2. **Compression phase**: $I(\mathbf{x}; \mathbf{h})$ decreases (discarding irrelevant information).
 
@@ -605,11 +615,13 @@ This remains an active area of research; the compression phase may depend on the
 ## 7. Paper Reading List
 
 ### Textbook Chapters
+
 1. **Cover, T. M. & Thomas, J. A.** *Elements of Information Theory*, 2nd ed. (2006). Chapters 1-4, 8. (The standard reference for information theory.)
 2. **Bishop, C. M.** *Pattern Recognition and Machine Learning* (2006). Chapter 1 (probability), Chapter 2 (distributions). (Excellent Bayesian perspective.)
 3. **Goodfellow, Bengio, Courville.** *Deep Learning*, Chapter 3: Probability and Information Theory.
 
 ### Research Papers
+
 4. **Tishby, N., Pereira, F. C., & Bialek, W.** "The information bottleneck method." *37th Allerton Conference* (2000). (Original information bottleneck framework.)
 5. **Shwartz-Ziv, R. & Tishby, N.** "Opening the black box of deep neural networks via information." *arXiv:1703.00810* (2017). (Information-theoretic analysis of DNN training.)
 6. **Gal, Y. & Ghahramani, Z.** "Dropout as a Bayesian approximation: Representing model uncertainty in deep learning." *ICML* (2016). (Connects dropout to variational inference.)
@@ -649,6 +661,7 @@ Use Lagrange multipliers to show that the distribution maximizing $H(p) = -\sum_
 
 **Problem 6** (15 pts). *MLE for Gaussian mixture model.*
 Implement the Expectation-Maximization (EM) algorithm for a mixture of $K$ Gaussians in 2D:
+
 - E-step: compute responsibilities $\gamma_{ik} = p(z_i = k | \mathbf{x}_i; \theta)$.
 - M-step: update $\pi_k$, $\boldsymbol{\mu}_k$, $\Sigma_k$.
 - Plot the data, cluster assignments, and fitted Gaussian contours at each iteration.

@@ -104,6 +104,7 @@ $$\hat{c} = \arg\max_k \phi(I)^T \psi(\text{"a photo of a } c_k\text{"})$$
 $$q_j = \frac{\exp(\phi(I)^T \psi(T_j) / \tau)}{\sum_k \exp(\phi(I)^T \psi(T_k) / \tau)}$$
 
 Then:
+
 - As $\tau \to 0^+$: $q \to$ one-hot on the most similar text (hard matching).
 - As $\tau \to \infty$: $q \to$ uniform distribution (no discrimination).
 
@@ -140,6 +141,7 @@ A Vector-Quantized GAN (Esser et al., 2021) encodes images into a grid of discre
 1. **Encoder**: $I \mapsto z_e \in \mathbb{R}^{h \times w \times d}$ (continuous feature map).
 2. **Quantization**: Each spatial feature is mapped to its nearest codebook entry:
 $$z_q[i, j] = \arg\min_{c_k \in \mathcal{C}} \|z_e[i, j] - c_k\|_2$$
+
 3. **Result**: A grid of codebook indices $\in \{1, \ldots, |\mathcal{C}|\}^{h \times w}$.
 
 This allows images to be treated as sequences of discrete tokens, enabling autoregressive generation (e.g., DALL-E).
@@ -198,6 +200,7 @@ $$Q'' = Q' + \text{FFN}(Q')$$
 This is repeated for $L$ layers, producing $N_q$ fixed visual tokens regardless of input resolution.
 
 **Properties:**
+
 - $N_q$ is typically 64--256, much smaller than the raw visual token count.
 - Compression preserves semantic content while discarding redundant spatial detail.
 - Enables processing of multiple images or video frames without sequence length explosion.
@@ -207,6 +210,7 @@ This is repeated for $L$ layers, producing $N_q$ fixed visual tokens regardless 
 $$h_l^{\text{fused}} = h_l^{\text{text}} + \tanh(\alpha_l) \cdot \text{CrossAttn}(h_l^{\text{text}},\ z^{\text{visual}})$$
 
 is initialized to $\alpha_l = 0$, so $\tanh(\alpha_l) = 0$ at initialization. This means:
+
 - At the start of training, the model behaves exactly like the pre-trained LLM.
 - The visual contribution is gradually introduced as $\alpha_l$ increases during training.
 - This preserves the language model's pre-trained capabilities while learning to incorporate visual information.
@@ -221,6 +225,7 @@ is initialized to $\alpha_l = 0$, so $\tanh(\alpha_l) = 0$ at initialization. Th
 2. **Latent diffusion**: The denoising model $\epsilon_\theta(z_t, t, c)$ operates in the latent space of a VAE.
 3. **Cross-attention conditioning**: At each denoising step, the noise prediction network uses cross-attention to attend to the text features:
 $$\text{Attn}(Q = Wz_t,\ K = W'c,\ V = W''c)$$
+
 4. **Decoding**: The denoised latent $z_0$ is decoded to an image via the VAE decoder.
 
 **Classifier-free guidance** (Ho and Salimans, 2022): To strengthen text conditioning:
@@ -349,7 +354,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-
 class VisionEncoder(nn.Module):
     """
     Simplified Vision Transformer (ViT) for CLIP.
@@ -414,7 +418,6 @@ class VisionEncoder(nn.Module):
 
         return x
 
-
 class TextEncoder(nn.Module):
     """
     Transformer text encoder for CLIP.
@@ -465,7 +468,6 @@ class TextEncoder(nn.Module):
         x = self.proj(x)                                          # (B, d)
 
         return x
-
 
 class CLIP(nn.Module):
     """
@@ -581,7 +583,6 @@ class VisualProjector(nn.Module):
             projected: (B, N_v, d_llm) -- visual tokens in LLM space
         """
         return self.proj(visual_features)                     # (B, N_v, d_llm)
-
 
 class SimpleLLaVA(nn.Module):
     """
@@ -811,7 +812,6 @@ def verify_clip():
     print(f"Predictions shape: {preds.shape}")            # (8,)
     print(f"Predictions: {preds.tolist()}")
 
-
 def verify_llava():
     """Verify LLaVA model shapes."""
     torch.manual_seed(42)
@@ -831,7 +831,6 @@ def verify_llava():
     print(f"Text tokens: {input_ids.shape[1]}")
     print(f"Total sequence length: {logits.shape[1]}")    # N_v + L_text = 46
     print(f"Logits shape: {logits.shape}")                # (2, 46, 1000)
-
 
 if __name__ == "__main__":
     print("=== CLIP Verification ===")
@@ -856,6 +855,7 @@ CLIP achieves impressive zero-shot performance across diverse vision benchmarks:
 | ObjectNet | 72.3% | 56.2% | +16.1% |
 
 Key observations:
+
 - CLIP matches or exceeds supervised baselines on many benchmarks without seeing any labeled examples.
 - The advantage is largest on **distribution-shifted** benchmarks (ObjectNet), suggesting CLIP learns more robust representations.
 

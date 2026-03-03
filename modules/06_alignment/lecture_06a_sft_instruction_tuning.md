@@ -300,7 +300,6 @@ from torch.utils.data import Dataset, DataLoader
 from typing import List, Tuple, Dict, Optional
 import copy
 
-
 # ── Data Format and Tokenization ─────────────────────────────────────
 
 def format_instruction_response(
@@ -324,7 +323,6 @@ def format_instruction_response(
         f"<|user|>\n{instruction}\n"
         f"<|assistant|>\n{response}<|eos|>"
     )
-
 
 def tokenize_with_mask(
     tokenizer,
@@ -382,7 +380,6 @@ def tokenize_with_mask(
         'labels': torch.tensor(labels, dtype=torch.long),          # (max_length,)
         'loss_mask': torch.tensor(loss_mask, dtype=torch.float32), # (max_length,)
     }
-
 
 # ── Sequence Packing ─────────────────────────────────────────────────
 
@@ -460,7 +457,6 @@ def pack_sequences(
 
     return packed
 
-
 # ── Block-Causal Attention Mask ──────────────────────────────────────
 
 def create_block_causal_mask(
@@ -494,7 +490,6 @@ def create_block_causal_mask(
 
     mask = causal & same_doc & not_pad    # (seq_len, seq_len)
     return mask
-
 
 # ── SFT Training Loop ────────────────────────────────────────────────
 
@@ -540,7 +535,6 @@ def sft_loss(
 
     loss = masked_loss.sum() / num_tokens            # scalar
     return loss
-
 
 def train_sft(
     model: nn.Module,
@@ -619,7 +613,6 @@ def train_sft(
 
     return losses
 
-
 # ── Minimal GPT for demonstration ────────────────────────────────────
 
 class MiniGPT(nn.Module):
@@ -694,7 +687,6 @@ class MiniGPT(nn.Module):
 
         return logits
 
-
 # ── Demo: end-to-end SFT on toy data ─────────────────────────────────
 
 def demo_sft():
@@ -757,7 +749,6 @@ def demo_sft():
     print(f"Loss reduction: {(1 - losses[-1]/losses[0])*100:.1f}%")
 
     return losses
-
 
 if __name__ == '__main__':
     demo_sft()

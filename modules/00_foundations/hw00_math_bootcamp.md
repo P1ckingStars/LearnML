@@ -103,6 +103,7 @@ $$\lambda_1(A) \ge \lambda_1(B) \ge \lambda_2(A) \ge \lambda_2(B) \ge \cdots \ge
 Write the log-likelihood, take derivatives with respect to $\boldsymbol{\mu}$ and $\Sigma$, and set them to zero. You may use the matrix calculus results from Part A.
 
 **(b)** (4 pts) *Bernoulli MLE with Beta prior.* Given $k$ successes in $n$ trials with prior $\theta \sim \text{Beta}(\alpha, \beta)$:
+
 - Derive the MAP estimate $\hat{\theta}_{\text{MAP}}$.
 - Show that the MAP estimate is a weighted average of the prior mode and the MLE.
 - What happens as $\alpha, \beta \to 1$ (uniform prior)?
@@ -114,6 +115,7 @@ Write the log-likelihood, take derivatives with respect to $\boldsymbol{\mu}$ an
 **(a)** (3 pts) Compute $\text{KL}(\text{Ber}(p) \| \text{Ber}(q))$ in closed form.
 
 **(b)** (4 pts) Compute $\text{KL}(\mathcal{N}(\mu_1, \sigma_1^2) \| \mathcal{N}(\mu_2, \sigma_2^2))$ for the univariate case. Verify your result by checking:
+
 - It equals zero when $(\mu_1, \sigma_1) = (\mu_2, \sigma_2)$.
 - It is non-negative.
 
@@ -250,6 +252,7 @@ def svd_power(A: torch.Tensor, k: int = None, num_iters: int = 300) -> tuple:
 ```
 
 **Requirements:**
+
 - (6 pts) Correct implementation of power iteration for the top singular triplet.
 - (6 pts) Correct deflation and iterative extraction of all singular values.
 - (3 pts) Test on random matrices of sizes $10 \times 8$, $50 \times 30$, and $100 \times 100$. Report relative error $\|A - U\Sigma V^\top\|_F / \|A\|_F$ for each.
@@ -304,6 +307,7 @@ def em_gmm(data: torch.Tensor, K: int, num_iters: int = 100) -> dict:
 ```
 
 **Requirements:**
+
 - (4 pts) Correct E-step: compute responsibilities $\gamma_{ik} = \pi_k \mathcal{N}(\mathbf{x}_i; \boldsymbol{\mu}_k, \Sigma_k) / \sum_j \pi_j \mathcal{N}(\mathbf{x}_i; \boldsymbol{\mu}_j, \Sigma_j)$.
 - (4 pts) Correct M-step: update $\pi_k$, $\boldsymbol{\mu}_k$, $\Sigma_k$ using the responsibilities.
 - (4 pts) Generate data from a 3-component mixture with well-separated means. Run EM and plot:
@@ -341,6 +345,7 @@ def rosenbrock_grad(xy: torch.Tensor) -> torch.Tensor:
 ```
 
 **Requirements:**
+
 - (4 pts) Implement all four optimizers from scratch. Each should accept a gradient function, initial point, and hyperparameters.
 - (4 pts) For each optimizer, carefully tune hyperparameters to achieve the best convergence. Report the hyperparameters you used and how you chose them.
 - (4 pts) Generate the following plots (all in one figure with subplots):

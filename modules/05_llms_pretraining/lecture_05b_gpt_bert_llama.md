@@ -67,6 +67,7 @@ The empirical version (replacing expectation with sample average) is exactly $\f
 **Theorem (Teacher Forcing Maximizes Likelihood).** Training with teacher forcing (conditioning on ground-truth prefixes $\mathbf{x}_{<t}$ rather than model samples) maximizes $\mathcal{L}_{\text{CLM}}(\theta)$.
 
 *Proof.* At training time, we need to compute $\log p_\theta(x_t \mid \mathbf{x}_{<t})$ for each position $t$. There are two choices:
+
 1. **Teacher forcing**: condition on the true prefix $\mathbf{x}_{<t}$.
 2. **Free running**: condition on model-generated prefix $\hat{\mathbf{x}}_{<t}$.
 
@@ -135,6 +136,7 @@ $$\mathcal{L}_{\text{MLM}}(\theta) = \mathbb{E}_{\mathbf{x} \sim \mathcal{D}} \l
 where $\mathcal{M} \subset \{1, \ldots, T\}$ is the set of masked positions (chosen uniformly at random with $|\mathcal{M}| \approx 0.15T$), and $\mathbf{x}_{\backslash \mathcal{M}}$ denotes the sequence with masked positions replaced.
 
 **Masking Strategy (80/10/10 rule):** For each selected position $t \in \mathcal{M}$:
+
 - With probability 0.8: replace $x_t$ with `[MASK]`
 - With probability 0.1: replace $x_t$ with a random token from $\mathcal{V}$
 - With probability 0.1: keep $x_t$ unchanged
@@ -193,6 +195,7 @@ T5 (Text-to-Text Transfer Transformer, Raffel et al. 2020) adopts the original e
 4. The target is the concatenation of sentinel tokens and their corresponding spans.
 
 **Example:**
+
 - Input: `The <extra_id_0> walks in the <extra_id_1>`
 - Target: `<extra_id_0> cute dog <extra_id_1> park <extra_id_2>`
 
@@ -395,7 +398,6 @@ import math
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
-
 @dataclass
 class GPT2Config:
     vocab_size: int = 50257
@@ -406,7 +408,6 @@ class GPT2Config:
     d_ff: int = 3072        # 4 * d_model
     dropout: float = 0.1
     bias: bool = True
-
 
 class CausalSelfAttention(nn.Module):
     """Multi-head causal self-attention for GPT-2."""
@@ -467,7 +468,6 @@ class CausalSelfAttention(nn.Module):
 
         return out, new_kv_cache
 
-
 class GPT2FFN(nn.Module):
     """Feed-forward network with GELU activation."""
 
@@ -481,7 +481,6 @@ class GPT2FFN(nn.Module):
         x = F.gelu(self.fc1(x))                           # (B, T, d_ff)
         x = self.dropout(self.fc2(x))                     # (B, T, d_model)
         return x
-
 
 class GPT2Block(nn.Module):
     """Single GPT-2 Transformer block (Pre-LN)."""
@@ -506,7 +505,6 @@ class GPT2Block(nn.Module):
         x = x + self.ffn(self.ln2(x))                         # (B, T, d_model)
 
         return x, new_kv
-
 
 class GPT2(nn.Module):
     """Full GPT-2 model."""
@@ -633,7 +631,6 @@ class RMSNorm(nn.Module):
         rms = torch.sqrt(x.pow(2).mean(dim=-1, keepdim=True) + self.eps)  # (B, T, 1)
         return (x / rms) * self.weight  # (B, T, d)
 
-
 class RotaryPositionEmbedding(nn.Module):
     """Rotary Position Embeddings (RoPE) for relative position encoding."""
 
@@ -677,7 +674,6 @@ class RotaryPositionEmbedding(nn.Module):
         # Interleave back
         return torch.stack([out1, out2], dim=-1).flatten(-2)  # (B, H, T, d_k)
 
-
 class SwiGLU(nn.Module):
     """SwiGLU feed-forward network (3 linear layers, no bias)."""
 
@@ -693,7 +689,6 @@ class SwiGLU(nn.Module):
         up = self.w3(x)             # (B, T, d_ff)
         return self.w2(gate * up)   # (B, T, d_model)
 
-
 @dataclass
 class LLaMAConfig:
     vocab_size: int = 32000
@@ -705,7 +700,6 @@ class LLaMAConfig:
     d_ff: int = 11008          # ≈ 2/3 * 4 * d_model
     dropout: float = 0.0
     rope_base: float = 10000.0
-
 
 class LLaMABlock(nn.Module):
     """Single LLaMA Transformer block."""
@@ -774,7 +768,6 @@ class LLaMABlock(nn.Module):
 
         return x, new_kv
 
-
 class LLaMA(nn.Module):
     """Full LLaMA model."""
 
@@ -819,11 +812,9 @@ class LLaMA(nn.Module):
 
         return logits, loss, new_kv_caches
 
-
 # ─── Verification ───────────────────────────────────────────────────────
 def count_params(model: nn.Module) -> int:
     return sum(p.numel() for p in model.parameters())
-
 
 def verify_gpt2():
     """Verify GPT-2 124M parameter count and forward pass shapes."""
@@ -843,7 +834,6 @@ def verify_gpt2():
     generated = model.generate(prompt, max_new_tokens=20)
     print(f"Generated shape: {generated.shape}")  # (1, 30)
 
-
 def verify_llama():
     """Verify LLaMA with reduced dimensions for testing."""
     config = LLaMAConfig(
@@ -858,7 +848,6 @@ def verify_llama():
     logits, loss, _ = model(x, targets=x)
     print(f"Logits shape: {logits.shape}")  # (2, 64, 1000)
     print(f"Loss: {loss.item():.4f}")
-
 
 if __name__ == "__main__":
     verify_gpt2()

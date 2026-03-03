@@ -11,6 +11,7 @@
 In this assignment, you will derive key theoretical properties of attention and Transformers (Part A), then build a complete GPT-style decoder-only Transformer from scratch and train it on real data (Part B).
 
 **Rules:**
+
 - You may NOT use `nn.TransformerDecoder`, `nn.TransformerDecoderLayer`, `nn.MultiheadAttention`, or any pre-built Transformer modules from PyTorch, HuggingFace, or other libraries.
 - You MAY use basic PyTorch primitives: `nn.Linear`, `nn.LayerNorm`, `nn.Embedding`, `nn.Dropout`, `nn.Module`, and all tensor operations.
 - You MAY use `torch.nn.functional.scaled_dot_product_attention` ONLY in the bonus section for benchmarking against your implementation.
@@ -104,6 +105,7 @@ class MultiHeadAttention(nn.Module):
 ```
 
 Requirements:
+
 1. Must support both training (no cache) and inference (with cache).
 2. Must correctly handle the causal mask.
 3. Include shape annotations (comments) for every intermediate tensor.
@@ -130,6 +132,7 @@ class RotaryPositionalEmbedding(nn.Module):
 ```
 
 Requirements:
+
 1. Support an `offset` parameter for KV cache compatibility (during generation, new tokens start at position `T_past`).
 2. Write a test verifying the relative position property: the dot product of rotated $q$ at position $m$ and rotated $k$ at position $n$ equals the dot product at positions $m + \delta$ and $n + \delta$ for any $\delta$.
 
@@ -176,12 +179,14 @@ class GPTModel(nn.Module):
 ```
 
 Architecture:
+
 - Token embedding + RoPE (no separate positional embedding table since RoPE is used)
 - $N$ decoder blocks, each with: LayerNorm -> MultiHeadAttention -> residual -> LayerNorm -> FFN -> residual (pre-norm)
 - Final LayerNorm -> Linear output head (weight-tied with token embedding)
 - FFN: $W_1$ (d_model -> d_ff) -> GELU -> $W_2$ (d_ff -> d_model)
 
 Requirements:
+
 1. Training forward pass: compute cross-entropy loss.
 2. Generation: implement `generate()` with KV caching, temperature scaling, and top-k sampling.
 3. Write a test generating text from a random model (just to verify the generation loop works).
@@ -209,6 +214,7 @@ config = {
 ```
 
 Requirements:
+
 1. Use a standard tokenizer (e.g., `tiktoken` with GPT-2 encoding or HuggingFace's `GPT2Tokenizer`).
 2. Implement a proper data pipeline: tokenize the corpus, create fixed-length chunks, and batch them.
 3. Use AdamW optimizer with learning rate warmup (linear warmup, then cosine decay).
@@ -226,11 +232,13 @@ Run the following ablation experiments and report results:
 **(a) Positional Encoding Comparison (5 points)**
 
 Train three models with identical hyperparameters but different positional encodings:
+
 1. **Sinusoidal** (add to embeddings, no RoPE)
 2. **Learned** (add to embeddings, no RoPE)
 3. **RoPE** (applied to Q, K in attention)
 
 For each, report:
+
 - Final validation perplexity.
 - Training curve.
 - A length generalization test: train on sequences of length 256, then evaluate perplexity on sequences of length 512 (by feeding longer chunks from the validation set). Which encoding generalizes best?
@@ -250,6 +258,7 @@ Using RoPE, compare the following configurations (keep total parameter count app
 | E (few heads) | 4 | 2 | 256 | 1024 | ~5M |
 
 Report:
+
 - Validation perplexity for each configuration.
 - Training speed (steps/second) for each.
 - Discussion: Which is best? Why? How does the number of heads affect quality?
@@ -261,6 +270,7 @@ Report:
 ### Bonus 1: FlashAttention Benchmarking (5 points)
 
 Compare your attention implementation against `torch.nn.functional.scaled_dot_product_attention` (which uses FlashAttention on CUDA):
+
 - Measure wall-clock time for forward pass at $T \in \{128, 256, 512, 1024, 2048\}$.
 - Measure peak GPU memory at each length.
 - Verify that the outputs match (within floating-point tolerance).
@@ -269,6 +279,7 @@ Compare your attention implementation against `torch.nn.functional.scaled_dot_pr
 ### Bonus 2: Multi-Query Attention (5 points)
 
 Implement multi-query attention (MQA) and grouped-query attention (GQA). Compare KV cache memory usage during generation against standard MHA. Specifically:
+
 - MHA ($h = 4$ KV heads), GQA ($g = 2$ KV heads), MQA ($g = 1$ KV head).
 - Report generation speed (tokens/second) for each.
 - Report quality (validation perplexity) for each.
@@ -276,6 +287,7 @@ Implement multi-query attention (MQA) and grouped-query attention (GQA). Compare
 ### Bonus 3: Implement Simple Linear Attention (5 points)
 
 Implement causal linear attention with the ELU+1 feature map. Compare:
+
 - Perplexity against standard softmax attention.
 - Training speed at $T \in \{256, 512, 1024\}$.
 - Discuss the quality gap and relate it to Theory Problem A.5.

@@ -49,6 +49,7 @@ $$\dot{x}(t) = Ax(t) + Bu(t)$$
 $$y(t) = Cx(t) + Du(t)$$
 
 where:
+
 - $u(t) \in \mathbb{R}^{H}$ is the input signal (for simplicity, often $H = 1$),
 - $x(t) \in \mathbb{R}^{N}$ is the latent state,
 - $y(t) \in \mathbb{R}^{H}$ is the output signal,
@@ -507,7 +508,6 @@ def hippo_legs_matrix(N: int) -> torch.Tensor:
             # else: 0 (upper triangle)
     return A
 
-
 def hippo_initialization(d_model: int, d_state: int) -> tuple:
     """
     Initialize SSM parameters using HiPPO-LegS.
@@ -642,7 +642,6 @@ class S4Layer(nn.Module):
         y = self.output_proj(y)                           # (B, L, H)
 
         return y
-
 
 class S4Block(nn.Module):
     """
@@ -782,7 +781,6 @@ def verify_conv_recurrent_equivalence():
     print(f"Input shape:  {u.shape}")       # (2, 128, 16)
     print(f"Output shape: {y_conv.shape}")  # (2, 128, 16)
 
-
 if __name__ == "__main__":
     verify_conv_recurrent_equivalence()
 ```
@@ -801,6 +799,7 @@ The Long-Range Arena (LRA) benchmark (Tay et al., 2021) evaluates models on sequ
 | S4 | 58.35 | 86.82 | 87.09 | 88.65 | 94.20 | 96.35 | 85.24 |
 
 Key observations:
+
 - **Path-X** (sequences of length 16K): Transformers fail entirely due to memory constraints. S4 achieves 96.35% accuracy.
 - **Image classification** (treating pixels as a sequence): S4's HiPPO initialization provides the inductive bias needed for long-range spatial dependencies.
 
@@ -834,6 +833,7 @@ Practical timing (single A100, $d = 256$, $N = 64$):
 ### 6.4 Kernel Visualization
 
 The learned SSM kernel often exhibits interpretable structure:
+
 - **Low-frequency components**: Smooth, slowly decaying kernel elements that capture global context.
 - **High-frequency components**: Oscillatory patterns for local feature detection.
 - **Exponential decay**: Controlled by the eigenvalues of $\bar{A}$, determining the effective memory horizon.

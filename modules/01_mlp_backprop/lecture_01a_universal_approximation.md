@@ -201,6 +201,7 @@ Return network parameters
 ```
 
 **Complexity Analysis:**
+
 - Grid cells: $M = O(1/\delta)^n$ where $\delta$ depends on the modulus of continuity of $f$
 - Hidden units per cell: $O(n)$ for axis-aligned bumps
 - Total hidden units: $O(n / \delta^n)$
@@ -267,6 +268,7 @@ The UAT is a **necessary but insufficient** foundation for understanding deep le
 - The real questions are about **optimization** (can we find good parameters?), **generalization** (will they work on new data?), and **efficiency** (how big a network do we need for structured problems?).
 
 Modern theory focuses on:
+
 - **Neural tangent kernels** (Jacot et al., 2018): connecting wide networks to kernel methods
 - **Mean field theory**: understanding infinite-width limits
 - **Lottery ticket hypothesis** (Frankle & Carlin, 2019): sparse subnetworks suffice
@@ -457,6 +459,7 @@ Typical findings when running the code above:
 | 256   | ~1e-6       | ~3e-3               | ~1e-5             |
 
 **Observations:**
+
 - Smooth functions converge quickly with moderate width.
 - Discontinuous functions converge slowly — Gibbs-like phenomenon near discontinuities.
 - Oscillatory functions require width proportional to the number of oscillations.
@@ -538,6 +541,7 @@ Typical findings when running the code above:
 **Exercise 1.3.** Prove that a single-hidden-layer network with polynomial activation $\sigma(t) = t^2$ **cannot** be a universal approximator. What class of functions does it generate? *(Hint: consider the output as a polynomial in $x$.)*
 
 **Exercise 1.4.** Telgarsky's depth separation uses the triangle wave $g(x) = 2\min(x, 1-x)$.
+
 - (a) Show that $g$ can be represented by a ReLU network with 2 hidden units and 1 layer.
 - (b) Show that $g \circ g$ has exactly 4 linear pieces.
 - (c) Prove by induction that the $k$-fold composition $g^{(k)}$ has $2^k$ linear pieces.
@@ -547,14 +551,17 @@ Typical findings when running the code above:
 ### Implementation Exercises
 
 **Exercise 1.6.** Modify the `train_approximator` function to:
+
 - (a) Compare sigmoid, tanh, ReLU, and GELU activations for the same target function. Plot all four approximations.
 - (b) Track not just training loss, but also the maximum pointwise error $\|N - f\|_\infty$ on a test grid.
 
 **Exercise 1.7.** Implement the **constructive approximation** from Section 4.1:
+
 - For $f(x) = \sin(2\pi x)$ on $[0,1]$, manually construct a sigmoid network by choosing weights that create bump functions at grid points.
 - Compare the constructed network's approximation with one found by gradient descent.
 
 **Exercise 1.8.** Replicate Telgarsky's depth separation empirically:
+
 - Train a shallow network (1 hidden layer, varying width) to approximate the 8-fold triangle wave composition.
 - Train a deep narrow network (8 layers, width 4) to approximate the same function.
 - Plot approximation quality vs. parameter count for both architectures.

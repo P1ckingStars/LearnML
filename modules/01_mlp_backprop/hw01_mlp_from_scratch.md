@@ -267,12 +267,14 @@ Using your PyTorch implementation, fix the architecture (e.g., [784, 256, 128, 1
 5. AdamW (lr=1e-3, weight_decay=1e-4)
 
 For each optimizer:
+
 - Plot training loss vs. epoch (all on one plot).
 - Plot test accuracy vs. epoch (all on one plot).
 - Report final test accuracy and number of epochs to reach 97% accuracy.
 - Measure wall-clock time per epoch.
 
 **Analysis questions:**
+
 - Which optimizer converges fastest in terms of epochs? In wall-clock time?
 - Which achieves the best final test accuracy?
 - Does momentum help? By how much (quantify in epochs-to-97%)?
@@ -289,11 +291,13 @@ Fix the optimizer (Adam, lr=1e-3) and architecture depth/width ([784, 256, 128, 
 4. GELU: $z \cdot \Phi(z)$ where $\Phi$ is the standard normal CDF
 
 For each activation:
+
 - Plot training loss and test accuracy curves.
 - Plot the **gradient norm per layer** at initialization and after 1 epoch. Use this to diagnose vanishing/exploding gradients.
 - Plot the **activation distribution** (histogram of hidden layer outputs) at initialization and after training.
 
 **Analysis questions:**
+
 - Which activation function trains fastest? Achieves the best accuracy?
 - For sigmoid and tanh, at what depth does training become difficult? Provide evidence using gradient norm plots.
 - How does GELU compare to ReLU in terms of training dynamics?
@@ -337,6 +341,7 @@ For each activation:
 | B4: Activation ablation + analysis | 7 |
 
 **Bonus points (up to 10 extra):**
+
 - Implement BatchNorm from scratch in NumPy with correct backward pass (+5).
 - Implement learning rate scheduling (cosine annealing) and show improvement (+3).
 - Reproduce the double descent curve for your MLP on a subset of MNIST (+2).

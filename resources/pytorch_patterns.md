@@ -290,7 +290,6 @@ def _init_weights(module: nn.Module, std: float = 0.02):
     elif isinstance(module, nn.Embedding):
         nn.init.normal_(module.weight, mean=0.0, std=std)
 
-
 class MyModel(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -405,7 +404,6 @@ class StableSoftmaxCrossEntropy(torch.autograd.Function):
         # targets is discrete, so no gradient
         return grad_logits, None
 
-
 # Usage
 loss = StableSoftmaxCrossEntropy.apply(logits, targets)
 ```
@@ -427,7 +425,6 @@ class StraightThroughEstimator(torch.autograd.Function):
     def backward(ctx, grad_output: torch.Tensor) -> torch.Tensor:
         # Pass gradient through unchanged
         return grad_output
-
 
 def binarize(x: torch.Tensor) -> torch.Tensor:
     return StraightThroughEstimator.apply(x)
@@ -491,6 +488,7 @@ for batch in dataloader:
 ### What Stays in float32
 
 The autocast context manager automatically handles dtype casting. Operations that remain in float32 by default:
+
 - Loss functions (cross_entropy, mse_loss)
 - Softmax, log_softmax
 - Layer normalization, batch normalization
@@ -1018,7 +1016,6 @@ class TrainConfig:
     def save(self, path: Path):
         with open(path / "config.json", "w") as f:
             json.dump(asdict(self), f, indent=2)
-
 
 def train(config: TrainConfig):
     set_seed(config.seed)

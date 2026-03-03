@@ -38,6 +38,7 @@ LoRA parameterizes the update as:
 $$W = W_0 + \frac{\alpha}{r} B A$$
 
 where:
+
 - $W_0 \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$ is the frozen pretrained weight.
 - $B \in \mathbb{R}^{d_{\text{out}} \times r}$ is a trainable matrix.
 - $A \in \mathbb{R}^{r \times d_{\text{in}}}$ is a trainable matrix.
@@ -84,6 +85,7 @@ compared to $\approx 7\text{B}$ total parameters --- about **0.12%** of the mode
 This is critical: fine-tuning starts from exactly the pretrained model's behavior, and the LoRA update smoothly deviates from it during training.
 
 **Standard initialization:**
+
 - $A$: Kaiming uniform (or Gaussian with std $1/\sqrt{d_{\text{in}}}$) for proper gradient flow.
 - $B$: Zeros.
 
@@ -191,6 +193,7 @@ QLoRA uses **paged optimizers** (via NVIDIA's unified memory) to handle memory s
 $$W_0 \in \text{NF4} \xrightarrow{\text{dequantize}} \hat{W}_0 \in \text{FP16/BF16} \xrightarrow{+ (\alpha/r) BA} W \in \text{FP16/BF16} \xrightarrow{\text{forward}} \mathbf{y}$$
 
 During the forward pass:
+
 1. Dequantize $W_0$ from NF4 to FP16 (on the fly, per-layer).
 2. Compute $W_0 \mathbf{x} + (\alpha/r) BA\mathbf{x}$.
 3. Gradients flow through $A$ and $B$ (in FP16/BF16), but **not** through $W_0$.
@@ -278,7 +281,6 @@ import torch.nn.functional as F
 from typing import Dict, List, Optional, Set
 import math
 import copy
-
 
 # ── LoRA Linear Layer ────────────────────────────────────────────────
 
@@ -384,7 +386,6 @@ class LoRALinear(nn.Module):
 
         return merged
 
-
 # ── Apply LoRA to a Model ────────────────────────────────────────────
 
 def apply_lora(
@@ -439,7 +440,6 @@ def apply_lora(
 
     return model
 
-
 def merge_lora(model: nn.Module) -> nn.Module:
     """
     Merge all LoRA layers back into standard nn.Linear layers.
@@ -465,7 +465,6 @@ def merge_lora(model: nn.Module) -> nn.Module:
 
     return model
 
-
 def count_parameters(model: nn.Module) -> Dict[str, int]:
     """
     Count total and trainable parameters.
@@ -483,7 +482,6 @@ def count_parameters(model: nn.Module) -> Dict[str, int]:
         'frozen': frozen,
         'pct_trainable': 100 * trainable / total if total > 0 else 0,
     }
-
 
 # ── Simulated NF4 Quantization (for QLoRA demonstration) ────────────
 
@@ -582,7 +580,6 @@ class NF4Tensor:
         overhead = scale_bits / self.block_size
         return data_bits + overhead
 
-
 # ── QLoRA Linear Layer (simulated) ──────────────────────────────────
 
 class QLoRALinear(nn.Module):
@@ -658,7 +655,6 @@ class QLoRALinear(nn.Module):
 
         return base_out + lora_out                           # (*, d_out)
 
-
 # ── Demo ─────────────────────────────────────────────────────────────
 
 def demo_lora():
@@ -721,7 +717,6 @@ def demo_lora():
 
     return model
 
-
 def demo_nf4():
     """
     Demonstrate NF4 quantization and measure error.
@@ -746,7 +741,6 @@ def demo_nf4():
     print(f"Relative L2 error: {error:.4f}")
     print(f"Max absolute error: {max_error:.4f}")
     print(f"Compression ratio: {32 / W_nf4.bits_per_element:.1f}x")
-
 
 if __name__ == '__main__':
     demo_lora()
@@ -866,7 +860,6 @@ def finetune_with_lora():
 
     return model
 
-
 # ── QLoRA Fine-Tuning ────────────────────────────────────────────────
 
 def finetune_with_qlora():
@@ -923,7 +916,6 @@ def finetune_with_qlora():
     print(f"GPU memory: ~5.5 GB (vs ~56 GB for full fine-tuning)")
 
     return model
-
 
 # ── Verification ─────────────────────────────────────────────────────
 

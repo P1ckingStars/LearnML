@@ -106,10 +106,12 @@ $$x_t' = x_t + E_{\text{pos}}[t]$$
 Used in BERT (Devlin et al., 2019) and GPT-2 (Radford et al., 2019).
 
 **Advantages:**
+
 - Maximum flexibility: can learn arbitrary position-dependent patterns.
 - Simple to implement.
 
 **Disadvantages:**
+
 - Cannot extrapolate beyond $T_{\max}$: positions $t > T_{\max}$ have no embedding.
 - Requires learning $T_{\max} \cdot d$ additional parameters.
 - Empirically, learned embeddings do not generalize to longer sequences at test time.
@@ -204,6 +206,7 @@ $$\lambda_h = 2^{-8/H \cdot h}, \quad h = 1, 2, \ldots, H$$
 for $H$ attention heads. This means different heads penalize distance at different rates: some heads can attend far (small $\lambda$) while others are restricted to local context (large $\lambda$).
 
 **Properties:**
+
 - No additional parameters (the slopes are fixed).
 - No positional information in the embeddings.
 - Naturally decays attention for distant tokens, providing an inductive bias for locality.
@@ -609,6 +612,7 @@ verify_positional_encodings()
 ### 6.1 Frequency Spectrum of Sinusoidal Encodings
 
 The frequencies $\omega_i = 10000^{-2i/d}$ span several orders of magnitude:
+
 - $\omega_0 = 1$: The first pair of dimensions oscillates every $2\pi \approx 6.3$ positions.
 - $\omega_{d/4} \approx 0.01$: Mid-range dimensions oscillate every ~628 positions.
 - $\omega_{d/2-1} \approx 10^{-4}$: The last dimensions oscillate every ~62,832 positions.
@@ -632,6 +636,7 @@ ALiBi shows the best raw extrapolation. RoPE with NTK-aware scaling bridges much
 ### 6.3 Visualizing Positional Similarity
 
 The dot product $PE(i)^\top PE(j)$ as a function of $|i - j|$:
+
 - **Sinusoidal**: Oscillates, with decreasing amplitude as $|i-j|$ grows. Not monotonically decreasing.
 - **Learned**: Typically shows a peaked pattern at $|i-j| = 0$ with rapid decay, but the shape is entirely learned and can be irregular.
 - **RoPE**: The dot product $q^\top \mathcal{R}_{n-m} k$ decays for large $|n-m|$ because the high-frequency rotations destructively interfere.

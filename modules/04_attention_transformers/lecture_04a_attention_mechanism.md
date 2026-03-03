@@ -223,6 +223,7 @@ $$\text{Attn}(q, \{(k_i, v_i)\}) = \frac{\sum_i K(q, k_i) \, v_i}{\sum_j K(q, k_
 which is exactly the Nadaraya-Watson form with $K_h(x, x_i) = K(q, k_i)$, $x = q$, $x_i = k_i$, $y_i = v_i$. $\blacksquare$
 
 **Implications:**
+
 - The "bandwidth" is controlled by $\sqrt{d_k}$ and the norms of $q, k$.
 - Like kernel regression, attention is a weighted average of the values, where weights depend on query-key similarity.
 - Unlike classical kernel regression, the keys and values are *learned*, not fixed data points. The model simultaneously learns the similarity function and the dictionary.

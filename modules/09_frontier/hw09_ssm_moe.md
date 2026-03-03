@@ -79,6 +79,7 @@ where $P_n$ is the $n$-th Legendre polynomial. Show that differentiating $c_n(t)
 $$\dot{c}_n(t) = \frac{1}{t}\left[A_{\text{HiPPO}} \cdot c(t) + B_{\text{HiPPO}} \cdot u(t)\right]$$
 
 You may use the following properties of Legendre polynomials:
+
 - $P_n(1) = 1$ for all $n$
 - $(2n+1)P_n(x) = P'_{n+1}(x) - P'_{n-1}(x)$
 - Orthogonality: $\int_{-1}^{1} P_n(x)P_m(x)\,dx = \frac{2}{2n+1}\delta_{nm}$
@@ -86,6 +87,7 @@ You may use the following properties of Legendre polynomials:
 ### Problem A.4: Computational Complexity Analysis (10%)
 
 **(a)** (3%) Derive the computational complexity (in FLOPs) of a single forward pass through:
+
 - (i) A Transformer self-attention layer with sequence length $T$, model dimension $d$, and $h$ heads.
 - (ii) An S4 layer with sequence length $T$, model dimension $d$ (number of independent SSMs), and state dimension $N$.
 - (iii) A Mamba layer with the same dimensions plus expansion factor $E = 2$.
@@ -105,6 +107,7 @@ $$f_i = \frac{1}{T}\sum_{t=1}^{T} \mathbf{1}[i \in \text{TopK}(G(x_t))], \quad p
 Show that $\sum_i f_i = K$ and $\sum_i p_i = 1$. Under these constraints, find the values of $f_i$ and $p_i$ that minimize $\mathcal{L}_{\text{balance}} = N \sum_i f_i p_i$. What is the minimum value?
 
 **(b)** (3%) Prove that the product form $f_i \cdot p_i$ is preferable to the squared form $f_i^2$ for the load balancing loss by showing that:
+
 - The gradient $\frac{\partial}{\partial W_g} \sum_i f_i^2$ is zero almost everywhere (due to the indicator function in $f_i$).
 - The gradient $\frac{\partial}{\partial W_g} \sum_i f_i \cdot p_i$ is nonzero and provides useful signal through the differentiable $p_i$.
 
@@ -123,6 +126,7 @@ Show that this loss penalizes large logit magnitudes. Compute $\frac{\partial \m
 Implement a discrete SSM layer from scratch in PyTorch.
 
 **(a)** (4%) Implement a `DiscreteSSM` class with:
+
 - Diagonal state matrix parameterized as $A = -\exp(\text{log\_A\_real})$ for guaranteed stability.
 - ZOH discretization.
 - Both convolutional (FFT-based) and recurrent forward passes.
@@ -139,6 +143,7 @@ y_rec, state = ssm.forward_rec(u) # (B, L, H), (B, H, N)
 **(b)** (3%) Verify that the convolutional and recurrent modes produce the same output up to numerical precision. Report the maximum absolute difference for sequences of length $L \in \{64, 256, 1024, 4096\}$ with $d_{\text{model}} = 64$ and $d_{\text{state}} = 32$.
 
 **(c)** (3%) Benchmark the wall-clock time of both modes for $L \in \{256, 1024, 4096, 16384, 65536\}$. Plot the results on a log-log scale and verify that:
+
 - Convolutional mode scales as $O(L \log L)$.
 - Recurrent mode scales as $O(L)$.
 
@@ -147,11 +152,13 @@ At what sequence length does the convolutional mode become faster than the recur
 ### Problem B.2: S4 Layer with Parallel Scan (10%)
 
 **(a)** (5%) Implement an S4 layer with:
+
 - HiPPO initialization (construct the HiPPO-LegS matrix and use its eigenvalues).
 - Complex diagonal parameterization.
 - FFT-based convolutional kernel computation.
 
 **(b)** (5%) Implement the parallel scan algorithm for computing the SSM recurrence:
+
 - Define the associative operator $(a_2, b_2) \bullet (a_1, b_1) = (a_2 a_1, a_2 b_1 + b_2)$.
 - Implement the Blelloch prefix scan.
 - Verify correctness against the sequential recurrence for random inputs.
@@ -160,12 +167,14 @@ At what sequence length does the convolutional mode become faster than the recur
 ### Problem B.3: Sparse MoE Layer (10%)
 
 **(a)** (4%) Implement a sparse MoE layer with top-2 routing:
+
 - $N = 8$ experts, each a 2-layer FFN with SiLU activation.
 - Top-2 softmax routing with renormalization.
 - Load balancing auxiliary loss.
 - Expert capacity with configurable capacity factor.
 
 **(b)** (3%) Implement expert utilization tracking. After each forward pass, record:
+
 - The number of tokens routed to each expert.
 - The average gate value for each expert.
 - The token drop rate.
@@ -173,6 +182,7 @@ At what sequence length does the convolutional mode become faster than the recur
 Plot these statistics over training and verify that the load balancing loss prevents expert collapse.
 
 **(c)** (3%) Ablation: Train the MoE layer with $\alpha \in \{0, 0.001, 0.01, 0.1, 1.0\}$ for the load balancing coefficient. For each, plot:
+
 - Training loss.
 - Expert utilization entropy.
 - Token drop rate.
@@ -188,6 +198,7 @@ Embedding -> [LayerNorm -> SSM -> Residual -> LayerNorm -> FFN -> Residual] x N 
 ```
 
 Train on a character-level language modeling task using a subset of the enwik8 dataset (first 5M characters). Use the following hyperparameters:
+
 - 4 layers, $d_{\text{model}} = 128$, $d_{\text{state}} = 64$
 - Batch size 32, sequence length 512
 - AdamW optimizer, learning rate $10^{-3}$ with cosine schedule
@@ -196,6 +207,7 @@ Train on a character-level language modeling task using a subset of the enwik8 d
 Report bits-per-character (BPC) on the validation set.
 
 **(b)** (5%) Train an LSTM baseline with the same architecture (replace SSM with single-layer LSTM, same hidden size). Compare:
+
 - Final BPC.
 - Training throughput (characters/second).
 - BPC as a function of sequence position (does the SSM maintain quality on later positions better than the LSTM?).
@@ -205,6 +217,7 @@ Report bits-per-character (BPC) on the validation set.
 **(a)** (5%) Train both your SSM model and a Transformer baseline (2-layer, 4-head, $d = 128$) on sequences of length 256 from enwik8.
 
 **(b)** (5%) Evaluate both models on sequences of length $L \in \{256, 512, 1024, 2048, 4096\}$ (without retraining). For each length, report:
+
 - BPC averaged over the full sequence.
 - BPC as a function of position within the sequence.
 - Wall-clock inference time.

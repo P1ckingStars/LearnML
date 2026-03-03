@@ -27,6 +27,7 @@ $$\min_{\theta \in \mathbb{R}^p} \mathcal{L}(\theta) = \frac{1}{N}\sum_{i=1}^N \
 where $\theta$ contains all learnable parameters (potentially billions), $f_\theta$ is the network, and $\ell$ is the per-sample loss. This is a high-dimensional, non-convex optimization problem.
 
 Despite non-convexity, first-order methods (gradient descent and its variants) work remarkably well in practice. Understanding *why* requires:
+
 - Convex optimization theory as the foundation and source of intuition.
 - Analysis of what changes in the non-convex setting.
 - Knowledge of the specific optimizers used in practice (SGD + momentum, Adam, AdamW).
@@ -44,6 +45,7 @@ $$t\,\mathbf{x} + (1 - t)\,\mathbf{y} \in \mathcal{C}$$
 Geometrically: the line segment between any two points in $\mathcal{C}$ lies entirely within $\mathcal{C}$.
 
 **Examples:**
+
 - Hyperplanes $\{\mathbf{x} : \mathbf{a}^\top \mathbf{x} = b\}$ and halfspaces $\{\mathbf{x} : \mathbf{a}^\top \mathbf{x} \le b\}$.
 - Balls $\{\mathbf{x} : \|\mathbf{x} - \mathbf{c}\| \le r\}$ in any norm.
 - The positive semidefinite cone $\{X \in \mathbb{R}^{n \times n} : X \succeq 0\}$.
@@ -63,6 +65,7 @@ $f$ is *strongly convex* with parameter $m > 0$ if $f(\mathbf{x}) - \frac{m}{2}\
 $$f\bigl(t\,\mathbf{x} + (1-t)\,\mathbf{y}\bigr) \le t\,f(\mathbf{x}) + (1-t)\,f(\mathbf{y}) - \frac{m}{2}\,t(1-t)\,\|\mathbf{x} - \mathbf{y}\|^2$$
 
 **Examples relevant to deep learning:**
+
 - Convex: linear functions, norms, $\|\mathbf{x}\|^2$, $\log(1 + e^{-x})$ (logistic loss), cross-entropy loss (as a function of logits for fixed labels).
 - Not convex: the loss landscape $\mathcal{L}(\theta)$ of a neural network with respect to $\theta$ (in general).
 
@@ -152,6 +155,7 @@ $$\kappa = L / m$$
 The condition number measures how "elongated" the sublevel sets of $f$ are. For quadratic $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^\top A\mathbf{x}$, we have $\kappa = \lambda_{\max}(A) / \lambda_{\min}(A)$.
 
 A large $\kappa$ means:
+
 - Gradient descent converges slowly (the gradient points away from the minimizer in ill-conditioned directions).
 - Preconditioning (e.g., Adam's adaptive learning rates) can dramatically improve convergence.
 
@@ -243,6 +247,7 @@ $$\mathbf{g}_t = \frac{1}{B}\sum_{i \in \mathcal{B}_t} \nabla \ell_i(\theta_t)$$
 where $\mathcal{B}_t$ is a random mini-batch of size $B$, and updates $\theta_{t+1} = \theta_t - \eta_t \mathbf{g}_t$.
 
 **Properties of the stochastic gradient:**
+
 - Unbiased: $\mathbb{E}[\mathbf{g}_t] = \nabla \mathcal{L}(\theta_t)$.
 - Variance: $\mathbb{E}[\|\mathbf{g}_t - \nabla \mathcal{L}(\theta_t)\|^2] = \sigma^2 / B$ (approximately), where $\sigma^2$ is the per-sample gradient variance.
 
@@ -253,6 +258,7 @@ $$\mathbb{E}[f(\bar{\mathbf{x}}_T)] - f(\mathbf{x}^*) \le \mathcal{O}\!\left(\fr
 where $\bar{\mathbf{x}}_T = \frac{1}{T}\sum_{t=1}^T \mathbf{x}_t$ is the iterate average. The rate is $\mathcal{O}(1/\sqrt{T})$ — slower than GD's $\mathcal{O}(1/T)$, but each iteration is $N/B$ times cheaper.
 
 **The SGD tradeoff:** Per-epoch cost comparison:
+
 - GD: 1 epoch = 1 gradient computation over all $N$ samples = 1 step.
 - SGD with batch size $B$: 1 epoch = $N/B$ steps, each using $B$ samples.
 
@@ -498,7 +504,6 @@ def sgd_momentum(grad_fn, x0, lr, beta, num_steps):
 
     return xs
 
-
 def adam(grad_fn, x0, lr=1e-3, beta1=0.9, beta2=0.999, eps=1e-8, num_steps=1000):
     """
     Adam optimizer from scratch.
@@ -666,11 +671,13 @@ print(f"LR at step 999: {lrs[999]:.6f}")
 ## 9. Paper Reading List
 
 ### Textbook Chapters
+
 1. **Boyd, S. & Vandenberghe, L.** *Convex Optimization* (2004). Chapters 2-3 (convex sets and functions), Chapter 9 (unconstrained minimization). Free at: https://web.stanford.edu/~boyd/cvxbook/
 2. **Nesterov, Y.** *Introductory Lectures on Convex Optimization* (2004). (Theoretical foundation.)
 3. **Goodfellow, Bengio, Courville.** *Deep Learning*, Chapter 8: Optimization for Training Deep Models.
 
 ### Research Papers
+
 4. **Kingma, D. P. & Ba, J.** "Adam: A method for stochastic optimization." *ICLR* (2015). (The Adam paper.)
 5. **Loshchilov, I. & Hutter, F.** "Decoupled weight decay regularization." *ICLR* (2019). (AdamW.)
 6. **Loshchilov, I. & Hutter, F.** "SGDR: Stochastic gradient descent with warm restarts." *ICLR* (2017). (Cosine annealing.)
@@ -686,6 +693,7 @@ print(f"LR at step 999: {lrs[999]:.6f}")
 
 **Problem 1** (12 pts). *Verifying convexity.*
 For each function below, determine whether it is convex, strictly convex, or strongly convex. Prove your answer using the appropriate condition (first-order, second-order, or definition).
+
 - (a) $f(\mathbf{x}) = \log\!\left(\sum_{i=1}^n e^{x_i}\right)$ (log-sum-exp)
 - (b) $f(\mathbf{x}) = \|\mathbf{x}\|_1$
 - (c) $f(\mathbf{x}) = \mathbf{x}^\top A\mathbf{x} + \mathbf{b}^\top\mathbf{x}$ where $A \succ 0$
@@ -693,6 +701,7 @@ For each function below, determine whether it is convex, strictly convex, or str
 
 **Problem 2** (15 pts). *Convergence analysis.*
 Consider minimizing $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^\top A\mathbf{x}$ where $A$ is symmetric positive definite with eigenvalues $\lambda_1 \ge \cdots \ge \lambda_n > 0$.
+
 - (a) What is the optimal constant step size for gradient descent? (Express in terms of $\lambda_1$ and $\lambda_n$.)
 - (b) Write out the GD iteration in the eigenbasis of $A$. Show that each coordinate converges independently as a geometric series.
 - (c) Prove that the convergence rate (per iteration) is $\left(\frac{\lambda_1 - \lambda_n}{\lambda_1 + \lambda_n}\right)^2 = \left(\frac{\kappa - 1}{\kappa + 1}\right)^2$ where $\kappa = \lambda_1/\lambda_n$.
@@ -700,6 +709,7 @@ Consider minimizing $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^\top A\mathbf{x}$ whe
 
 **Problem 3** (12 pts). *SGD noise analysis.*
 Consider $f(\theta) = \mathbb{E}_{x \sim p}[\ell(\theta, x)]$ where $\ell(\theta, x) = \frac{1}{2}(\theta - x)^2$ and $x \sim \mathcal{N}(0, 1)$. (So $f(\theta) = \frac{1}{2}(\theta^2 + 1)$, minimized at $\theta^* = 0$.)
+
 - (a) Compute $\nabla f(\theta)$ and the stochastic gradient $g(\theta, x) = \nabla_\theta \ell(\theta, x)$.
 - (b) Compute the variance of the stochastic gradient as a function of $\theta$.
 - (c) Show that with constant step size $\eta$, SGD does not converge to $\theta^* = 0$ but instead fluctuates around it. What is the stationary distribution of $\theta_t$ for large $t$?
@@ -709,6 +719,7 @@ Show that Adam with $\beta_1 = 0$, $\beta_2 = 0$ reduces to standard gradient de
 
 **Problem 5** (12 pts). *Condition number and preconditioning.*
 Consider $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^\top A\mathbf{x}$ with $A = \text{diag}(100, 1)$.
+
 - (a) What is the condition number $\kappa$?
 - (b) Run GD for 1000 steps with $\eta = 2/(\lambda_1 + \lambda_n)$ starting from $\mathbf{x}_0 = (10, 10)^\top$. Plot the trajectory in 2D and $f(\mathbf{x}_t)$ vs. $t$.
 - (c) Now apply the preconditioner $P = A^{-1}$ (i.e., update $\mathbf{x} \leftarrow \mathbf{x} - \eta\,P\,\nabla f(\mathbf{x})$). Show this converges in one step. What is the condition number of the preconditioned system?
@@ -718,12 +729,14 @@ Consider $f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^\top A\mathbf{x}$ with $A = \tex
 
 **Problem 6** (15 pts). *Optimizer comparison on neural network training.*
 Train a 3-layer MLP on MNIST with:
+
 - SGD (lr=0.01)
 - SGD + momentum (lr=0.01, momentum=0.9)
 - Adam (lr=0.001)
 - AdamW (lr=0.001, weight_decay=0.01)
 
 For each optimizer:
+
 - Plot training loss and test accuracy vs. epoch.
 - Plot the learning rate schedule (use cosine decay for all).
 - Report final test accuracy.
@@ -755,12 +768,14 @@ class MLP(nn.Module):
 
 **Problem 7** (15 pts). *Loss landscape visualization.*
 For a simple 2-layer network trained on a small dataset:
+
 - After training, compute the loss along random 1D and 2D slices through the parameter space.
 - Implement the filter-normalized visualization from Li et al. (2018): for random direction $\mathbf{d}$, normalize $\mathbf{d}_i = \frac{\mathbf{d}_i}{\|\mathbf{d}_i\|}\|\theta_i\|$ for each layer $i$, then plot $f(\theta^* + \alpha\,\mathbf{d})$ for $\alpha \in [-1, 1]$.
 - Compare the landscape for a network with and without skip connections.
 
 **Problem 8** (12 pts). *Gradient clipping analysis.*
 Implement gradient clipping (max-norm) and compare training stability:
+
 - Train an RNN (single-layer, hidden size 128) on a simple sequence copying task.
 - Train with and without gradient clipping ($c = 1.0$).
 - Plot the gradient norm $\|\nabla \mathcal{L}\|$ vs. training step for both cases.

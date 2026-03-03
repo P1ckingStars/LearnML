@@ -17,6 +17,7 @@ By the end of this lecture, you will be able to:
 ### 2.1 Historical Background
 
 Backpropagation has been independently discovered multiple times:
+
 - **Bryson & Ho (1969):** Dynamic programming formulation for control systems.
 - **Werbos (1974):** First application to neural networks (PhD thesis, largely unnoticed).
 - **Rumelhart, Hinton, & Williams (1986):** The landmark paper that popularized backpropagation and catalyzed the connectionist movement.
@@ -52,6 +53,7 @@ $$(J_f)_{ij} = \frac{\partial f_i}{\partial x_j}$$
 ### 3.2 Computation Graphs
 
 **Definition 3.1.** A **computation graph** is a directed acyclic graph (DAG) $G = (V, E)$ where:
+
 - Each node $v_i \in V$ represents an intermediate variable.
 - Each edge $(v_i, v_j) \in E$ indicates that $v_j$ depends on $v_i$ (i.e., $v_i$ is an input to the operation computing $v_j$).
 - **Source nodes** (no incoming edges) are inputs or parameters.
@@ -148,6 +150,7 @@ Consider a 3-layer MLP for $K$-class classification:
 $$\hat{\mathbf{y}} = \text{softmax}(W_3 \cdot \text{ReLU}(W_2 \cdot \text{ReLU}(W_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2) + \mathbf{b}_3)$$
 
 **Dimensions:**
+
 - Input: $\mathbf{x} \in \mathbb{R}^{d_0}$
 - Layer 1: $W_1 \in \mathbb{R}^{d_1 \times d_0}$, $\mathbf{b}_1 \in \mathbb{R}^{d_1}$
 - Layer 2: $W_2 \in \mathbb{R}^{d_2 \times d_1}$, $\mathbf{b}_2 \in \mathbb{R}^{d_2}$
@@ -315,6 +318,7 @@ Output: grad[p] for each p in params
 ```
 
 **Complexity Analysis:**
+
 - Forward pass: $O(T_f)$ where $T_f$ is the total cost of evaluating all operations.
 - Backward pass: $O(T_f)$ — each operation's local gradient costs the same order as the operation itself.
 - Total: $O(T_f)$ time, $O(M)$ memory where $M$ is the total size of intermediate activations stored in cache.
@@ -686,6 +690,7 @@ if __name__ == '__main__':
 ### 9.2 Memory Cost of Backpropagation
 
 For an $L$-layer MLP with hidden dimension $d$ and batch size $B$:
+
 - **Forward activations stored:** $O(L \cdot B \cdot d)$ — this is the dominant memory cost.
 - **Parameters:** $O(L \cdot d^2)$ — independent of batch size.
 - **Gradient computation:** same order as forward pass.
@@ -749,10 +754,12 @@ For an $L$-layer MLP with hidden dimension $d$ and batch size $B$:
 ### Theory Exercises
 
 **Exercise 2.1.** For a function $f: \mathbb{R}^n \to \mathbb{R}^m$, the full Jacobian has $nm$ entries. Show that:
+
 - (a) Forward-mode AD computes one column of the Jacobian per pass (cost: $n$ passes for the full Jacobian).
 - (b) Reverse-mode AD computes one row of the Jacobian per pass (cost: $m$ passes for the full Jacobian).
 
 **Exercise 2.2.** Derive the backward pass (i.e., $\partial \mathcal{L} / \partial \mathbf{z}$) through the following operations, stating shapes at each step:
+
 - (a) $\mathbf{h} = \tanh(\mathbf{z})$ where $\mathbf{z} \in \mathbb{R}^d$.
 - (b) $\mathbf{h} = \text{LayerNorm}(\mathbf{z})$ where $\text{LayerNorm}(\mathbf{z}) = \frac{\mathbf{z} - \mu}{\sqrt{\sigma^2 + \epsilon}} \odot \gamma + \beta$, with $\mu = \frac{1}{d}\sum_i z_i$, $\sigma^2 = \frac{1}{d}\sum_i (z_i - \mu)^2$.
 - (c) $Y = \text{softmax}(X W^T)$ where $X \in \mathbb{R}^{B \times d}$, $W \in \mathbb{R}^{K \times d}$.
@@ -760,6 +767,7 @@ For an $L$-layer MLP with hidden dimension $d$ and batch size $B$:
 **Exercise 2.3.** Prove the Cheap Gradient Principle: if $f: \mathbb{R}^n \to \mathbb{R}$ can be evaluated in time $T$, then reverse-mode AD computes $\nabla f$ in time at most $cT$ where $c \le 5$. *(Hint: count the operations. Each elementary operation in the forward pass generates at most one multiplication and one addition in the backward pass.)*
 
 **Exercise 2.4.** Consider a deep linear network $f(\mathbf{x}) = W_L W_{L-1} \cdots W_1 \mathbf{x}$ with $W_\ell \in \mathbb{R}^{d \times d}$.
+
 - (a) Compute $\frac{\partial f}{\partial W_\ell}$ as a function of the other weight matrices.
 - (b) Show that if all $W_\ell = W$, then $\|\frac{\partial f}{\partial W_1}\| = O(\|W\|^{L-1})$. Interpret this in terms of vanishing/exploding gradients.
 
@@ -770,11 +778,13 @@ For an $L$-layer MLP with hidden dimension $d$ and batch size $B$:
 **Exercise 2.6.** Implement gradient clipping by global norm. Given a list of parameter tensors, compute the global gradient norm and scale all gradients if the norm exceeds a threshold $\tau$. Compare with `torch.nn.utils.clip_grad_norm_`.
 
 **Exercise 2.7.** Implement **gradient checkpointing** for an $L$-layer MLP:
+
 - During the forward pass, only store activations at every $\sqrt{L}$ layers.
 - During the backward pass, recompute the missing activations from the nearest checkpoint.
 - Measure memory usage vs. the naive approach and verify gradients match.
 
 **Exercise 2.8.** Build a computation graph visualizer:
+
 - Given a PyTorch model and an input, trace the computation graph.
 - Output a DOT graph showing each operation, tensor shapes on edges, and gradient flow direction.
 - *(Hint: use `torch.autograd.grad` with `create_graph=True` and inspect `grad_fn` attributes.)*

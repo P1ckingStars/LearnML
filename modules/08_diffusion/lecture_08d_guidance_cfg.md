@@ -42,6 +42,7 @@ Classifier-free guidance has become the dominant approach, powering DALL-E 2, Im
 #### 3.1.1 Setup
 
 Suppose we have:
+
 - An unconditional diffusion model that estimates the score $\nabla_{x_t} \log p(x_t)$.
 - A classifier $p_\phi(y \mid x_t)$ trained on noisy images at all noise levels.
 
@@ -181,6 +182,7 @@ $$= \nabla_x \log \frac{p(x \mid c)^{1+w}}{p(x)^w}$$
 Therefore the guided distribution is $\tilde{p}_w(x \mid c) \propto p(x \mid c)^{1+w} / p(x)^w$. $\blacksquare$
 
 **Interpretation:** CFG sharpens the conditional distribution. For $w > 0$:
+
 - Modes of $p(x \mid c)$ are amplified.
 - Regions where $p(x \mid c) \ll p(x)$ (common but not condition-matching samples) are suppressed.
 - This explains the quality-diversity tradeoff: higher $w$ produces more prototypical (but less diverse) samples.
@@ -197,6 +199,7 @@ Therefore the guided distribution is $\tilde{p}_w(x \mid c) \propto p(x \mid c)^
 | $w > 15$ | Over-saturation | Rising FID | Declining IS |
 
 **Precision and Recall:** Dhariwal and Nichol (2021) measured:
+
 - **Precision** (sample quality): monotonically increases with guidance scale up to saturation.
 - **Recall** (mode coverage): monotonically decreases with guidance scale.
 - The FID-optimal point balances precision and recall.
@@ -220,6 +223,7 @@ For text conditioning (as in Imagen, DALL-E 2, Stable Diffusion):
 2. **Cross-attention**: Add cross-attention layers in the U-Net where the query is the image feature and the key/value are the text embeddings:
    $$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{Q K^\top}{\sqrt{d}}\right) V$$
    where $Q = W_Q h$ (from image features), $K = W_K c$, $V = W_V c$ (from text embeddings).
+
 3. **Pooled embedding**: A pooled text embedding (e.g., [CLS] token) can be added to the time embedding for global conditioning.
 
 ### 3.5 Latent Diffusion Models
@@ -235,11 +239,13 @@ Running diffusion in pixel space is expensive. For a $512 \times 512 \times 3$ i
 The latent diffusion model (LDM) consists of two components:
 
 **Component 1: Autoencoder.** A VQ-VAE or KL-regularized VAE with encoder $\mathcal{E}$ and decoder $\mathcal{D}$:
+
 - $z = \mathcal{E}(x)$: encode image $x \in \mathbb{R}^{H \times W \times 3}$ to latent $z \in \mathbb{R}^{h \times w \times c}$, where typically $h = H/f$, $w = W/f$ for downsampling factor $f \in \{4, 8\}$ and $c \in \{3, 4, 8, 16\}$.
 - $\hat{x} = \mathcal{D}(z)$: decode latent back to image.
 - The autoencoder is trained with reconstruction loss + perceptual loss + adversarial loss + mild KL regularization.
 
 **Component 2: Latent Diffusion Model.** A standard diffusion model (DDPM/DDIM/flow matching) operating on the latent space $z$ instead of pixel space $x$:
+
 - Forward process: $q(z_t \mid z_0)$ adds noise to the latent.
 - Reverse process: $p_\theta(z_{t-1} \mid z_t, c)$ denoises in latent space, with text/class conditioning via cross-attention.
 - The U-Net operates on $h \times w \times c$ tensors, which is $f^2 \cdot (3/c)$ times cheaper per pixel than pixel-space diffusion.
@@ -254,6 +260,7 @@ For $f = 8$ (Stable Diffusion's default):
 | Latent | $64 \times 64 \times 4$ | 16,384 | ~0.02x |
 
 This $\sim$50x reduction in dimensionality translates to:
+
 - ~10x faster training.
 - ~10x faster sampling.
 - Ability to train on consumer GPUs.
@@ -268,6 +275,7 @@ z_T ~ N(0,I)  →  U-Net(z_t, t, c)  →  z_0  →  VAE Decoder  →  image x
 ```
 
 **Training pipeline:**
+
 1. Pre-train the autoencoder on images (reconstruction + adversarial loss).
 2. Freeze the autoencoder.
 3. Encode the entire dataset: $z_0^{(i)} = \mathcal{E}(x^{(i)})$.
@@ -362,7 +370,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-
 class SinusoidalPositionEmbedding(nn.Module):
     """Sinusoidal timestep embedding."""
 
@@ -384,7 +391,6 @@ class SinusoidalPositionEmbedding(nn.Module):
         )                                               # (dim/2,)
         args = t[:, None].float() * freqs[None, :]     # (B, dim/2)
         return torch.cat([args.sin(), args.cos()], dim=-1)  # (B, dim)
-
 
 class ConditionalResBlock(nn.Module):
     """Residual block with adaptive group normalization for class conditioning."""
@@ -422,7 +428,6 @@ class ConditionalResBlock(nn.Module):
         h = F.silu(h)
 
         return h + self.skip(x)                               # (B, out_ch, H, W)
-
 
 class ConditionalUNet(nn.Module):
     """U-Net with class conditioning and CFG support.
@@ -758,7 +763,6 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-
 def train_cfg_ddpm(
     epochs: int = 100,
     batch_size: int = 128,
@@ -825,16 +829,19 @@ def train_cfg_ddpm(
 The guidance scale $w$ controls a fundamental tradeoff:
 
 **Low $w$ (0--2):**
+
 - Diverse samples spanning many modes.
 - Individual samples may be less sharp or "typical."
 - FID may be moderate.
 
 **Optimal $w$ (3--7.5 for images):**
+
 - Samples are sharp and class-consistent.
 - FID is minimized at this range.
 - Most real-world applications use this range (Stable Diffusion default: $w = 7.5$).
 
 **High $w$ (>10):**
+
 - Oversaturated, "deep-fried" samples.
 - Loss of fine details and subtlety.
 - FID increases again due to loss of diversity.
@@ -861,6 +868,7 @@ The guidance scale $w$ controls a fundamental tradeoff:
 ### 6.4 Text Conditioning: Architecture Matters
 
 Saharia et al. (2022, Imagen) showed that the choice of text encoder matters more than the diffusion architecture:
+
 - **CLIP text encoder** (used in Stable Diffusion): good for compositional understanding, trained on image-text pairs.
 - **T5 text encoder** (used in Imagen): better at understanding complex text, trained on text-only data.
 - **Frozen encoders** work better than fine-tuned ones, as fine-tuning can cause mode collapse in text understanding.

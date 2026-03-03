@@ -38,11 +38,13 @@ After AllReduce, every GPU has the same $\bar{g}$ and applies the same optimizer
 Ring AllReduce is the standard algorithm for gradient synchronization. With $P$ GPUs arranged in a ring:
 
 **Phase 1: Reduce-Scatter** ($P-1$ steps)
+
 - Split gradient $g_i$ into $P$ chunks of size $N/P$.
 - In step $s$, GPU $i$ sends chunk $(i-s) \bmod P$ to GPU $(i+1) \bmod P$ and receives from GPU $(i-1) \bmod P$.
 - After $P-1$ steps, GPU $i$ holds the sum of chunk $i$ from all GPUs.
 
 **Phase 2: AllGather** ($P-1$ steps)
+
 - In step $s$, GPU $i$ sends its summed chunk to the next GPU.
 - After $P-1$ steps, every GPU has all summed chunks.
 
@@ -65,7 +67,6 @@ import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, DistributedSampler
 
-
 def setup_ddp(rank: int, world_size: int):
     """Initialize distributed process group.
 
@@ -80,7 +81,6 @@ def setup_ddp(rank: int, world_size: int):
         world_size=world_size,
     )
     torch.cuda.set_device(rank)
-
 
 def train_ddp(rank: int, world_size: int):
     """Train a model with DistributedDataParallel.
@@ -113,7 +113,6 @@ def train_ddp(rank: int, world_size: int):
             optimizer.zero_grad()
 
     dist.destroy_process_group()
-
 
 # Launch: torchrun --nproc_per_node=4 script.py
 ```
@@ -167,15 +166,18 @@ GPU layout for MHA with TP=4, H=32:
 ```
 
 **QKV Projection (Column-Parallel):**
+
 - $W^Q, W^K, W^V \in \mathbb{R}^{d \times d}$ are split column-wise.
 - Each GPU computes Q, K, V for its assigned heads.
 - **No communication**: input $X$ is replicated (from previous layer's AllReduce).
 
 **Attention Computation (Local):**
+
 - Each GPU computes attention for its local heads.
 - **No communication**: attention is independent per head.
 
 **Output Projection (Row-Parallel):**
+
 - $W^O \in \mathbb{R}^{d \times d}$ is split row-wise.
 - Each GPU computes a partial output $O_i = \text{heads}_i \cdot W^O_i$.
 - **AllReduce** to sum partial outputs: $O = \sum_i O_i$.
@@ -196,7 +198,6 @@ For FFN: $Y = \text{GELU}(X W_1) W_2$ where $W_1 \in \mathbb{R}^{d \times 4d}$, 
 import torch
 import torch.nn as nn
 import torch.distributed as dist
-
 
 class ColumnParallelLinear(nn.Module):
     """Linear layer with column-parallel weight split.
@@ -219,7 +220,6 @@ class ColumnParallelLinear(nn.Module):
         if self.bias is not None:
             y = y + self.bias
         return y  # no communication needed
-
 
 class RowParallelLinear(nn.Module):
     """Linear layer with row-parallel weight split.
@@ -318,6 +318,7 @@ GPU 3: __ __ __ F1 F2 F3 B1 F4 B2 F5 B3 F6 B4 F7 B5 F8 B6 B7 B8
 ### 4.1 The Redundancy Problem
 
 In standard data parallelism, every GPU stores:
+
 - Parameters $\theta$: $2N$ bytes (fp16)
 - Gradients $g$: $2N$ bytes (fp16)
 - Optimizer states (Adam): $12N$ bytes (fp32 copy of params: $4N$, momentum: $4N$, variance: $4N$)
@@ -386,7 +387,6 @@ from torch.distributed.fsdp import MixedPrecision, ShardingStrategy
 from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
 from functools import partial
 
-
 # ─── Model Definition ────────────────────────────────────────────────────
 
 class TransformerBlock(nn.Module):
@@ -409,7 +409,6 @@ class TransformerBlock(nn.Module):
         x = x + attn_out                                             # (B, T, d)
         x = x + self.ffn(self.ln2(x))                               # (B, T, d)
         return x
-
 
 class SimpleGPT(nn.Module):
     """A simplified GPT for FSDP demonstration."""
@@ -444,7 +443,6 @@ class SimpleGPT(nn.Module):
         x = self.ln_f(x)                                              # (B, T, d)
         logits = self.lm_head(x)                                      # (B, T, V)
         return logits
-
 
 # ─── FSDP Training ───────────────────────────────────────────────────────
 
@@ -531,7 +529,6 @@ def train_fsdp(rank: int, world_size: int):
 
     dist.destroy_process_group()
 
-
 # ─── Launch ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -558,6 +555,7 @@ if __name__ == "__main__":
 **Given:** LLaMA-7B has $N = 6.74 \times 10^9$ parameters. Training uses AdamW in bf16/fp32 mixed precision.
 
 **(a)** Compute the memory for model states (parameters, gradients, optimizer) under:
+
 - Standard DDP (no ZeRO)
 - ZeRO-1 on 8 GPUs
 - ZeRO-2 on 8 GPUs
@@ -586,6 +584,7 @@ if __name__ == "__main__":
 **(b)** Estimate activation memory for a single layer with sequence length $T = 4096$ and batch size $B = 1$:
 
 Per Transformer layer, the major activations are:
+
 - Attention input: $B \times T \times d = 1 \times 4096 \times 4096 = 16.8M$ (bf16: 33.6 MB)
 - QKV: $3 \times B \times H \times T \times d_k = 3 \times 1 \times 32 \times 4096 \times 128 = 50.3M$ (bf16: 100.7 MB)
 - Attention weights: $B \times H \times T \times T = 1 \times 32 \times 4096 \times 4096 = 536.9M$ (bf16: 1073.7 MB $\approx$ 1.07 GB)
@@ -639,9 +638,11 @@ For $P \gg 1$: $\approx 2N$. The communication volume per GPU is approximately c
 **(b)** Compare communication times for DDP vs. ZeRO-3 on $P = 8$ GPUs with $N = 7 \times 10^9$ (7B) parameters in bf16 (2 bytes/param), bandwidth $\beta = 600$ GB/s (NVLink).
 
 **DDP:** AllReduce of size $2N = 14$ GB.
+
 - Time: $2N(P-1)/P / \beta = 14 \times 7/8 / 600 = 0.020$ seconds.
 
 **ZeRO-3:** AllGather ($N$ bytes) for forward + AllGather ($N$) for backward + Reduce-Scatter ($N$) for gradients = $3N = 21$ GB total.
+
 - Time: $3N(P-1)/P / \beta = 21 \times 7/8 / 600 = 0.031$ seconds.
 
 **Overhead:** ZeRO-3 is $\sim$1.5x more communication than DDP, but uses $1/P$ of the memory.
@@ -657,6 +658,7 @@ For $P \gg 1$: $\approx 2N$. The communication volume per GPU is approximately c
 **(b)** Memory impact: gradient accumulation does NOT reduce peak memory for activations (each microbatch's activations are still needed for its backward pass). However, it does reduce peak memory for gradients: only one microbatch's activations need to be in memory at a time.
 
 With gradient checkpointing + gradient accumulation:
+
 - Activation memory: $O(L \cdot B_\mu \cdot T \cdot d)$ (one microbatch at a time)
 - Gradient memory: $O(N)$ (accumulated across microbatches)
 
@@ -673,6 +675,7 @@ With gradient checkpointing + gradient accumulation:
 $$\text{MFU} = 400 / 990 = 40.4\%$$
 
 This is typical for large-scale LLM training. The gap is due to:
+
 - Communication overhead (~15%)
 - Memory bandwidth bottleneck (~20%)
 - Pipeline bubbles (~5%)

@@ -17,30 +17,36 @@ $$H_{\text{out}} = \left\lfloor \frac{H_{\text{in}} + 2p - d(k-1) - 1}{s} \right
 ### 1.2 Worked Examples
 
 **Example 1: Basic convolution.**
+
 - Input: $H = 32$, kernel $k = 3$, padding $p = 0$, stride $s = 1$, dilation $d = 1$
 - $H_{\text{out}} = \lfloor \frac{32 + 0 - 1(2) - 1}{1} \rfloor + 1 = \lfloor 29 \rfloor + 1 = 30$
 
 **Example 2: "Same" convolution.**
+
 - Input: $H = 32$, $k = 5$, $p = 2$, $s = 1$, $d = 1$
 - $H_{\text{out}} = \lfloor \frac{32 + 4 - 4 - 1}{1} \rfloor + 1 = 31 + 1 = 32$
 - Rule: for "same" output with $s=1$, $d=1$: $p = \lfloor k/2 \rfloor$
 
 **Example 3: Strided convolution.**
+
 - Input: $H = 224$, $k = 7$, $p = 3$, $s = 2$, $d = 1$
 - $H_{\text{out}} = \lfloor \frac{224 + 6 - 6 - 1}{2} \rfloor + 1 = \lfloor 111.5 \rfloor + 1 = 112$
 - This is the ResNet stem: halves spatial dimensions.
 
 **Example 4: Dilated convolution.**
+
 - Input: $H = 32$, $k = 3$, $p = 2$, $s = 1$, $d = 2$
 - Effective kernel: $d(k-1) + 1 = 2(2) + 1 = 5$
 - $H_{\text{out}} = \lfloor \frac{32 + 4 - 4 - 1}{1} \rfloor + 1 = 32$
 - Note: padding $p = d \lfloor k/2 \rfloor = 2$ gives "same" for dilated conv.
 
 **Example 5: Combined stride and dilation.**
+
 - Input: $H = 64$, $k = 3$, $p = 2$, $s = 2$, $d = 2$
 - $H_{\text{out}} = \lfloor \frac{64 + 4 - 4 - 1}{2} \rfloor + 1 = \lfloor 31.5 \rfloor + 1 = 32$
 
 **Example 6: Max Pooling.**
+
 - Same formula applies. Input: $H = 112$, $k = 3$, $p = 1$, $s = 2$
 - $H_{\text{out}} = \lfloor \frac{112 + 2 - 2 - 1}{2} \rfloor + 1 = \lfloor 55.5 \rfloor + 1 = 56$
 
@@ -239,6 +245,7 @@ Compare: 8 standard $3 \times 3$ layers give receptive field $1 + 2 \times 8 = 1
 **Problem:** With dilation $d$, the kernel only samples every $d$-th pixel, creating a grid pattern. If all layers use the same dilation, information between grid points never interacts.
 
 **Solutions:**
+
 1. Use a sequence of different dilation rates (e.g., [1, 2, 4, 8] or [1, 2, 5, 1, 2, 5]).
 2. The Hybrid Dilated Convolution (HDC) principle: use dilation rates whose GCD is 1.
 3. Interleave dilated and non-dilated layers.
@@ -338,7 +345,6 @@ class DepthwiseSeparableConv2d(nn.Module):
         x = self.pointwise(x)           # (N, C_out, H', W')
         return x
 
-
 # --- Comparison ---
 C_in, C_out, k = 256, 256, 3
 H, W = 56, 56
@@ -391,6 +397,7 @@ This is equivalent to applying a shared fully connected layer (with weight matri
 **FLOPs:** $2 \times C_{\text{out}} \times C_{\text{in}} \times H \times W$ (multiply-adds).
 
 **Example:** $1 \times 1$ conv from 2048 to 512 channels on a $7 \times 7$ feature map:
+
 - Parameters: $2048 \times 512 + 512 = 1,049,088$
 - FLOPs: $2 \times 2048 \times 512 \times 7 \times 7 = 102,760,448 \approx 103\text{M}$
 
@@ -456,7 +463,6 @@ def count_parameters(model: nn.Module) -> dict:
             counts[layer_type]['params'] += n_params
     return counts
 
-
 def compute_conv_flops(module: nn.Conv2d, input_shape: tuple) -> int:
     """
     Compute FLOPs for a Conv2d layer.
@@ -484,7 +490,6 @@ def compute_conv_flops(module: nn.Conv2d, input_shape: tuple) -> int:
     total_flops = N * C_out * H_out * W_out * flops_per_element
 
     return total_flops
-
 
 def analyze_architecture(model: nn.Module, input_shape: tuple = (1, 3, 224, 224)):
     """
@@ -546,7 +551,6 @@ def analyze_architecture(model: nn.Module, input_shape: tuple = (1, 3, 224, 224)
 
     return total_flops, total_params
 
-
 # --- Analyze common architectures ---
 
 # Simple VGG-like network
@@ -604,6 +608,7 @@ analyze_architecture(model)
 | ConvNeXt-T    | 28.6       | 4.5       | 82.1%     | 0.157             |
 
 **Key observations:**
+
 - AlexNet has the most parameters but fewest FLOPs — most parameters are in FC layers (cheap to compute, expensive to store).
 - EfficientNet achieves the best accuracy-per-FLOP ratio through compound scaling.
 - ViT is computationally expensive due to $O(N^2)$ self-attention.

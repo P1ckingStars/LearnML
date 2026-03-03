@@ -20,6 +20,7 @@ By the end of this lecture, you will be able to:
 Train-time scaling laws (Kaplan et al., 2020; Hoffmann et al., 2022) established that larger models trained on more data perform better. But what about **inference time**? Can we improve performance by spending more compute at test time, without changing the model?
 
 The answer is yes, and the implications are profound:
+
 - A smaller model with more test-time compute can match a larger model with less.
 - This creates a **compute-performance tradeoff** at inference time, analogous to the train-time tradeoff.
 - System designers can dynamically allocate compute based on problem difficulty.
@@ -27,6 +28,7 @@ The answer is yes, and the implications are profound:
 ### 2.2 Forms of Test-Time Compute
 
 Test-time compute can be spent in several ways:
+
 1. **Sampling**: Generate multiple candidate answers and select the best (best-of-N).
 2. **Verification**: Use a reward model to score and filter candidates.
 3. **Search**: Systematically explore reasoning paths (MCTS, beam search).
@@ -160,6 +162,7 @@ where $\hat{p}_i = R_\theta(q, s_1, \ldots, s_i)$ is the PRM's predicted probabi
 Monte Carlo Tree Search adapts naturally to LLM reasoning by treating thought generation as a sequential decision process.
 
 **Definition 3.12 (MCTS for Reasoning).** The MCTS tree is defined as:
+
 - **State**: partial reasoning chain $(s_1, \ldots, s_i)$
 - **Action**: generate the next reasoning step $s_{i+1}$
 - **Reward**: PRM score or final answer correctness
@@ -172,6 +175,7 @@ The four MCTS phases:
 $$a^* = \arg\max_a \left[ Q(s, a) + c \sqrt{\frac{\ln N(s)}{N(s, a)}} \right]$$
 
 where:
+
 - $Q(s, a)$: average reward of simulations through $(s, a)$
 - $N(s)$: visit count of state $s$
 - $N(s, a)$: visit count of edge $(s, a)$
@@ -236,6 +240,7 @@ For $D > 1$ and $p_s < 1$, PRM-guided search is strictly more efficient because 
 For PRM-guided search, at each step we can try $N_{\text{per-step}}$ candidates and proceed with any correct one. The probability of getting at least one correct candidate at any step is $1 - (1 - p_s)^{N_{\text{per-step}}}$. With total budget spread across $D$ steps, $N_{\text{per-step}} = N \cdot c_{\text{gen}} / (D \cdot c_{\text{step}})$. Even with equal per-step budget, the success probability at each step is $1 - (1 - p_s)^{N/D}$, and the overall success is $[1 - (1-p_s)^{N/D}]^D$.
 
 For $p_s = 0.8$, $D = 5$, $N = 50$:
+
 - Best-of-N: $1 - (1 - 0.8^5)^{50} = 1 - (1-0.328)^{50} = 1.0$ (already saturated)
 - But with $p_s = 0.3$, $D = 10$, $N = 20$:
   - Best-of-N: $1 - (1 - 0.3^{10})^{20} = 1 - (1 - 5.9 \times 10^{-6})^{20} \approx 1.2 \times 10^{-4}$
@@ -373,7 +378,6 @@ from dataclasses import dataclass
 from typing import Callable, Optional
 import math
 
-
 class RewardModel(nn.Module):
     """
     Reward model that scores (question, answer) pairs.
@@ -433,7 +437,6 @@ class RewardModel(nn.Module):
         reward = self.reward_head(cls_repr).squeeze(-1)               # [B]
 
         return reward
-
 
 class ProcessRewardModel(nn.Module):
     """
@@ -542,7 +545,6 @@ class ProcessRewardModel(nn.Module):
 
         return chain_log_score
 
-
 class BestOfN:
     """
     Best-of-N sampling with reward model scoring.
@@ -619,7 +621,6 @@ import random
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-
 @dataclass
 class MCTSNode:
     """Node in the MCTS reasoning tree."""
@@ -662,7 +663,6 @@ class MCTSNode:
         exploitation = self.q_value
         exploration = c * self.prior * math.sqrt(self.parent.visits) / (1 + self.visits)
         return exploitation + exploration
-
 
 class MCTSReasoner:
     """
@@ -895,7 +895,6 @@ def train_prm(
 
     return metrics
 
-
 def generate_prm_labels_via_rollouts(
     question: str,
     chain: list[str],              # List of reasoning steps
@@ -962,6 +961,7 @@ Performance of best-of-N on MATH benchmark with different reward models:
 | 1024 | 67.5% | 75.2% | 56.3% |
 
 Key observations:
+
 - PRM consistently outperforms ORM at all sample sizes.
 - Random selection (no RM) shows only marginal improvement with $N$ (from sample diversity alone).
 - Returns diminish after $N \approx 256$, consistent with the verifier accuracy ceiling (Theorem 3.15).

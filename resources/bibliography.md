@@ -3,6 +3,7 @@
 A curated reading list for a PhD-track deep learning course, organized by topic. Each entry includes a citation, one-line summary, and significance rating.
 
 **Significance Ratings:**
+
 - ★★★ Essential -- foundational or field-defining; must read
 - ★★ Important -- significant contribution; strongly recommended
 - ★ Recommended -- valuable for depth or perspective; read as needed

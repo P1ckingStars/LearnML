@@ -25,14 +25,17 @@ $$x_{n+1} = x_n + f(x_n, t_n)\, \Delta t + g(t_n)\, \sqrt{|\Delta t|}\, z_n, \qu
 ### 1.2 Convergence Properties
 
 **Definition (Strong and Weak Convergence).** A numerical scheme has:
+
 - **Strong order $\gamma$** if $\mathbb{E}[\|x_N - x(T)\|] \leq C \cdot \Delta t^\gamma$.
 - **Weak order $\beta$** if $|\mathbb{E}[g(x_N)] - \mathbb{E}[g(x(T))]| \leq C \cdot \Delta t^\beta$ for smooth test functions $g$.
 
 **Theorem 1.1.** The Euler-Maruyama method has:
+
 - Strong order $\gamma = 1/2$.
 - Weak order $\beta = 1$.
 
 *Proof sketch (strong order).* The local error has two components:
+
 1. Drift truncation error: $O(\Delta t^2)$ (same as Euler for ODEs).
 2. Diffusion truncation error: The Ito integral $\int_{t_n}^{t_{n+1}} g(t)\, dW$ is approximated by $g(t_n) \Delta W_n$ where $\Delta W_n \sim \mathcal{N}(0, \Delta t\, I)$. The approximation error from the time-variation of $g$ is $O(\Delta t)$ in the $L^2$ sense. Since $\Delta W_n = O(\sqrt{\Delta t})$ in magnitude, the local strong error is $O(\Delta t^{3/2})$. Accumulating $N = T/\Delta t$ such errors: $N \cdot O(\Delta t^{3/2}) = O(\Delta t^{1/2})$.
 
@@ -91,6 +94,7 @@ $$x_{n+1} = x_n + h \cdot F(x_n, t_n)$$
 where $F(x, t) = -\frac{1}{2}\beta(t)[x + s_\theta(x, t)]$ and $h = \Delta t = -T/N$.
 
 **Properties:**
+
 - 1 neural network evaluation (NFE) per step.
 - Local truncation error: $O(h^2)$.
 - Global error: $O(h)$ (first order).
@@ -104,6 +108,7 @@ $$\tilde{x}_{n+1} = x_n + h \cdot F(x_n, t_n) \quad \text{(Euler predictor)}$$
 $$x_{n+1} = x_n + \frac{h}{2}\bigl[F(x_n, t_n) + F(\tilde{x}_{n+1}, t_{n+1})\bigr] \quad \text{(trapezoidal corrector)}$$
 
 **Properties:**
+
 - 2 NFE per step.
 - Local truncation error: $O(h^3)$.
 - Global error: $O(h^2)$ (second order).
@@ -143,6 +148,7 @@ Approximate $\hat{\varepsilon}$ as linear over the interval using two evaluation
 $$x_t = \frac{\sqrt{\bar{\alpha}_t}}{\sqrt{\bar{\alpha}_s}} x_s + \sqrt{\bar{\alpha}_t}\left(e^{-\lambda_t} - e^{-\lambda_s}\right)\left[\hat{\varepsilon}_s + \frac{1}{2(\lambda_{s_{1/2}} - \lambda_s)}(\hat{\varepsilon}_{s_{1/2}} - \hat{\varepsilon}_s)(e^{-\lambda_t} - e^{-\lambda_s})\right]$$
 
 **Properties:**
+
 - 2 NFE per step.
 - Achieves second-order convergence in the log-SNR domain.
 - Empirically: good quality in 10-20 steps (20-40 NFE).
@@ -223,6 +229,7 @@ Key values:
 We walk through DDPM sampling for a 2D toy example where $p_{\text{data}}$ is a mixture of two Gaussians.
 
 **Setup:**
+
 - $T = 5$ (small for illustration; real models use $T = 1000$).
 - $\beta = [0.1, 0.2, 0.3, 0.4, 0.5]$.
 - $\alpha = [0.9, 0.8, 0.7, 0.6, 0.5]$.
@@ -307,6 +314,7 @@ For variance: $\text{Var}[x_{n+1}] = (1-\Delta t)^2 \text{Var}[x_n] + \Delta t$.
 $$\text{Var}[x_n] = \frac{\Delta t}{1 - (1-\Delta t)^2}\left[1 - (1-\Delta t)^{2n}\right] = \frac{1}{2 - \Delta t}\left[1 - (1-\Delta t)^{2n}\right]$$
 
 **(b)** At $t = n\Delta t$:
+
 - Exact mean: $e^{-n\Delta t}$. EM mean: $(1-\Delta t)^n$. For small $\Delta t$: $(1-\Delta t)^n \approx e^{-n\Delta t} + O(\Delta t)$.
 - Exact variance: $\frac{1}{2}(1 - e^{-2n\Delta t})$. EM variance: $\frac{1}{2-\Delta t}(1 - (1-\Delta t)^{2n})$. As $\Delta t \to 0$: $\frac{1}{2-\Delta t} \to \frac{1}{2}$ and $(1-\Delta t)^{2n} \to e^{-2n\Delta t}$, so they agree at leading order.
 
@@ -429,6 +437,7 @@ Adaptive solvers estimate the local truncation error and adjust the step size to
 3. **Transition region ($t \approx T/2$):** The ODE transitions from smooth to structured behavior. Moderate step sizes suffice.
 
 Therefore, adaptive solvers automatically:
+
 - Take large steps in the high-noise regime (saving compute).
 - Take small steps in the low-noise regime (preserving quality).
 - Achieve target accuracy with fewer total NFE than uniform-step solvers.
@@ -440,6 +449,7 @@ Empirically, RK45 typically uses 80-150 NFE for CIFAR-10, compared to ~200 for u
 ### Problem 7: Comparing Stochastic and Deterministic Sampling
 
 **Problem:** For a 1D Gaussian mixture $p_{\text{data}} = 0.5\,\mathcal{N}(-3, 0.5^2) + 0.5\,\mathcal{N}(3, 0.5^2)$, simulate both:
+
 1. The reverse SDE (Euler-Maruyama, $N = 100$ steps).
 2. The probability flow ODE (Euler, $N = 100$ steps).
 
@@ -458,6 +468,7 @@ $$\nabla_x \log p_t(x) = \frac{-w_1(x)\frac{x - \mu_1(t)}{\sigma^2(t)} - w_2(x)\
 where $w_i(x) = \pi_i \mathcal{N}(x; \mu_i(t), \sigma^2(t)) / p_t(x)$ are the posterior responsibilities.
 
 **Expected results:**
+
 - Both methods recover the bimodal distribution.
 - The SDE samples show more spread (higher variance around each mode) due to the stochastic noise.
 - The ODE samples are deterministic: each starting point maps to a unique endpoint, producing a cleaner histogram but with no randomness.
@@ -467,7 +478,6 @@ where $w_i(x) = \pi_i \mathcal{N}(x; \mu_i(t), \sigma^2(t)) / p_t(x)$ are the po
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-
 
 def exact_score_gaussian_mixture(x, t, alpha_bar):
     """Exact score for a 1D mixture of two Gaussians."""
@@ -492,7 +502,6 @@ def exact_score_gaussian_mixture(x, t, alpha_bar):
     score = -(w1 * (x - mean1) + w2 * (x - mean2)) / var
     return score
 
-
 def sample_reverse_sde(N=100, n_samples=1000, T=1.0, beta_min=0.1, beta_max=20.0):
     """Sample via reverse SDE (Euler-Maruyama)."""
     dt = -T / N
@@ -512,7 +521,6 @@ def sample_reverse_sde(N=100, n_samples=1000, T=1.0, beta_min=0.1, beta_max=20.0
         x = x + drift * dt + diffusion * np.sqrt(abs(dt)) * z
 
     return x
-
 
 def sample_probability_flow_ode(N=100, n_samples=1000, T=1.0, beta_min=0.1, beta_max=20.0):
     """Sample via probability flow ODE (Euler)."""

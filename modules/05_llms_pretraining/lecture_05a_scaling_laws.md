@@ -69,6 +69,7 @@ $$L(N, D) = \left[\left(\frac{N_c}{N}\right)^{\alpha_N / \beta} + \left(\frac{D_
 where $\beta$ is a blending exponent. Setting $D \to \infty$ recovers $L(N)$; setting $N \to \infty$ recovers $L(D)$.
 
 **Interpretation.** The model encounters two independent sources of loss:
+
 1. **Approximation error** $\sim N^{-\alpha_N/\beta}$: the model class is not rich enough.
 2. **Estimation error** $\sim D^{-\alpha_D/\beta}$: not enough data to learn the true distribution.
 
@@ -164,6 +165,7 @@ A model with $N$ parameters can learn approximately the top $K(N) \sim N^{1/d}$ 
 $$L(N) - L_\infty = \sum_{k > K(N)} \delta_k \approx \int_{K(N)}^{\infty} k^{-\gamma}\, dk = \frac{K(N)^{1-\gamma}}{\gamma - 1} \propto N^{(1-\gamma)/d}$$
 
 Setting $\alpha_N = (\gamma - 1)/d$ recovers the power law. The exponent depends on:
+
 - $\gamma$: the decay rate of feature importances (set by the data distribution).
 - $d$: the effective intrinsic dimension of the model class.
 
@@ -176,6 +178,7 @@ Wei et al. (2022) documented capabilities that appear to emerge suddenly as mode
 **Definition (Emergent Ability).** An ability is *emergent* if it is not present in smaller models but appears in larger models. Operationally, performance on a task is near-random below some scale threshold and then jumps sharply above it.
 
 **Examples:**
+
 - **Arithmetic**: GPT-3 175B can perform 3-digit addition, but GPT-3 13B cannot.
 - **Chain-of-thought reasoning**: Only effective in models above ~60B parameters.
 - **Word unscrambling**: Performance is near-zero until ~10B parameters, then rapidly improves.
@@ -318,7 +321,6 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from typing import Tuple
 
-
 @dataclass
 class ScalingLawParams:
     """Parameters for L(N, D) = A/N^alpha + B/D^beta + L_inf."""
@@ -327,7 +329,6 @@ class ScalingLawParams:
     alpha: float
     beta: float
     L_inf: float
-
 
 class ScalingLawModel(torch.nn.Module):
     """Learnable scaling law: L(N, D) = A/N^alpha + B/D^beta + L_inf."""
@@ -369,7 +370,6 @@ class ScalingLawModel(torch.nn.Module):
                 L_inf=self.L_inf.item(),
             )
 
-
 def fit_scaling_law(
     N_data: np.ndarray,     # (M,) — parameter counts
     D_data: np.ndarray,     # (M,) — token counts
@@ -399,7 +399,6 @@ def fit_scaling_law(
             print(f"Step {step}: fitting loss = {loss.item():.6f}")
 
     return model.get_params()
-
 
 def chinchilla_optimal(
     C: float,
@@ -451,7 +450,6 @@ def generate_synthetic_scaling_data(
     L_observed = L_true + noise                                   # (num_runs,)
 
     return N, D, L_observed
-
 
 def demo_scaling_laws():
     """Full demo: generate data, fit scaling law, compute Chinchilla optimal."""
@@ -525,7 +523,6 @@ def demo_scaling_laws():
     plt.savefig("scaling_laws_fit.png", dpi=150)
     plt.show()
 
-
 if __name__ == "__main__":
     demo_scaling_laws()
 ```
@@ -556,7 +553,6 @@ def emergence_threshold(
     N_critical = N_c / ratio
 
     return N_critical
-
 
 def plot_emergence():
     """Visualize emergent abilities for tasks of different complexity."""

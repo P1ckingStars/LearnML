@@ -47,6 +47,7 @@ This connects to deep questions in computational complexity: what is the power o
 ### 3.1 Chain-of-Thought Prompting
 
 **Definition 3.1 (Chain of Thought).** Given a question $q$, a chain-of-thought response is a sequence $(r_1, r_2, \ldots, r_m, a)$ where:
+
 - Each $r_i$ is an intermediate reasoning step (natural language)
 - $a$ is the final answer
 - Each $r_i$ depends on $q$ and $(r_1, \ldots, r_{i-1})$
@@ -76,12 +77,14 @@ The key constraint: the depth of the computation is **fixed at** $L$ regardless 
 **Theorem 3.3 (Transformers are in $\mathsf{TC}^0$, Merrill & Sabharwal, 2023).** A fixed-precision transformer with $L$ layers, $H$ attention heads, and polynomial embedding dimension $d = \text{poly}(n)$ can be simulated by a $\mathsf{TC}^0$ circuit (constant-depth threshold circuits with polynomial size).
 
 *Proof sketch.* Each transformer layer consists of:
+
 1. **Attention**: Matrix multiplication of $Q$, $K$, $V$ matrices, softmax, and weighted sum. Matrix multiplication is in $\mathsf{TC}^0$ (iterated addition of products). Softmax requires division, which is also in $\mathsf{TC}^0$ under fixed precision.
 2. **FFN**: Matrix multiply + nonlinearity, also in $\mathsf{TC}^0$.
 
 Since we have $L = O(1)$ layers (constant depth), the entire computation is the composition of a constant number of $\mathsf{TC}^0$ operations, which remains in $\mathsf{TC}^0$. $\square$
 
 **Corollary 3.4.** Problems outside $\mathsf{TC}^0$ cannot be solved by bounded-depth transformers (without chain of thought). This includes:
+
 - **Graph connectivity**: determining if two nodes are connected in a graph (this is in $\mathsf{L} = \mathsf{DLOGSPACE}$, which is believed to be strictly harder than $\mathsf{TC}^0$).
 - **Formula evaluation**: evaluating Boolean formulas of unbounded depth.
 
@@ -101,6 +104,7 @@ where $(y_1, \ldots, y_{t-1})$ are previously generated CoT tokens. Each $y_t$ c
 **Theorem 3.7 (CoT Solves Graph Connectivity).** There exists a transformer with CoT that can determine $s$-$t$ connectivity in a graph $G = (V, E)$ with $|V| = n$ nodes.
 
 *Proof.* The transformer can simulate BFS using CoT:
+
 - Initialize: generate token encoding "visited = {$s$}, frontier = {$s$}"
 - For each CoT step: expand the frontier by one hop, updating the visited set
 - After at most $n-1$ steps: check if $t \in$ visited
@@ -149,6 +153,7 @@ For example, with $p = 0.7$ and $\delta = 0.01$: $K \geq \frac{\ln 100}{2(0.2)^2
 - Search proceeds via BFS, DFS, or best-first search
 
 Formally, let $\mathcal{T} = (\mathcal{V}, \mathcal{E})$ be the reasoning tree where:
+
 - Root: initial problem state $s_0$
 - $\text{children}(s)$: states reachable by one thought step from $s$
 - $V(s) \in [0, 1]$: LLM-estimated value of state $s$ (probability of reaching correct answer)
@@ -176,6 +181,7 @@ $$\quad \text{frontier} \leftarrow \text{top-}w(\text{candidates}, V)$$
 $$\text{Return best terminal state in frontier}$$
 
 **Proposition 3.12 (ToT Complexity).** ToT with branching factor $b$, depth $D$, and beam width $w$ requires:
+
 - **LLM calls for generation**: $O(w \cdot b \cdot D)$
 - **LLM calls for evaluation**: $O(w \cdot b \cdot D)$
 - **Total**: $O(w \cdot b \cdot D)$ LLM forward passes
@@ -187,10 +193,12 @@ Compared to self-consistency with $K$ samples (each of depth $D$): $K \cdot D$ t
 A critical question: does the CoT reasoning trace actually reflect the model's computation, or is it a post-hoc rationalization?
 
 **Definition 3.13 (Faithful CoT).** A CoT trace $(r_1, \ldots, r_m)$ is **faithful** if:
+
 1. The final answer $a$ causally depends on the reasoning steps (not just on the original query).
 2. Each step $r_i$ accurately describes the computation being performed.
 
 **Observation (Turpin et al., 2024).** CoT is not always faithful. Models can:
+
 - Arrive at the correct answer via different internal reasoning than what the CoT describes.
 - Be influenced by biased few-shot examples in the CoT while the trace appears to follow correct logic.
 - Generate plausible-sounding but logically flawed reasoning chains.
@@ -317,7 +325,6 @@ from collections import Counter
 from typing import Callable, Optional
 import re
 
-
 class SelfConsistency:
     """
     Self-consistency decoding: sample multiple CoT chains and majority vote.
@@ -393,7 +400,6 @@ class SelfConsistency:
             "vote_distribution": vote_counts,
         }
 
-
 class WeightedSelfConsistency:
     """
     Weighted self-consistency using chain log-probabilities.
@@ -456,7 +462,6 @@ import heapq
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-
 @dataclass(order=True)
 class ThoughtNode:
     """
@@ -481,7 +486,6 @@ class ThoughtNode:
             path.append(node.state)
             node = node.parent
         return list(reversed(path))
-
 
 class TreeOfThought:
     """
@@ -625,7 +629,6 @@ class TreeOfThought:
             "stats": self.stats,
         }
 
-
 # ============================================================
 # Example: Game of 24 with Tree of Thought
 # ============================================================
@@ -690,14 +693,12 @@ def make_game_of_24_tot(llm: Callable) -> TreeOfThought:
 ```python
 from dataclasses import dataclass
 
-
 @dataclass
 class CoTExample:
     """A chain-of-thought exemplar for few-shot prompting."""
     question: str
     reasoning: str
     answer: str
-
 
 class CoTPromptBuilder:
     """
@@ -759,7 +760,6 @@ class CoTPromptBuilder:
 
         return "\n\n".join(parts)
 
-
 # --- Example exemplars for arithmetic ---
 
 ARITHMETIC_EXEMPLARS = [
@@ -796,7 +796,6 @@ ARITHMETIC_EXEMPLARS = [
 ```python
 import time
 from typing import Callable
-
 
 class CoTEvaluator:
     """

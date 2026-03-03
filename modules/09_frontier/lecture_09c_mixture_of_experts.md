@@ -51,6 +51,7 @@ The MoE concept dates to Jacobs et al. (1991), who proposed it as a divide-and-c
 $$\text{MoE}(x) = \sum_{i=1}^{N} g_i(x) \cdot f_i(x)$$
 
 where:
+
 - $f_i: \mathbb{R}^d \to \mathbb{R}^d$ is the $i$-th expert (typically a feedforward network),
 - $g_i(x)$ is the gating weight for expert $i$, with the constraint that $g_i(x) = 0$ for all but $K$ experts.
 
@@ -339,7 +340,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class TopKRouter(nn.Module):
     """
     Top-K expert router with load balancing loss.
@@ -555,7 +555,6 @@ class SparseMoE(nn.Module):
 
         return y, balance_loss
 
-
 class SparseMoEBatched(nn.Module):
     """
     Batched Sparse MoE for better GPU utilization.
@@ -658,7 +657,6 @@ class MoETransformerBlock(nn.Module):
         x = x + self.dropout(moe_out)
 
         return x, balance_loss
-
 
 class MoETransformer(nn.Module):
     """
@@ -765,7 +763,6 @@ def analyze_expert_utilization(model, dataloader, device='cpu'):
         uniform_entropy = -torch.log(torch.tensor(1.0 / len(fractions)))
         print(f"  Uniform entropy: {uniform_entropy:.3f}")
 
-
 # Demo
 if __name__ == "__main__":
     torch.manual_seed(42)
@@ -811,6 +808,7 @@ MoE models demonstrate a distinct scaling pattern compared to dense models:
 | MoE 125M (32E, top-2) | 1.8B | 175M | 20.1 | 1.4x |
 
 Key observations:
+
 - The MoE model with 1.8B total parameters achieves perplexity comparable to a 350M dense model but requires only ~50% of the FLOPs.
 - Increasing the number of experts (with fixed K) provides "free" capacity.
 
@@ -860,6 +858,7 @@ MoE models are known to exhibit training instability, particularly:
 ### 7.2 Connections to Ensemble Methods
 
 MoE can be viewed as a **learned ensemble**: instead of training $N$ independent models and averaging, MoE trains $N$ experts jointly with a learned routing function. The key differences from classical ensembles are:
+
 - **Sparse activation**: Only $K$ of $N$ experts compute per input (vs. all models in an ensemble).
 - **Shared backbone**: Experts share the embedding, attention layers, and router.
 - **Specialization**: Experts learn to handle different inputs, rather than being diverse copies.
@@ -867,6 +866,7 @@ MoE can be viewed as a **learned ensemble**: instead of training $N$ independent
 ### 7.3 Connections to Conditional Computation
 
 MoE is an instance of **conditional computation** (Bengio et al., 2013): the computation path through the network depends on the input. Other instances include:
+
 - **Early exit**: Stopping computation at an intermediate layer if the prediction is confident.
 - **Adaptive depth**: Choosing how many layers to apply per token (Universal Transformer).
 - **Token pruning**: Dropping unimportant tokens in later layers.

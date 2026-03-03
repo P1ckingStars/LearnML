@@ -142,6 +142,7 @@ This is acceptable, especially if motivated by what you learned from early exper
 ### "I am behind schedule."
 
 Talk to the instructor immediately. Options include:
+
 - Reducing scope (fewer baselines, simpler method, smaller dataset)
 - Adjusting the timeline
 - Getting targeted help on the blocking issue

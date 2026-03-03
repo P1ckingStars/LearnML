@@ -376,7 +376,6 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import math
 
-
 # ── Data structures ──────────────────────────────────────────────────
 
 @dataclass
@@ -397,7 +396,6 @@ class RolloutBuffer:
     returns: torch.Tensor          # (B, L) Ĝ_t (computed post-rollout)
     response_mask: torch.Tensor    # (B, L) 1 for response tokens, 0 otherwise
 
-
 # ── KL Penalty Computation ───────────────────────────────────────────
 
 def compute_kl_penalty(
@@ -416,7 +414,6 @@ def compute_kl_penalty(
     """
     kl = log_probs - ref_log_probs       # (B, L)
     return kl
-
 
 # ── GAE Computation ──────────────────────────────────────────────────
 
@@ -466,7 +463,6 @@ def compute_gae(
 
     return advantages, returns
 
-
 # ── PPO Loss Functions ───────────────────────────────────────────────
 
 def ppo_policy_loss(
@@ -508,7 +504,6 @@ def ppo_policy_loss(
 
     return policy_loss
 
-
 def value_function_loss(
     values: torch.Tensor,
     returns: torch.Tensor,
@@ -546,7 +541,6 @@ def value_function_loss(
 
     return vf_loss
 
-
 def entropy_bonus(
     logits: torch.Tensor,
     mask: torch.Tensor,
@@ -566,7 +560,6 @@ def entropy_bonus(
     ent = -(probs * log_probs).sum(dim=-1)                   # (B, L)
     ent = (ent * mask).sum() / mask.sum()                    # scalar
     return ent
-
 
 # ── PPO Trainer ──────────────────────────────────────────────────────
 
@@ -818,7 +811,6 @@ class PPOTrainer:
             'mean_reward': rollout.rewards.mean().item(),
         }
 
-
 # ── Adaptive KL Controller ──────────────────────────────────────────
 
 class AdaptiveKLController:
@@ -858,7 +850,6 @@ class AdaptiveKLController:
         self.kl_coeff *= mult
         self.kl_coeff = max(self.kl_coeff, 1e-6)  # prevent going to zero
         return self.kl_coeff
-
 
 # ── Demo ─────────────────────────────────────────────────────────────
 
@@ -941,7 +932,6 @@ def demo_ppo_rlhf():
         print(f"  Mean reward: {metrics['mean_reward']:.4f}")
         print(f"  Mean KL:     {metrics['mean_kl']:.4f}")
         print()
-
 
 if __name__ == '__main__':
     demo_ppo_rlhf()

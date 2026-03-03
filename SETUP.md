@@ -7,7 +7,9 @@
 - **For LLM/Diffusion modules (05–10)**: NVIDIA GPU with ≥16 GB VRAM, or use cloud compute
 
 ### Cloud Options
+
 If you lack a local GPU:
+
 - **Google Colab Pro** (\$10/month): T4/A100, sufficient for most homeworks
 - **Lambda Labs**: A10/A100 on-demand
 - **RunPod**: Good for longer training runs
@@ -129,6 +131,7 @@ LearnML/
 ```
 
 Create this structure:
+
 ```bash
 for i in $(seq -w 0 10); do
     mkdir -p submissions/hw${i}/code

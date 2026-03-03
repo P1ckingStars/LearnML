@@ -27,6 +27,7 @@ In Lecture 03, we saw that RNNs process sequences step by step, creating a seque
 ### 2.3 Impact
 
 The Transformer has become the *de facto* standard architecture for:
+
 - NLP: BERT (Devlin et al., 2019), GPT series (Radford et al., 2018, 2019; Brown et al., 2020), T5 (Raffel et al., 2020)
 - Vision: ViT (Dosovitskiy et al., 2021), Swin Transformer (Liu et al., 2021)
 - Multimodal: CLIP, Flamingo, GPT-4
@@ -60,6 +61,7 @@ Both stacks use residual connections and layer normalization around each sub-lay
 $$\text{LayerNorm}(x) = \gamma \odot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta$$
 
 where:
+
 - $\mu = \frac{1}{d} \sum_{i=1}^{d} x_i$ is the mean over features
 - $\sigma^2 = \frac{1}{d} \sum_{i=1}^{d} (x_i - \mu)^2$ is the variance over features
 - $\gamma, \beta \in \mathbb{R}^d$ are learnable scale and shift parameters
@@ -68,6 +70,7 @@ where:
 Applied to a matrix $X \in \mathbb{R}^{T \times d}$: normalization is performed independently for each row (each position).
 
 **Contrast with Batch Normalization:**
+
 - BatchNorm normalizes over the batch dimension (and spatial dimensions) for each feature.
 - LayerNorm normalizes over the feature dimension for each sample (and position).
 - LayerNorm has no dependence on batch statistics, making it suitable for variable-length sequences and inference without running statistics.
@@ -274,18 +277,21 @@ which depends only on $v_1, \ldots, v_i$ (and $k_1, \ldots, k_i$ through the att
 ### 3.9 Architectural Variants
 
 **Definition 3.7 (Encoder-Only: BERT).** (Devlin et al., 2019)
+
 - Stack of $N$ encoder blocks with bidirectional (unmasked) self-attention.
 - Input: token sequence with special tokens [CLS] and [SEP].
 - Pre-training: Masked Language Modeling (MLM) --- predict randomly masked tokens using full bidirectional context. Next Sentence Prediction (NSP) as auxiliary task.
 - Inductive bias: Each token sees the *entire* input. Best for classification and understanding tasks.
 
 **Definition 3.8 (Decoder-Only: GPT).** (Radford et al., 2018)
+
 - Stack of $N$ decoder blocks with causal (masked) self-attention. No cross-attention (no encoder).
 - Pre-training: Autoregressive language modeling --- predict the next token given all previous tokens.
 - At inference, generation proceeds left to right, one token at a time.
 - Inductive bias: Strictly causal. Natural for generation tasks. Can be adapted for all tasks via prompting.
 
 **Definition 3.9 (Encoder-Decoder: T5).** (Raffel et al., 2020)
+
 - Full encoder-decoder Transformer.
 - Pre-training: Span corruption --- replace random spans with sentinel tokens, decoder generates the missing spans.
 - Inductive bias: Encoder sees full input bidirectionally; decoder generates output autoregressively conditioned on encoder output. Natural for sequence-to-sequence tasks (translation, summarization).
@@ -711,7 +717,6 @@ class GPTBlock(nn.Module):
         x = x + self.ffn(x_norm)
         return x
 
-
 class GPT(nn.Module):
     """Minimal GPT-style decoder-only Transformer."""
 
@@ -814,6 +819,7 @@ Depth is generally more important than width for the same parameter budget, up t
 ### 6.3 Dropout Locations
 
 Dropout is applied at three points in the Transformer:
+
 1. After embedding + positional encoding
 2. On attention weights (after softmax)
 3. After each sub-layer (before the residual addition)
@@ -823,6 +829,7 @@ Typical rate: 0.1 for base models, 0.3 for small models, 0.0 for very large mode
 ### 6.4 Post-Norm Instability
 
 Without learning rate warmup, post-norm Transformers often diverge in the first few hundred steps. The mechanism:
+
 1. At initialization, the residual branch output has similar magnitude to the residual.
 2. LayerNorm normalizes the sum, but the gradient through LayerNorm depends on the ratio of residual to sub-layer output.
 3. If this ratio fluctuates wildly early in training, the effective learning rate for each layer varies enormously, causing instability.

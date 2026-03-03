@@ -48,6 +48,7 @@ Agents represent a shift from "LLM as oracle" to "LLM as controller." The LLM be
 We formalize an LLM agent as operating in a Partially Observable Markov Decision Process (POMDP):
 
 **Definition 3.1 (Agent POMDP).** An LLM agent is a tuple $(\mathcal{S}, \mathcal{A}, \mathcal{O}, T, O, R, \gamma)$ where:
+
 - $\mathcal{S}$: state space (full environment state, e.g., database contents, web pages, file system)
 - $\mathcal{A}$: action space (tool calls, text generation, retrieval queries)
 - $\mathcal{O}$: observation space (tool outputs, retrieved documents, user messages)
@@ -61,6 +62,7 @@ The agent maintains a **belief state** $b_t \in \Delta(\mathcal{S})$, which in t
 **The Observe-Think-Act Loop:**
 
 At each step $t$:
+
 1. **Observe**: receive observation $o_t \sim O(s_t, a_{t-1})$
 2. **Think**: update belief $b_t = \text{Update}(b_{t-1}, a_{t-1}, o_t)$ and select action $a_t \sim \pi(a | b_t)$
 3. **Act**: execute $a_t$ in the environment, transition $s_{t+1} \sim T(s_t, a_t)$
@@ -86,6 +88,7 @@ ReAct (Yao et al., 2023) formalizes the interleaving of reasoning and acting. Th
 $$\tau = (q, t_1, a_1, o_1, t_2, a_2, o_2, \ldots, t_n, a_n, o_n)$$
 
 where:
+
 - $q$ is the initial query
 - $t_i$ is a **thought** (free-form reasoning text)
 - $a_i$ is an **action** (a tool call or final answer)
@@ -106,6 +109,7 @@ $$\mathcal{P}_{\text{reason}} \cup \mathcal{P}_{\text{act}} \subseteq \mathcal{P
 Tool use extends the agent's action space with structured function calls.
 
 **Definition 3.5 (Tool Schema).** A tool is defined by a tuple $\mathcal{T} = (\text{name}, \text{desc}, \sigma_{\text{in}}, \sigma_{\text{out}}, f)$ where:
+
 - $\text{name}$: string identifier
 - $\text{desc}$: natural language description
 - $\sigma_{\text{in}}$: input schema (e.g., JSON Schema)
@@ -148,6 +152,7 @@ Identifying $p(d|q)$ with the retriever distribution $p_R(d|q)$ and $p(y|q,d)$ w
 ### 3.5 Dense Retrieval: Dual-Encoder Architecture
 
 **Definition 3.8 (Dual Encoder).** A dual encoder consists of two encoders:
+
 - Query encoder: $E_q: \mathcal{Q} \to \mathbb{R}^d$
 - Document encoder: $E_d: \mathcal{D} \to \mathbb{R}^d$
 
@@ -172,6 +177,7 @@ $$\mathcal{L} = -\mathbb{E}\left[\log \frac{f(q, d^+)}{f(q, d^+) + \sum_{j \neq 
 By Jensen's inequality and properties of the KL divergence, this satisfies $\mathcal{L} \geq \log B - I(Q; D)$, giving us $I(Q; D) \geq \log B - \mathcal{L}$. $\square$
 
 **Hard Negative Mining.** Performance improves significantly when negatives are not just random documents but are "hard" negatives that are similar but not relevant. Common strategies:
+
 - BM25 negatives: documents that match lexically but are not semantically relevant
 - In-batch negatives with cross-GPU sharing (Qu et al., 2021)
 - Iterative mining: use the current model to find hard negatives, retrain
@@ -183,6 +189,7 @@ After encoding all documents, we need to find the $k$ most similar document vect
 **Definition 3.10 ($(c, r)$-Approximate Nearest Neighbor).** Given a dataset $\mathcal{X} \subset \mathbb{R}^d$, a query $q \in \mathbb{R}^d$, distance function $\text{dist}$, approximation factor $c > 1$, and distance threshold $r > 0$, the $(c,r)$-ANN problem is: if there exists $x^* \in \mathcal{X}$ with $\text{dist}(q, x^*) \leq r$, return $x \in \mathcal{X}$ with $\text{dist}(q, x) \leq cr$.
 
 **HNSW (Hierarchical Navigable Small World Graphs).** HNSW (Malkov & Yashunin, 2020) builds a multi-layer graph where:
+
 - Layer 0 contains all $N$ points
 - Layer $\ell$ contains each point with probability $e^{-\ell / m_L}$ where $m_L$ is a normalization factor
 - Each layer is a navigable small-world graph with edges connecting nearby points
@@ -198,6 +205,7 @@ $$\text{At layer 0, do beam search with beam width } ef$$
 $$\text{Return top-}k \text{ from beam}$$
 
 **Complexity:**
+
 - Build: $O(N \log N)$ time, $O(Nd + NM)$ space where $M$ is the max edges per node
 - Query: $O(\log N)$ expected time with high probability
 
@@ -207,6 +215,7 @@ $$\text{Return top-}k \text{ from beam}$$
 2. **Query**: Find the $n_{\text{probe}}$ nearest centroids to $q$. Search only vectors assigned to those cells.
 
 **Complexity:**
+
 - Build: $O(NdC \cdot \text{iters})$ for $k$-means
 - Query: $O(Cd + n_{\text{probe}} \cdot N/C \cdot d)$
 
@@ -221,14 +230,17 @@ Storage per vector: $M \lceil \log_2 K \rceil$ bits instead of $32d$ bits.
 Documents must be split into chunks before embedding. This is a critical design decision.
 
 **Fixed-size chunking.** Split every $L$ tokens with overlap $O$:
+
 - Chunk $i$: tokens $[i(L-O), i(L-O) + L)$
 - Simple but may split semantic units
 
 **Recursive/semantic chunking.** Split at natural boundaries (paragraphs, sections) then recursively split large chunks:
+
 - Preserves semantic coherence
 - Variable chunk sizes require careful handling
 
 **Proposition 3.11 (Retrieval Precision-Recall Tradeoff with Chunk Size).** Let $L$ be the chunk length. As $L$ increases:
+
 - **Recall** tends to increase: larger chunks are more likely to contain the answer.
 - **Precision** tends to decrease: larger chunks contain more irrelevant context.
 - **Embedding quality** tends to decrease: embedding models have finite capacity and longer texts dilute the representation.
@@ -495,7 +507,6 @@ class ReActAgent:
 
         return "Max steps reached without finding an answer."
 
-
 # --- Example tools ---
 
 def calculator(expression: str) -> float:
@@ -535,7 +546,6 @@ import torch.nn.functional as F
 import numpy as np
 from dataclasses import dataclass
 from typing import Optional
-
 
 # ============================================================
 # Dense Retriever: Dual Encoder with Contrastive Training
@@ -664,7 +674,6 @@ class DualEncoder(nn.Module):
 
         return loss, similarity
 
-
 # ============================================================
 # Chunking
 # ============================================================
@@ -712,7 +721,6 @@ def chunk_document(
             break
 
     return chunks
-
 
 # ============================================================
 # Vector Index (simplified HNSW-like structure)
@@ -766,7 +774,6 @@ class FlatIndex:
 
         return topk_scores, results
 
-
 # ============================================================
 # Cross-Encoder Re-ranker
 # ============================================================
@@ -815,7 +822,6 @@ class CrossEncoderReranker(nn.Module):
         cls_output = x[:, 0, :]                                       # [B, d]
         score = self.classifier(cls_output).squeeze(-1)               # [B]
         return score
-
 
 # ============================================================
 # Full RAG Pipeline
@@ -1025,6 +1031,7 @@ def train_dual_encoder(
 | **ReAct** | **35.1** | **64.6** | **71.0** |
 
 Key observations:
+
 - ReAct outperforms both pure reasoning and pure acting across diverse tasks.
 - CoT alone fails on tasks requiring external knowledge (FEVER fact verification).
 - Acting alone fails on tasks requiring multi-step reasoning (HotpotQA).
@@ -1149,6 +1156,7 @@ Retrieve more, then re-rank, is a dominant strategy.
 ### Implementation Exercises
 
 **Exercise 9.4 (Agent Implementation).** Implement a ReAct agent that can:
+
 - Search Wikipedia (use the Wikipedia API)
 - Perform calculations
 - Look up weather data (use a mock API)

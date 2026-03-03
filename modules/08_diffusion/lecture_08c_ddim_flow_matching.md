@@ -67,6 +67,7 @@ $$(1 - \bar{\alpha}_{t-1} - \sigma_t^2) + \sigma_t^2 = 1 - \bar{\alpha}_{t-1}$$
 So $q_\sigma(x_{t-1} \mid x_0) = \mathcal{N}(\sqrt{\bar{\alpha}_{t-1}}\, x_0, (1-\bar{\alpha}_{t-1}) I)$. $\blacksquare$
 
 **Special cases:**
+
 - $\sigma_t = \tilde{\beta}_t^{1/2} = \sqrt{\frac{(1-\bar{\alpha}_{t-1})\beta_t}{1-\bar{\alpha}_t}}$: recovers DDPM.
 - $\sigma_t = 0$ for all $t$: the **DDIM deterministic** sampler. The reverse process is completely deterministic given $x_T$.
 
@@ -340,7 +341,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-
 class DDIMSampler:
     """DDIM sampler that uses a pre-trained DDPM noise prediction model."""
 
@@ -601,7 +601,6 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-
 def train_flow_matching(
     epochs: int = 100,
     batch_size: int = 128,
@@ -731,6 +730,7 @@ The relationship is roughly logarithmic: doubling $S$ gives diminishing returns.
 ### 6.3 Flow Matching: Trajectory Straightness
 
 The key advantage of flow matching is that straight-line trajectories are easier for ODE solvers. Empirically:
+
 - **Diffusion (probability flow ODE)**: Trajectories curve significantly, especially at early/late times. Euler method introduces large truncation errors.
 - **Flow matching (OT-CFM)**: Trajectories are nearly straight after training. Euler method is nearly exact.
 - **Rectified flows**: After 2 rounds of rectification, trajectories are almost perfectly straight, enabling 1-step generation.

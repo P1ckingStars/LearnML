@@ -33,6 +33,7 @@ Song et al. (2021) unified score-based models and diffusion models by formulatin
 ### 2.2 Prerequisites
 
 This lecture assumes familiarity with:
+
 - Ito calculus: Ito SDEs, Ito's lemma, Wiener processes.
 - DDPM (Lecture 08a): forward/reverse processes, noise prediction, $L_{\text{simple}}$.
 - Basic measure theory: density evolution, Fokker-Planck equations.
@@ -46,6 +47,7 @@ We will provide necessary background on SDEs as needed, but a deeper treatment c
 ### 3.1 Stochastic Differential Equations: Background
 
 **Definition 3.1 (Wiener Process).** A standard Wiener process (Brownian motion) $\{W_t\}_{t \geq 0}$ in $\mathbb{R}^d$ satisfies:
+
 1. $W_0 = 0$.
 2. $W_t - W_s \sim \mathcal{N}(0, (t-s)I_d)$ for $0 \leq s < t$.
 3. Increments over non-overlapping intervals are independent.
@@ -194,9 +196,11 @@ $$\frac{\partial p_t}{\partial t} = -\nabla \cdot \left[\left(f - \frac{g^2}{2} 
 This is the continuity equation for an ODE with drift $\hat{f} = f - \frac{g^2}{2} \nabla_x \log p_t(x)$. $\blacksquare$
 
 **Important properties of the probability flow ODE:**
+
 1. **Deterministic:** Given $x_T$, the trajectory $x_t$ is uniquely determined. This enables deterministic sampling.
 2. **Exact likelihood:** By the instantaneous change of variables formula (Chen et al., 2018):
 $$\log p_0(x_0) = \log p_T(x_T) + \int_0^T \nabla \cdot \hat{f}(x_t, t)\, dt$$
+
 3. **Same marginals:** Despite being deterministic, the ODE produces the same marginal distribution $p_t$ as the stochastic reverse SDE at every time $t$.
 
 ### 3.8 Score Matching
@@ -323,7 +327,6 @@ return x(0)
 import torch
 import torch.nn as nn
 import math
-
 
 class VPSDE:
     """Variance-Preserving SDE: dx = -0.5*β(t)*x*dt + √β(t)*dW.
@@ -637,6 +640,7 @@ The score $\nabla_x \log p_t(x)$ points in the direction of increasing log-densi
 ### 7.1 Connection to DDPM (Lecture 08a)
 
 The VP-SDE is the continuous-time limit of DDPM:
+
 - **Marginals match**: $q(x_t \mid x_0)$ in DDPM equals $p_{0t}(x_t \mid x_0)$ in VP-SDE when $\bar{\alpha}_t = e^{-\int_0^t \beta(s) ds}$.
 - **Losses match**: $L_{\text{simple}}$ is denoising score matching with $\lambda(t) = \sigma^2(t)$.
 - **Sampling**: DDPM sampling is Euler-Maruyama applied to the reverse VP-SDE with $N = T$ steps.
@@ -644,6 +648,7 @@ The VP-SDE is the continuous-time limit of DDPM:
 ### 7.2 Connection to Normalizing Flows
 
 The probability flow ODE defines a continuous normalizing flow (CNF):
+
 - The ODE transforms the prior $p_T$ into the data distribution $p_0$.
 - Unlike discrete normalizing flows (RealNVP, Glow), the architecture is unconstrained --- no need for invertibility or triangular Jacobians.
 - The instantaneous change of variables formula allows exact likelihood computation without computing full Jacobians.

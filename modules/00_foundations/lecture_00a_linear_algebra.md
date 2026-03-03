@@ -27,6 +27,7 @@ $$\mathbf{h}^{(l)} = \sigma\!\bigl(W^{(l)}\,\mathbf{h}^{(l-1)} + \mathbf{b}^{(l)
 where $W^{(l)} \in \mathbb{R}^{m \times n}$ is a weight matrix, $\mathbf{b}^{(l)} \in \mathbb{R}^m$ is a bias vector, and $\sigma$ is a nonlinear activation applied element-wise. Understanding what a matrix "does" — stretches, rotates, projects — directly reveals what a network layer does to data.
 
 Beyond individual layers:
+
 - **Backpropagation** is repeated application of the chain rule to Jacobians (matrices of partial derivatives).
 - **Batch normalization** decorrelates activations — an operation understood through eigenvalues of covariance matrices.
 - **Weight initialization** (Xavier, Kaiming) is designed to preserve norms of activations across layers, a linear-algebraic condition.
@@ -44,6 +45,7 @@ Fluency in linear algebra is non-negotiable for understanding, debugging, and ad
 **Definition.** A *vector space* over ℝ is a set $V$ equipped with two operations — vector addition $+ : V \times V \to V$ and scalar multiplication $\cdot : \mathbb{R} \times V \to V$ — satisfying eight axioms: closure under addition and scalar multiplication, commutativity and associativity of addition, existence of additive identity and inverses, compatibility and identity of scalar multiplication, and distributivity.
 
 **Examples relevant to deep learning:**
+
 - $\mathbb{R}^n$: the space of $n$-dimensional column vectors.
 - $\mathbb{R}^{m \times n}$: the space of $m \times n$ real matrices (equivalently, $\mathbb{R}^{mn}$).
 - The space of functions $f : \mathbb{R}^d \to \mathbb{R}$ (infinite-dimensional — relevant to kernel methods and neural tangent kernels).
@@ -110,6 +112,7 @@ This underlies the QR decomposition $A = QR$, which is more numerically stable t
 Eigenvalues are roots of the *characteristic polynomial* $\det(A - \lambda I) = 0$.
 
 **Theorem (Spectral Theorem).** Let $A \in \mathbb{R}^{n \times n}$ be *symmetric* ($A = A^\top$). Then:
+
 1. All eigenvalues of $A$ are real.
 2. Eigenvectors corresponding to distinct eigenvalues are orthogonal.
 3. $A$ admits the decomposition $A = Q \Lambda Q^\top$ where $Q$ is orthogonal and $\Lambda = \text{diag}(\lambda_1, \dots, \lambda_n)$.
@@ -137,6 +140,7 @@ The SVD generalizes eigendecomposition to *any* matrix, including rectangular on
 $$A = U \Sigma V^\top$$
 
 where:
+
 - $U \in \mathbb{R}^{m \times m}$ is orthogonal (columns are *left singular vectors*)
 - $V \in \mathbb{R}^{n \times n}$ is orthogonal (columns are *right singular vectors*)
 - $\Sigma \in \mathbb{R}^{m \times n}$ is diagonal with non-negative entries $\sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_{\min(m,n)} \ge 0$ (the *singular values*)
@@ -284,6 +288,7 @@ Since $|\lambda_i / \lambda_1| < 1$ for $i \ge 2$, the terms with $i \ge 2$ vani
 ### 3.3 Computing SVD via Power Iteration
 
 To find the largest singular value $\sigma_1$ of $A \in \mathbb{R}^{m \times n}$:
+
 1. Run power iteration on $A^\top A$ to get $\mathbf{v}_1$ (right singular vector) and $\sigma_1^2$ (eigenvalue).
 2. Compute $\mathbf{u}_1 = A\mathbf{v}_1 / \sigma_1$.
 3. For subsequent singular values, deflate: $A \leftarrow A - \sigma_1 \mathbf{u}_1 \mathbf{v}_1^\top$ and repeat.
@@ -453,6 +458,7 @@ $$\text{Covariance} = \frac{1}{N} X^\top X$$
 The top-$k$ principal components are the $k$ eigenvectors of $X^\top X$ with largest eigenvalues — equivalently, the top-$k$ right singular vectors of $X$. The projection is $X V_k$ where $V_k \in \mathbb{R}^{D \times k}$.
 
 This is used in deep learning for:
+
 - **Data whitening**: transforming inputs to have identity covariance.
 - **Analyzing learned representations**: PCA of hidden activations reveals what a network has learned.
 - **Dimensionality reduction** before training on high-dimensional inputs.
@@ -482,11 +488,13 @@ This constrains the Lipschitz constant of the discriminator to 1, stabilizing tr
 ## 6. Paper Reading List
 
 ### Textbook Chapters
+
 1. **Strang, G.** *Introduction to Linear Algebra*, 6th ed. Chapters 1-8. (Comprehensive reference.)
 2. **Strang, G.** *Linear Algebra and Learning from Data* (2019). Chapters I-III. (Directly connects linear algebra to data science and deep learning.)
 3. **Goodfellow, Bengio, Courville.** *Deep Learning*, Chapter 2: Linear Algebra. (Concise review tailored for DL.)
 
 ### Survey and Research Papers
+
 4. **Petersen, K. B., & Pedersen, M. S.** *The Matrix Cookbook* (2012). Technical report. (Essential reference for matrix calculus identities — keep this bookmarked.)
 5. **Halko, N., Martinsson, P. G., & Tropp, J. A.** "Finding structure with randomness: Probabilistic algorithms for constructing approximate matrix decompositions." *SIAM Review* 53.2 (2011): 217-288. (Randomized SVD — used in practice for large matrices.)
 6. **Miyato, T., Kataoka, T., Koyama, M., & Yoshida, Y.** "Spectral Normalization for Generative Adversarial Networks." *ICLR* (2018). (Power iteration for spectral norm — application of this lecture's material.)
@@ -503,11 +511,13 @@ This constrains the Lipschitz constant of the discriminator to 1, stabilizing tr
 *Hint:* Show that $\ker(A^\top A) = \ker(A)$.
 
 **Problem 2** (15 pts). Let $A \in \mathbb{R}^{n \times n}$ be symmetric positive definite. Prove:
+
 - (a) All eigenvalues are strictly positive.
 - (b) $\det(A) > 0$.
 - (c) The Cholesky decomposition $A = LL^\top$ exists, where $L$ is lower triangular with positive diagonal entries.
 
 **Problem 3** (15 pts). *Matrix calculus.* Derive $\partial f / \partial X$ for each of the following, where $A, B$ are constant matrices of appropriate size:
+
 - (a) $f(X) = \text{tr}(AX^\top B)$
 - (b) $f(X) = \text{tr}\bigl((AX + B)^\top (AX + B)\bigr)$
 - (c) $f(\mathbf{x}) = \mathbf{x}^\top A^\top A \mathbf{x} - 2\mathbf{b}^\top A\mathbf{x}$ (the squared residual in least squares, expanded)
@@ -515,6 +525,7 @@ This constrains the Lipschitz constant of the discriminator to 1, stabilizing tr
 Verify your answers numerically using PyTorch autograd.
 
 **Problem 4** (10 pts). *SVD and norms.* Prove:
+
 - (a) $\|A\|_F = \sqrt{\sum_i \sigma_i^2}$ (Frobenius norm equals root sum of squared singular values).
 - (b) $\|A\|_2 = \sigma_1$ (spectral norm equals largest singular value).
 
@@ -526,6 +537,7 @@ Verify your answers numerically using PyTorch autograd.
 
 **Problem 6** (15 pts). *SVD from scratch.*
 Implement the full SVD of an $m \times n$ matrix using only power iteration (no calls to `torch.linalg.svd` or `torch.linalg.eigh`). Your implementation should:
+
 - Use deflation to extract successive singular values.
 - Return $U$, $\Sigma$, $V^\top$ in the same format as `torch.linalg.svd`.
 - Achieve relative error $< 10^{-4}$ on random $50 \times 30$ matrices.
@@ -550,6 +562,7 @@ def svd_power(A: torch.Tensor, num_iters: int = 300) -> tuple:
 
 **Problem 7** (10 pts). *Low-rank approximation.*
 Given the MNIST dataset (28x28 images flattened to 784-d vectors):
+
 - Compute the SVD of the data matrix.
 - Plot the top 20 singular values. What fraction of total variance do the top 10 principal components capture?
 - Reconstruct images using rank-$k$ approximations for $k \in \{5, 10, 50, 100, 784\}$. Display results in a grid.
@@ -557,6 +570,7 @@ Given the MNIST dataset (28x28 images flattened to 784-d vectors):
 
 **Problem 8** (15 pts). *Spectral normalization.*
 Implement spectral normalization for a linear layer:
+
 - Maintain running estimates $\hat{\mathbf{u}}$, $\hat{\mathbf{v}}$ of the top left/right singular vectors.
 - At each forward pass, perform one step of power iteration to update the estimates.
 - Divide the weight matrix by the estimated spectral norm.

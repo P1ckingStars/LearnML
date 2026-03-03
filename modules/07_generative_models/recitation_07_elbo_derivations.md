@@ -466,6 +466,7 @@ For the second term: $\mathbb{E}_{p(x)}\mathbb{E}_{q_\phi(z|x)}[\cdot] = \mathbb
 $$= \mathbb{E}_{q_\phi(z)}\left[\log\frac{q_\phi(z)}{p(z)}\right] = D_{\text{KL}}(q_\phi(z) \| p(z)) \quad \blacksquare$$
 
 **Interpretation**:
+
 - $I_q(x; z)$: How much the encoder differentiates between different inputs. High $I_q$ means the latent code carries information about $x$.
 - $D_{\text{KL}}(q_\phi(z) \| p(z))$: How much the aggregate posterior deviates from the prior. This measures the overall "spread" mismatch.
 
@@ -529,6 +530,7 @@ The true posterior is:
 $$p(z \mid x) = \mathcal{N}\left((W^\top W + \sigma^2 I)^{-1} W^\top x, \, \sigma^2(W^\top W + \sigma^2 I)^{-1}\right)$$
 
 Let $M = W^\top W + \sigma^2 I$. Then:
+
 - Optimal $\mu^*(x) = M^{-1}W^\top x$ (linear in $x$).
 - Optimal covariance: $\sigma^2 M^{-1}$, which is generally not diagonal.
 

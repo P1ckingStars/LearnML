@@ -11,6 +11,7 @@
 In this homework, you will build a complete language model pipeline from tokenization through training and generation. Part A focuses on the mathematical foundations; Part B is a full implementation project.
 
 **What you will build:**
+
 1. A BPE tokenizer from scratch
 2. GPT-2 Small (124M parameters) from scratch in PyTorch
 3. A training pipeline with modern best practices
@@ -86,6 +87,7 @@ Compute the optimal $N^*$ and $D^*$ for the following compute budgets and fill i
 | `widest` | 3 |
 
 Represent each word as a character sequence with an end-of-word marker `_`. Manually execute 10 BPE merge operations. For each step, show:
+
 - The pair counts
 - The selected pair
 - The updated corpus representation
@@ -112,12 +114,14 @@ pip install torch numpy matplotlib tiktoken datasets tqdm wandb
 Implement a Byte Pair Encoding tokenizer without using any tokenization libraries.
 
 **Requirements:**
+
 1. Implement `train(text: str, vocab_size: int)` following the BPE algorithm.
 2. Implement `encode(text: str) -> list[int]` that tokenizes text using learned merge rules.
 3. Implement `decode(token_ids: list[int]) -> str` that converts tokens back to text.
 4. Implement `save(path: str)` and `load(path: str)` for persistence.
 
 **Tests:**
+
 - Roundtrip: `decode(encode(text)) == text` for any input.
 - Vocabulary size: after training, `len(vocab) == target_vocab_size`.
 - Train on the first 1MB of OpenWebText. Report vocabulary contents and fertility.
@@ -146,6 +150,7 @@ class BPETokenizer:
 ```
 
 **Deliverables:**
+
 - Source code for the tokenizer.
 - A plot of corpus token count vs. number of merges.
 - The 20 most common tokens in the trained vocabulary.
@@ -187,6 +192,7 @@ class GPT2(nn.Module):
 ```
 
 **Deliverables:**
+
 - Source code with shape annotations on every tensor.
 - Verify parameter count is approximately 124M (within 1%).
 - **(Bonus, +5%)**: Load pretrained GPT-2 weights from HuggingFace and verify your model produces identical logits (to within fp32 numerical precision).
@@ -225,6 +231,7 @@ $$g_{\text{eff}} = \frac{1}{A} \sum_{a=1}^{A} g_a$$
    - Tokens per second
 
 **Deliverables:**
+
 - Training script with all components above.
 - Training curves (loss, LR, grad norm, throughput) plotted over training.
 - Final validation perplexity.
@@ -255,6 +262,7 @@ Implement efficient autoregressive generation with a KV cache.
    - Report speedup for prompt lengths $P \in \{64, 256, 512\}$ and generation lengths $G \in \{64, 256\}$.
 
 **Deliverables:**
+
 - KV cache implementation with shape annotations.
 - Generated text samples (10 samples, 200 tokens each) with different sampling strategies:
   - Greedy
@@ -285,6 +293,7 @@ $$\text{PPL} = \exp\left(-\frac{1}{T}\sum_{t=1}^{T} \log p_\theta(x_t \mid x_{<t
    - A unigram baseline: $\text{PPL}_{\text{unigram}} = \exp(H_{\text{unigram}})$
 
 **Deliverables:**
+
 - Perplexity computation code.
 - Table of perplexities across domains.
 - Discussion: why is perplexity higher on out-of-domain text? How does this relate to the data distribution seen during training?

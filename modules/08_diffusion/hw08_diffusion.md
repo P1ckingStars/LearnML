@@ -11,6 +11,7 @@
 This homework covers the mathematical foundations and practical implementation of diffusion models. Part A tests your ability to derive the core results from first principles. Part B requires building a complete diffusion model pipeline, from training through evaluation.
 
 **Grading:**
+
 - Part A (Mathematical Derivations): 50%
 - Part B (Implementation): 50%
 
@@ -35,11 +36,13 @@ $$q(x_t \mid x_0) = \mathcal{N}\bigl(x_t;\, \sqrt{\bar{\alpha}_t}\, x_0,\, (1-\b
 where $\alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{s=1}^{t} \alpha_s$.
 
 **Requirements:**
+
 - Use proof by induction.
 - Show every step in the variance computation, explicitly using the independence of $\varepsilon_1$ and $\varepsilon_2$ when combining Gaussian noise terms.
 - State the key identity $\alpha_t(1-\bar{\alpha}_{t-1}) + \beta_t = 1 - \bar{\alpha}_t$ and prove it.
 
 **(b)** (4 points) Compute the signal-to-noise ratio $\text{SNR}(t) = \bar{\alpha}_t / (1-\bar{\alpha}_t)$ for:
+
 1. The linear schedule with $\beta_1 = 10^{-4}$, $\beta_T = 0.02$, $T = 1000$. Express $\bar{\alpha}_t$ as a product and give a numerical approximation for $t \in \{1, 100, 500, 1000\}$.
 2. The cosine schedule with $\bar{\alpha}_t = f(t)/f(0)$, $f(t) = \cos^2((t/T+s)/(1+s) \cdot \pi/2)$, $s = 0.008$. Give numerical values for the same $t$ values.
 
@@ -62,6 +65,7 @@ $$\tilde{\mu}_t = \frac{\sqrt{\bar{\alpha}_{t-1}}\, \beta_t}{1 - \bar{\alpha}_t}
 $$\tilde{\beta}_t = \frac{(1-\bar{\alpha}_{t-1})\beta_t}{1-\bar{\alpha}_t}$$
 
 **Requirements:**
+
 - Write out the three Gaussians explicitly (numerator and denominator of Bayes' rule).
 - Show the "completing the square" computation in full detail.
 - Verify that the precision (inverse variance) and mean match the claimed expressions.
@@ -147,6 +151,7 @@ Implement a complete DDPM training pipeline:
 **(b)** (5 points) **Forward process:** Implement `q_sample(x0, t, noise)` that computes $x_t = \sqrt{\bar{\alpha}_t}\, x_0 + \sqrt{1-\bar{\alpha}_t}\, \varepsilon$ using the closed-form marginal. Include a unit test: verify empirically that the mean and variance of $x_t \mid x_0$ match the theory for 10,000 samples.
 
 **(c)** (7 points) **U-Net for noise prediction:** Implement a U-Net with:
+
 - Sinusoidal time embeddings.
 - At least 3 levels of encoder/decoder with skip connections.
 - GroupNorm and SiLU activations.
@@ -156,6 +161,7 @@ Implement a complete DDPM training pipeline:
 Report your architecture details (channels, number of blocks, attention layers if any, parameter count).
 
 **(d)** (5 points) **Training loop:** Train on CIFAR-10 with:
+
 - Cosine noise schedule, $T = 1000$.
 - Adam optimizer, learning rate $2 \times 10^{-4}$.
 - Gradient clipping at norm 1.0.
@@ -189,6 +195,7 @@ Using the DDPM model trained in B1:
 Plot FID vs. $w$ and identify the optimal guidance scale. Use the `pytorch-fid` or `torch-fidelity` library.
 
 Include a table summarizing:
+
 | Guidance $w$ | FID | Sampling time (total for 10K samples) |
 
 ---
@@ -196,6 +203,7 @@ Include a table summarizing:
 ### Problem B4: Analysis and Comparison (10 points)
 
 **(a)** (3 points) **Sampling speed comparison:** Time the generation of 64 samples for:
+
 1. DDPM (1000 steps)
 2. DDIM (50 steps, $\eta = 0$)
 3. DDIM (20 steps, $\eta = 0$)
@@ -203,11 +211,13 @@ Include a table summarizing:
 Report wall-clock time and speedup relative to DDPM. Include both with and without CFG ($w = 3$).
 
 **(b)** (3 points) **Noise schedule ablation:** Compare linear vs. cosine schedules by training two models (at least 30 epochs each) and generating 64 samples from each. Report:
+
 - Loss curves (overlaid on the same plot).
 - Sample quality (visual comparison and FID if feasible).
 - Which timestep range contributes most to the loss for each schedule?
 
 **(c)** (4 points) **Denoising visualization and analysis:**
+
 - Visualize the denoising process: starting from $x_T \sim \mathcal{N}(0, I)$, show $x_t$ at 10 evenly-spaced timesteps during DDIM sampling ($S = 50$).
 - For a single image, plot $\|\hat{x}_0^{(t)} - x_0^{\text{true}}\|$ (the predicted clean image at each timestep) vs. $t$ during sampling. At which timestep does the model "decide" the main content?
 - Discuss the relationship between the denoising trajectory and the "coarse to fine" generation process.

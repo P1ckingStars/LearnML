@@ -289,6 +289,7 @@ def grpo_step(
 ```
 
   For the reward function, you may use one of:
+
   - A trained reward model (from Lecture 06b exercises).
   - A rule-based reward (e.g., for math: 1 if the answer is correct, 0 otherwise).
   - An LLM-as-judge reward.

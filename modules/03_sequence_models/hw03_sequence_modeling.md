@@ -13,6 +13,7 @@ This homework covers the core concepts from Module 03: recurrent neural networks
 **Academic Integrity:** All code must be your own. You may use PyTorch's basic tensor operations (`torch.matmul`, `torch.sigmoid`, etc.) but **not** high-level modules (`nn.RNN`, `nn.LSTM`, `nn.GRU`, `nn.MultiheadAttention`) unless explicitly stated.
 
 **Notation:** Throughout, we use:
+
 - $x_t \in \mathbb{R}^d$: input at time $t$
 - $h_t \in \mathbb{R}^n$: hidden state at time $t$
 - $W_{hh} \in \mathbb{R}^{n \times n}$: recurrent weight matrix
@@ -34,6 +35,7 @@ $$\hat{y}_t = W_{hy} h_t + b_y$$
 $$\mathcal{L} = \sum_{t=1}^{T} \ell(\hat{y}_t, y_t)$$
 
 **(a)** (4 points) Derive $\frac{\partial \mathcal{L}}{\partial W_{hh}}$ via Backpropagation Through Time. Express your answer as a sum over time steps, with each term involving:
+
 - The immediate partial derivative $\frac{\partial^+ h_k}{\partial W_{hh}}$ (treating $h_{k-1}$ as constant),
 - The product of Jacobians $\prod_{s=k+1}^{t} \frac{\partial h_s}{\partial h_{s-1}}$.
 
@@ -66,6 +68,7 @@ and that $\lim_{k \to \infty} \|W_{hh}^k\|_2^{1/k} = \rho(W_{hh})$. Conclude tha
 $$\rho_{\text{eff}} = \lim_{k \to \infty} \left\|\prod_{s=t+1}^{t+k} \text{diag}(\sigma'(z_s)) W_{hh}\right\|^{1/k}$$
 
 Argue (you may use results from dynamical systems without proof) that:
+
 1. $\rho_{\text{eff}} \leq \|W_{hh}\|_2$ (the spectral norm bound).
 2. In the typical case where the RNN operates in a region where $|\sigma'(z)| < 1$ for most components, $\rho_{\text{eff}} < \|W_{hh}\|_2$.
 3. When $\rho_{\text{eff}} < 1$, the gradient vanishes; when $\rho_{\text{eff}} > 1$, it explodes.
@@ -100,6 +103,7 @@ where $f_t = \sigma(\bar{f}_t)$, $i_t = \sigma(\bar{i}_t)$, $\tilde{c}_t = \tanh
 ### Problem A4: GRU as a Special Case of Gated RNNs (8 points)
 
 **(a)** (4 points) Define a **general gated RNN** framework with the following components:
+
 - A memory state $m_t$
 - An output state $h_t$
 - A set of gate functions $g_t^{(k)}$ for $k = 1, \ldots, K$
@@ -125,6 +129,7 @@ Prove that $\text{PPL} = \left(\prod_{t=1}^{N} \frac{1}{P_\theta(x_t \mid x_{<t}
 **(c)** (2 points) Prove that for a uniform model ($P_\theta(x_t \mid x_{<t}) = 1/V$ for all $t$), the perplexity equals $V$ (the vocabulary size). Interpret this result.
 
 **(d)** (2 points) Suppose a model achieves perplexity 100 on a word-level task with vocabulary $V = 50{,}000$. Compute:
+
 - The average cross-entropy per token (in nats and bits).
 - The compression ratio compared to a uniform model (i.e., $\log_2(V) / \log_2(\text{PPL})$).
 - The percentage of "uncertainty eliminated" compared to the uniform model: $1 - \log_2(\text{PPL}) / \log_2(V)$.
@@ -176,6 +181,7 @@ class VanillaRNN(nn.Module):
 ```
 
 **Deliverables:**
+
 1. Your implementation (with shape annotations on every intermediate tensor).
 2. Verification: compare forward pass outputs with `torch.nn.RNN` on the same random inputs. Report the maximum absolute difference (should be < 1e-5).
 3. Verification: compare gradients (use `torch.autograd.gradcheck`).
@@ -206,6 +212,7 @@ class LSTMCellScratch(nn.Module):
 ```
 
 **Deliverables:**
+
 1. Implementation with shape annotations.
 2. Numerical verification against `torch.nn.LSTMCell`.
 3. Ablation: train on a sequence memorization task (memorize a bit at $t=0$, recall at $t=T$) for $T \in \{20, 50, 100, 200, 500\}$. Report accuracy. Include the forget gate bias experiment: compare bias $\in \{0, 1, 2\}$.
@@ -217,17 +224,20 @@ class LSTMCellScratch(nn.Module):
 Train a character-level language model on a text corpus.
 
 **Dataset:** Use one of the following (or equivalent):
+
 - Shakespeare complete works (~5MB)
 - War and Peace (~3MB)
 - Wikipedia excerpt (~10MB)
 
 **Requirements:**
+
 1. Implement data processing: character vocabulary, train/val/test split (80/10/10), batched sequence creation.
 2. Train both a vanilla RNN and an LSTM language model.
 3. Use the following architecture: embedding dim = 128, hidden size = 256, 2 layers, dropout = 0.2.
 4. Train for at least 20 epochs with gradient clipping.
 
 **Deliverables:**
+
 1. Training code with proper truncated BPTT (hidden state detaching between batches).
 2. Table of validation perplexity for both models at the end of training.
 3. Learning curves: train and validation loss per epoch for both models.
@@ -243,10 +253,12 @@ Train a character-level language model on a text corpus.
 ### Problem B4: Word-Level Language Model on Penn Treebank (8 points)
 
 **Dataset:** Penn Treebank (PTB). Use the standard preprocessing from Mikolov et al. (2010):
+
 - Vocabulary of ~10,000 words
 - Standard train/val/test split
 
 **Requirements:**
+
 1. Implement a word-level LSTM language model with:
    - Embedding dim = 200, hidden size = 200, 2 layers
    - Weight tying (output projection shares weights with embedding)
@@ -255,6 +267,7 @@ Train a character-level language model on a text corpus.
 3. Implement learning rate annealing: divide LR by 4 when validation perplexity does not improve.
 
 **Deliverables:**
+
 1. Final test perplexity (target: below 90 for full credit, below 85 for bonus).
 2. Learning curves.
 3. Comparison with and without weight tying.
@@ -267,11 +280,13 @@ Train a character-level language model on a text corpus.
 Implement a seq2seq model with Bahdanau attention for a simple translation task.
 
 **Dataset:** Use a small parallel corpus. Options:
+
 - Multi30k English-German (recommended, ~30k sentence pairs)
 - Tatoeba sentence pairs
 - Or a synthetic reversal task: reverse a sequence of random integers (for debugging)
 
 **Requirements:**
+
 1. Implement from scratch:
    - Bidirectional LSTM encoder
    - Bahdanau (additive) attention mechanism
@@ -280,6 +295,7 @@ Implement a seq2seq model with Bahdanau attention for a simple translation task.
 2. Architecture: embed dim = 256, hidden size = 512, 2 encoder layers, 1 decoder layer, attention dim = 128.
 
 **Deliverables:**
+
 1. Implementation with shape annotations on all tensors.
 2. First, verify on the synthetic reversal task (should achieve >99% accuracy).
 3. Train on the real translation task. Report BLEU score on the test set.
@@ -295,6 +311,7 @@ Compare the training dynamics of vanilla RNN vs LSTM by monitoring gradient norm
 **Task:** Train both architectures on the character-level language model from B3.
 
 **Requirements:**
+
 1. At every training step, compute and log:
    - $\|{\partial \mathcal{L}}/{\partial W_{hh}}\|_2$ (recurrent weight gradient norm)
    - The maximum absolute gradient across all parameters
@@ -302,6 +319,7 @@ Compare the training dynamics of vanilla RNN vs LSTM by monitoring gradient norm
 2. Record these for at least 1000 training steps.
 
 **Deliverables:**
+
 1. Plot: gradient norm vs. training step for both vanilla RNN and LSTM (same plot, different colors).
 2. Plot: maximum absolute gradient vs. training step.
 3. Histogram: distribution of gradient norms across all parameters for both models (at the end of training).
@@ -315,6 +333,7 @@ Compare the training dynamics of vanilla RNN vs LSTM by monitoring gradient norm
 ## Grading Rubric
 
 ### Part A (50 points total)
+
 | Problem | Points | Criteria |
 |---------|--------|----------|
 | A1 | 12 | Correct derivation, explicit Jacobian, intermediate steps |
@@ -324,6 +343,7 @@ Compare the training dynamics of vanilla RNN vs LSTM by monitoring gradient norm
 | A5 | 10 | Correct proofs, numerical examples |
 
 ### Part B (50 points total)
+
 | Problem | Points | Criteria |
 |---------|--------|----------|
 | B1 | 8 | Correct implementation, numerical verification |
@@ -334,6 +354,7 @@ Compare the training dynamics of vanilla RNN vs LSTM by monitoring gradient norm
 | B6 | 6 | Gradient plots, analysis |
 
 ### Bonus (up to 5 points)
+
 - B4: Test perplexity below 85 (+2 points)
 - B5: Implement Luong attention and compare with Bahdanau (+2 points)
 - B6: Implement and visualize gradient flow through the LSTM cell state vs. hidden state separately (+1 point)

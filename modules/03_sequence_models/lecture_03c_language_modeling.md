@@ -215,6 +215,7 @@ for epoch i = 1 to E:
 ```
 
 **Tradeoffs:**
+
 - Reduces exposure bias at the cost of slower convergence (ground truth provides a stronger learning signal).
 - The schedule is a hyperparameter: too fast causes training instability, too slow does not help.
 
@@ -269,11 +270,13 @@ For conditional generation tasks (translation, summarization), perplexity alone 
 $$\text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)$$
 
 where:
+
 - $p_n$ is the **modified n-gram precision**: the fraction of n-grams in $c$ that appear in some reference, with clipping to prevent gaming by repetition.
 - $w_n = 1/N$ (typically $N=4$).
 - $\text{BP} = \min(1, e^{1 - |r|/|c|})$ is the **brevity penalty**, penalizing candidates shorter than the reference.
 
 **Limitations of BLEU:**
+
 - Only measures n-gram overlap, not semantic similarity.
 - Insensitive to word order beyond n-gram windows.
 - Does not correlate well with human judgments for single sentences (better for corpus-level evaluation).
@@ -397,6 +400,7 @@ Complexity: O(T_max * B * V) time, O(B * T_max) space
 ```
 
 **Beam width tradeoffs:**
+
 - $B = 1$: greedy decoding. Fast but suboptimal.
 - $B = 5$-$10$: typical for machine translation. Good quality-speed tradeoff.
 - $B \to \infty$: exact search (intractable).
@@ -564,7 +568,6 @@ def sample_greedy(logits: torch.Tensor) -> torch.Tensor:
     """
     return logits.argmax(dim=-1)
 
-
 def sample_with_temperature(
     logits: torch.Tensor,
     temperature: float = 1.0
@@ -582,7 +585,6 @@ def sample_with_temperature(
     scaled_logits = logits / temperature             # (B, V)
     probs = F.softmax(scaled_logits, dim=-1)         # (B, V)
     return torch.multinomial(probs, num_samples=1).squeeze(-1)  # (B,)
-
 
 def sample_top_k(
     logits: torch.Tensor,
@@ -609,7 +611,6 @@ def sample_top_k(
 
     probs = F.softmax(filtered, dim=-1)              # (B, V)
     return torch.multinomial(probs, num_samples=1).squeeze(-1)  # (B,)
-
 
 def sample_top_p(
     logits: torch.Tensor,

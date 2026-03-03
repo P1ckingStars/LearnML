@@ -62,6 +62,7 @@ Row 3: $(0.333 + 0 + 0.167, \quad 0 + 0.333 + 0.167) = (0.500, 0.500)$
 $$O = \begin{pmatrix} 0.615 & 0.385 \\ 0.385 & 0.615 \\ 0.500 & 0.500 \end{pmatrix}$$
 
 **Interpretation:**
+
 - Token 1 (query $[1,0]$) attends most to key 1 ($[1,0]$), so its output is biased toward value 1.
 - Token 2 (query $[0,1]$) attends most to key 2 ($[0,1]$), so its output is biased toward value 2.
 - Token 3 (query $[1,1]$) attends equally to all keys (because its dot product with all keys is equal after scaling), so its output is the mean of all values.
@@ -103,10 +104,12 @@ Input $X \in \mathbb{R}^{3 \times 4}$:
 $$X = \begin{pmatrix} 1 & 0 & 0 & 1 \\ 0 & 1 & 1 & 0 \\ 1 & 1 & 0 & 0 \end{pmatrix}$$
 
 **Head 1** uses the first 2 dimensions (conceptually, after $W_1^Q, W_1^K, W_1^V$ projections):
+
 - Operates on a $d_k = 2$ subspace.
 - Might learn to attend based on syntactic patterns.
 
 **Head 2** uses a different 2D projection:
+
 - Operates on a different $d_k = 2$ subspace.
 - Might learn to attend based on semantic patterns.
 
@@ -131,6 +134,7 @@ For a single head with $T$ tokens and $d_k$ dimensions:
 | Output proj $W^O$ | $(T, d) \times (d, d) \to (T, d)$ | $2Td^2$ |
 
 For $h$ heads with $d_k = d/h$:
+
 - QKV projections: $3 \times 2Td \cdot d = 6Td^2$ (or equivalently $3 \times 2Td \cdot d_k \cdot h = 6Td^2$)
 - Attention per head: $4T^2 d_k$ (for $S$ and $AV$)
 - Total attention: $h \times 4T^2 d_k = 4T^2 d$
@@ -191,10 +195,12 @@ The $2BhT^2 = 2BT^2 \cdot h$ term (from storing attention matrices) dominates wh
 ### 2.5 Self-Attention vs Cross-Attention Complexity
 
 **Self-attention**: $Q, K, V$ all from the same input of length $T$.
+
 - FLOPs: $O(T^2 d)$ for the attention, $O(Td^2)$ for projections.
 - Memory: $O(T^2)$ for the attention matrix.
 
 **Cross-attention**: $Q$ from decoder (length $T_{\text{dec}}$), $K, V$ from encoder (length $T_{\text{enc}}$).
+
 - FLOPs: $O(T_{\text{dec}} \cdot T_{\text{enc}} \cdot d)$ for attention, $O((T_{\text{dec}} + T_{\text{enc}}) \cdot d^2)$ for projections.
 - Memory: $O(T_{\text{dec}} \cdot T_{\text{enc}})$ for the attention matrix.
 
@@ -347,6 +353,7 @@ The online computation gives the same result (up to numerical precision), but we
 | FlashAttention | $O(T)$ for $O$, $m$, $\ell$ | $O(B_r B_c + (B_r + B_c)d)$ |
 
 For $T = 16384$, $d = 128$:
+
 - Standard: $2 \times 16384^2 \times 2$ bytes $= 1$ GB just for $S$ and $A$.
 - FlashAttention: $16384 \times 128 \times 2$ bytes $= 4$ MB for $O$, plus $O(T)$ for statistics.
 
@@ -399,6 +406,7 @@ Causal mask: $M = \begin{pmatrix} 1 & 0 \\ 1 & 1 \end{pmatrix}$
 Masked scores: $\tilde{S} = \begin{pmatrix} 1.414 & -\infty \\ 1.414 & 1.414 \end{pmatrix}$
 
 Softmax:
+
 - Row 1: $\text{softmax}(1.414, -\infty) = (1, 0)$
 - Row 2: $\text{softmax}(1.414, 1.414) = (0.5, 0.5)$ (unchanged, both visible)
 
@@ -477,6 +485,7 @@ An A100 GPU has 20 MB of SRAM. You want to compute attention with $d_k = 128$ in
 **(a)** SRAM budget: 20 MB = $20 \times 10^6$ bytes = $10^7$ FP16 elements.
 
 Storage needed:
+
 - $Q_{\text{block}}$: $B \times 128$
 - $K_{\text{block}}$: $B \times 128$
 - $V_{\text{block}}$: $B \times 128$

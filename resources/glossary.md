@@ -56,13 +56,13 @@ Self-attention where each position can only attend to itself and preceding posit
 A prompting technique where the model is encouraged to produce intermediate reasoning steps before giving a final answer. This has been shown to significantly improve performance on arithmetic, commonsense, and symbolic reasoning tasks, particularly for large language models.
 
 **Classifier-Free Guidance.**
-A technique for conditional generation in diffusion models that interpolates between conditional and unconditional score estimates: score_guided = (1 + w) * score_conditional - w * score_unconditional. Higher guidance weight w produces samples more aligned with the condition at the cost of diversity.
+A technique for conditional generation in diffusion models that interpolates between conditional and unconditional score estimates: `score_guided = (1 + w) * score_conditional - w * score_unconditional`. Higher guidance weight w produces samples more aligned with the condition at the cost of diversity.
 
 **Contrastive Learning.**
 A self-supervised learning approach that trains representations by pulling together embeddings of similar (positive) pairs and pushing apart embeddings of dissimilar (negative) pairs. The InfoNCE loss is the most common objective: L = -log(exp(sim(z_i, z_j)/tau) / sum_k exp(sim(z_i, z_k)/tau)).
 
 **Convolution (in neural networks).**
-A linear operation that applies a learnable kernel (filter) to local patches of the input, sharing weights across spatial positions. For a 2D convolution with input I and kernel K: (I * K)[i,j] = sum_{m,n} I[i+m, j+n] K[m, n]. Provides translation equivariance and parameter efficiency.
+A linear operation that applies a learnable kernel (filter) to local patches of the input, sharing weights across spatial positions. For a 2D convolution with input I and kernel K: `(I * K)[i,j] = sum_{m,n} I[i+m, j+n] K[m, n]`. Provides translation equivariance and parameter efficiency.
 
 **Cross-Entropy Loss.**
 The standard loss for classification: L = -sum_k y_k log(p_k), where y is the one-hot target and p is the predicted probability distribution. Equivalent to the negative log-likelihood of the correct class. Minimizing cross-entropy is equivalent to minimizing KL divergence from the data distribution.
@@ -136,7 +136,7 @@ A framework for training generative models via an adversarial game between a gen
 A learned function that controls information flow, typically outputting values in [0, 1] via a sigmoid. Used in LSTMs (input, forget, output gates), GRUs, mixture of experts (gating network), and gated linear units.
 
 **GELU (Gaussian Error Linear Unit).**
-An activation function defined as GELU(x) = x * Phi(x), where Phi is the standard Gaussian CDF. Approximated as x * sigma(1.702x). Smoother than ReLU; the default activation in transformers (BERT, GPT).
+An activation function defined as `GELU(x) = x * Phi(x)`, where Phi is the standard Gaussian CDF. Approximated as `x * sigma(1.702x)`. Smoother than ReLU; the default activation in transformers (BERT, GPT).
 
 **Generalization.**
 The ability of a model to perform well on unseen data from the same distribution as the training data. The generalization gap is the difference between training and test performance. Deep learning theory seeks to explain why overparameterized models generalize despite classical theory suggesting they should overfit.
@@ -235,7 +235,7 @@ Training with a mix of float16 (or bfloat16) and float32 precision. Most operati
 An architecture where a gating network routes each input to a subset of "expert" subnetworks. This enables conditional computation: the model has many parameters but only activates a fraction for each input. Allows scaling model capacity without proportionally scaling compute.
 
 **Momentum.**
-An acceleration technique for gradient descent that accumulates a velocity vector from past gradients: v_t = beta * v_{t-1} + g_t; theta_{t+1} = theta_t - alpha * v_t. Smooths noisy gradients and accelerates convergence along consistent gradient directions.
+An acceleration technique for gradient descent that accumulates a velocity vector from past gradients: `v_t = beta * v_{t-1} + g_t; theta_{t+1} = theta_t - alpha * v_t`. Smooths noisy gradients and accelerates convergence along consistent gradient directions.
 
 **Multi-Head Attention.**
 Running multiple attention operations in parallel with different learned projections, then concatenating and projecting the results. For h heads with d_model-dimensional inputs: each head uses d_k = d_model/h dimensional projections. Allows attending to information from different representation subspaces.
@@ -384,7 +384,7 @@ Mapping continuous representations to a finite set of discrete codebook vectors.
 A training strategy where the learning rate starts from a small value and increases linearly (or otherwise) to the target value over the first few hundred to few thousand steps. Prevents early training instability, especially with adaptive optimizers like Adam, where moment estimates are poorly calibrated initially.
 
 **Weight Decay.**
-A regularization technique that shrinks weights toward zero at each update: theta_{t+1} = (1 - lambda * alpha) * theta_t - alpha * g_t. In L2 regularization, an equivalent penalty term lambda ||theta||^2 is added to the loss. Weight decay and L2 regularization are equivalent for SGD but differ for Adam (see AdamW).
+A regularization technique that shrinks weights toward zero at each update: `theta_{t+1} = (1 - lambda * alpha) * theta_t - alpha * g_t`. In L2 regularization, an equivalent penalty term `lambda ||theta||^2` is added to the loss. Weight decay and L2 regularization are equivalent for SGD but differ for Adam (see AdamW).
 
 **Weight Initialization.**
 The method for setting initial parameter values before training. Critical for stable training. Common methods: Xavier/Glorot (uniform or normal, scaled by fan-in and fan-out), Kaiming/He (scaled by fan-in, designed for ReLU), orthogonal initialization (preserves gradient norms).

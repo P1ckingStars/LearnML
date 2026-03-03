@@ -116,6 +116,7 @@ Start from the Euler discretization with step $\epsilon$, compute $\log|\det(I +
 ### Problem 5: Analysis of Posterior Collapse (10%)
 
 Consider a linear VAE with:
+
 - Encoder: $q_\phi(z \mid x) = \mathcal{N}(Wx + b, \text{diag}(\sigma^2))$ where $W \in \mathbb{R}^{d \times D}$, $b \in \mathbb{R}^d$, and $\sigma^2 \in \mathbb{R}^d$ (learned but shared across datapoints).
 - Decoder: $p_\theta(x \mid z) = \mathcal{N}(Vz + c, \gamma^2 I)$ where $V \in \mathbb{R}^{D \times d}$, $c \in \mathbb{R}^D$.
 - Prior: $p(z) = \mathcal{N}(0, I)$.
@@ -147,11 +148,13 @@ All implementations should be in PyTorch. Include training curves for all experi
 Implement a Variational Autoencoder from scratch and train it on CelebA (64x64 resolution).
 
 **(a)** **Architecture** (5%):
+
 - Build a convolutional encoder that maps 64x64x3 images to a latent space of dimension $d = 128$. Use the architecture: 4 Conv layers (channels: 32, 64, 128, 256, kernel 4x4, stride 2) with ReLU activations, followed by linear layers to produce $\mu$ and $\log\sigma^2$.
 - Build a mirror decoder using transposed convolutions with a sigmoid output.
 - Report the total number of parameters.
 
 **(b)** **Training** (5%):
+
 - Implement the VAE loss: binary cross-entropy reconstruction + analytic KL.
 - Train for 50 epochs with Adam (lr=1e-4) and batch size 128.
 - Plot the ELBO, reconstruction loss, and KL divergence over training.
@@ -159,6 +162,7 @@ Implement a Variational Autoencoder from scratch and train it on CelebA (64x64 r
 - Show 16 random samples from the trained model.
 
 **(c)** **Analysis** (5%):
+
 - Interpolate between 5 pairs of images in latent space (show 10 steps each).
 - Compute the active units: how many latent dimensions have $D_{\text{KL}}(q_\phi(z_j \mid x) \| p(z_j)) > 0.01$ on average? What fraction of the 128 dimensions are "active"?
 
@@ -166,11 +170,13 @@ Implement a Variational Autoencoder from scratch and train it on CelebA (64x64 r
 
 **(a)** **KL Annealing** (5%):
 Implement three KL annealing strategies:
+
 1. No annealing ($\beta = 1$ throughout).
 2. Linear annealing ($\beta$ from 0 to 1 over the first 25 epochs).
 3. Cyclical annealing (4 cycles over 50 epochs, each cycling $\beta$ from 0 to 1).
 
 For each, train a VAE on CelebA and plot:
+
 - KL divergence over training.
 - Number of active latent dimensions over training.
 - Reconstruction quality at epoch 50 (show 8 examples each).
@@ -181,6 +187,7 @@ Which strategy best avoids posterior collapse?
 Train beta-VAEs with $\beta \in \{0.5, 1, 2, 4, 10\}$ (no annealing).
 
 For each:
+
 - Report final reconstruction loss and KL.
 - Show latent traversals: for each of the top 5 latent dimensions (by KL), show an image grid where that dimension varies from $-3$ to $+3$ in 11 steps.
 - Qualitatively: which latent dimensions correspond to which visual factors (e.g., smile, hair color, pose)?
@@ -196,17 +203,20 @@ Implement the free bits strategy with $\lambda \in \{0.0, 0.125, 0.25, 0.5, 1.0\
 Implement RealNVP with affine coupling layers for 2D data.
 
 Train on three toy distributions:
+
 1. Two moons (from scikit-learn).
 2. Concentric rings (two circles at radii 1 and 2).
 3. A mixture of 8 Gaussians arranged in a circle.
 
 For each distribution:
+
 - Plot training data, learned density (as a contour plot), generated samples, and the latent space.
 - Report the test negative log-likelihood.
 - Ablate the number of layers $K \in \{2, 4, 8, 16\}$ and plot NLL vs. $K$.
 
 **(b)** **Comparison: VAE vs. Flow** (5%):
 On the same three 2D distributions:
+
 - Train a VAE with 2D latent space.
 - Compare visually: which produces sharper density estimates? Which better captures multimodality?
 - Compare numerically: ELBO (for VAE) vs. exact NLL (for flow).
@@ -216,11 +226,13 @@ On the same three 2D distributions:
 
 **(a)** **Quantitative Comparison Table** (5%):
 On Fashion-MNIST (28x28 grayscale), train:
+
 1. Standard VAE ($d = 20$).
 2. Beta-VAE ($d = 20$, $\beta = 4$).
 3. VAE with KL annealing ($d = 20$, linear annealing over 20 epochs).
 
 For each, report:
+
 - Negative ELBO (nats/dim).
 - Reconstruction MSE on the test set.
 - Number of active latent dimensions.
@@ -228,6 +240,7 @@ For each, report:
 
 **(b)** **Latent Space Analysis** (5%):
 For the best-performing model from (a):
+
 - Apply t-SNE to the latent representations of the test set, colored by class label. Are the classes separated?
 - Perform class-conditional generation: for each of the 10 Fashion-MNIST classes, find the mean latent vector of all test images in that class. Decode these 10 mean vectors and show the results. Do they look like prototypical items?
 - Interpolate between class centroids (e.g., "T-shirt" to "Coat"). Show 10-step interpolations for 3 pairs.

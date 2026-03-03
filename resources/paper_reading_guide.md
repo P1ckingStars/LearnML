@@ -25,12 +25,14 @@ Reading a paper in a single linear pass is inefficient. Instead, adopt a structu
 **Goal:** Determine whether the paper is worth a deeper read and where it fits in the literature.
 
 Read only:
+
 - Title, abstract, and introduction
 - Section and subsection headings
 - Figures, tables, and their captions (these often convey the core results)
 - Conclusion
 
 After Pass 1, you should be able to answer:
+
 - What problem is the paper solving?
 - What is the claimed contribution?
 - What type of paper is this? (new architecture, new training method, theoretical analysis, empirical study, benchmark, survey)
@@ -53,6 +55,7 @@ Read the full paper, but skip dense proofs on first pass. Focus on:
 - **Related work.** How do the authors position their work? Who are they comparing against, and who are they conspicuously not citing?
 
 Annotate as you go:
+
 - Circle terms you do not understand
 - Star key insights
 - Write question marks next to claims that seem unsupported
@@ -71,6 +74,7 @@ This pass is reserved for papers central to your research. You should:
 - **Situate in the literature.** How does this extend or contradict prior work? What are the natural next steps?
 
 After Pass 3, you should be able to:
+
 - Present the paper from memory
 - Identify its strengths and weaknesses
 - Propose concrete extensions or follow-up experiments
@@ -151,6 +155,7 @@ Whether in a reading group, lab meeting, or conference, presenting a paper well 
 ### Leading Discussion
 
 Good discussion questions for a reading group:
+
 - "What would happen if assumption X were violated?"
 - "How would you adapt this method to domain Y?"
 - "What experiment would most change your opinion of this paper?"

@@ -25,6 +25,7 @@
 ## Pre-Work (Before Week 1)
 
 ### Module 00: Mathematical Foundations
+
 Complete before the semester begins. Self-paced, ~2 weeks.
 
 | Day | Topic | Materials |

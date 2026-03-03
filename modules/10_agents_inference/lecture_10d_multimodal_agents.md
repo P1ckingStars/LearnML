@@ -18,6 +18,7 @@ By the end of this lecture, you will be able to:
 ### 2.1 Beyond Text-Only Agents
 
 Lecture 10a introduced text-based agents with tool use and RAG. Real-world deployment requires agents that can:
+
 - **See**: process screenshots, images, videos (vision-language agents)
 - **Code**: write, test, debug, and deploy software (code agents)
 - **Collaborate**: work with other agents and humans (multi-agent systems)
@@ -30,6 +31,7 @@ The majority of human-computer interaction is visual: websites, applications, do
 ### 2.3 Current State
 
 We are in an early but rapidly advancing phase:
+
 - Vision-language models (GPT-4V, Gemini) enable screenshot understanding
 - Code agents (SWE-agent, Devin) can solve real GitHub issues
 - Multi-agent frameworks (AutoGen, CrewAI) are being actively developed
@@ -56,6 +58,7 @@ $$\pi(a_t | o_1, a_1, \ldots, o_t) = \pi(a_t | v_1, l_1, a_1, \ldots, v_t, l_t)$
 $$\mathcal{A}_{\text{web}} = \{\texttt{click}(x, y), \texttt{type}(text), \texttt{scroll}(\Delta), \texttt{navigate}(url), \texttt{back}, \texttt{forward}, \texttt{stop}(answer)\}$$
 
 **Observation representations:**
+
 1. **Screenshot only**: $o_t = v_t$ (pixel-level). Requires vision capabilities. Robust to website changes.
 2. **DOM/accessibility tree**: $o_t = l_t$ (structured text). More compact but may miss visual layout.
 3. **Set-of-Marks**: Overlay numbered labels on interactive elements in the screenshot, combining visual and textual cues.
@@ -65,6 +68,7 @@ $$\mathcal{A}_{\text{web}} = \{\texttt{click}(x, y), \texttt{type}(text), \textt
 $$I(a; v, l) \geq I(a; v) \quad \text{and} \quad I(a; v, l) \geq I(a; l)$$
 
 with equality iff $v$ and $l$ are redundant given $a$. In practice, $v$ and $l$ provide complementary information:
+
 - Visual: layout, colors, relative positions, images, visual patterns
 - Textual: element labels, link targets, form field names, hidden metadata
 
@@ -87,6 +91,7 @@ $$P_0 \xrightarrow{\text{write}} P_1 \xrightarrow{\text{test}} (P_1, \text{error
 3. **Debug**: The generator uses the error trace to produce a corrected program.
 
 **Theorem 3.5 (Convergence of Write-Test-Debug).** Under idealized assumptions:
+
 - The generator has probability $p_{\text{fix}} > 0$ of fixing each bug in a single debug step.
 - Bugs are independent (fixing one does not introduce another).
 - The program has at most $B$ bugs initially.
@@ -137,6 +142,7 @@ where $r$ is the debate round. After $R$ rounds, a judge $J$ selects:
 $$\hat{a} = J(q, \{a_i^{(r)}\}_{i,r})$$
 
 **Theorem 3.7 (Debate Improves Over Single Agent, Du et al. 2023).** Under assumptions:
+
 - Each agent $A_i$ produces the correct answer with independent probability $p > 1/2$.
 - Agents update their answers based on the arguments of others.
 - The judge selects the majority answer after the final round.
@@ -169,6 +175,7 @@ The advantage scales exponentially with the number of subtasks $k$.
 ### 3.4 Agent Evaluation
 
 **Definition 3.9 (Agent Benchmark).** An agent benchmark $\mathcal{B} = \{(q_i, E_i, M_i)\}_{i=1}^N$ consists of:
+
 - $q_i$: task specification
 - $E_i$: environment (e.g., codebase, website, set of tools)
 - $M_i$: evaluation metric (e.g., tests pass, task completed, answer correct)
@@ -189,6 +196,7 @@ The advantage scales exponentially with the number of subtasks $k$.
 $$\text{Acc}_{\text{best agent}} \geq \text{Acc}_{\text{human}} - \epsilon$$
 
 At saturation, the benchmark loses discriminative power. The field must continuously create harder benchmarks. Current evidence suggests:
+
 - HumanEval: approaching saturation (>95% with best-of-N)
 - MATH: moderate saturation (~95% with test-time compute)
 - SWE-bench: far from saturation (~50% on Lite, ~20% on full)
@@ -218,6 +226,7 @@ At saturation, the benchmark loses discriminative power. The field must continuo
 $$\forall a \in \mathcal{A}_{\text{sandbox}}: \; \text{Impact}(a, E_{\text{real}}) = 0$$
 
 That is, actions in the sandbox have zero real-world impact. This provides:
+
 - **Reversibility**: all actions can be undone
 - **Bounded impact**: by definition
 - **Preview**: humans can review planned actions before execution
@@ -247,6 +256,7 @@ where $\theta_t$ are the agent's parameters (or prompt/strategy), $\tau_i$ are t
 3. **Mesa-optimization**: A self-improving agent may develop internal optimization processes (mesa-optimizers) whose objectives diverge from the outer objective. This is a core alignment concern.
 
 **Theorem 3.15 (Self-Play Improvement, informal).** In zero-sum games, self-play converges to a Nash equilibrium (Silver et al., 2017). For general tasks, no analogous guarantee exists. Self-improvement can:
+
 - Converge to a fixed point (stable skill level)
 - Diverge (progressively worse behavior)
 - Oscillate (cycling between strategies)
@@ -406,7 +416,6 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional
 import json
 
-
 @dataclass
 class BrowserAction:
     """Represents an action in a web browser."""
@@ -418,7 +427,6 @@ class BrowserAction:
     url: Optional[str] = None
     answer: Optional[str] = None
 
-
 @dataclass
 class BrowserObservation:
     """Represents what the agent sees in the browser."""
@@ -426,7 +434,6 @@ class BrowserObservation:
     accessibility_tree: Optional[str] = None
     url: str = ""
     page_title: str = ""
-
 
 class SetOfMarksProcessor:
     """
@@ -482,7 +489,6 @@ class SetOfMarksProcessor:
             }
 
         return annotated, mapping
-
 
 class WebBrowsingAgent:
     """
@@ -636,7 +642,6 @@ import os
 from dataclasses import dataclass
 from typing import Callable, Optional
 
-
 @dataclass
 class CodeEdit:
     """Represents a code edit."""
@@ -645,7 +650,6 @@ class CodeEdit:
     new_content: str
     line_start: Optional[int] = None
     line_end: Optional[int] = None
-
 
 @dataclass
 class TestResult:
@@ -657,7 +661,6 @@ class TestResult:
     failure_messages: list[str]
     stdout: str
     stderr: str
-
 
 class CodeAgent:
     """
@@ -929,7 +932,6 @@ from dataclasses import dataclass
 from typing import Callable
 from collections import Counter
 
-
 @dataclass
 class AgentConfig:
     """Configuration for an agent in the multi-agent system."""
@@ -937,7 +939,6 @@ class AgentConfig:
     system_prompt: str
     model: Callable            # (prompt) -> str
     temperature: float = 0.7
-
 
 class MultiAgentDebate:
     """
@@ -1069,7 +1070,6 @@ class MultiAgentDebate:
         sentences = response.strip().split(".")
         return sentences[-1].strip() if sentences else response.strip()
 
-
 class SpecializedMultiAgent:
     """
     Multi-agent system with specialized roles.
@@ -1125,7 +1125,6 @@ import time
 from dataclasses import dataclass
 from typing import Callable
 
-
 @dataclass
 class BenchmarkResult:
     """Result of evaluating an agent on a benchmark."""
@@ -1136,7 +1135,6 @@ class BenchmarkResult:
     avg_steps: float
     avg_time: float
     per_task_results: list[dict]
-
 
 class AgentBenchmark:
     """
@@ -1255,6 +1253,7 @@ Performance of different agents on SWE-bench Lite (300 real GitHub issues):
 | OpenHands (Claude 3.5) | 41.7% | 30 | \$2.00 |
 
 Key observations:
+
 - Direct prompting is almost useless for real code tasks (1.7%).
 - The agent-computer interface matters enormously (SWE-agent's ACI design is crucial).
 - More exploration steps generally help, but costs increase linearly.

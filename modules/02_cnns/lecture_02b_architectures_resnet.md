@@ -35,6 +35,7 @@ The central challenge: deeper networks should have greater representational capa
 ### 3.1 LeNet-5 (LeCun et al., 1998)
 
 **Architecture:**
+
 ```
 Input: 32x32 grayscale image
   -> Conv(6, 5x5, stride=1) -> Sigmoid -> AvgPool(2x2, stride=2)     => 6 x 14 x 14
@@ -49,6 +50,7 @@ Input: 32x32 grayscale image
 ### 3.2 AlexNet (Krizhevsky et al., 2012)
 
 **Architecture:**
+
 ```
 Input: 227x227x3 (note: often incorrectly stated as 224)
   -> Conv(96, 11x11, stride=4, pad=0) -> ReLU -> MaxPool(3x3, s=2) -> LRN
@@ -80,6 +82,7 @@ Input: 227x227x3 (note: often incorrectly stated as 224)
 **Proposition 3.1 (Parameter Savings).** For $C$ channels, three 3x3 layers use $3 \times (C \times C \times 9) = 27C^2$ parameters, while a single 7x7 layer uses $C \times C \times 49 = 49C^2$ parameters. The savings factor is $49/27 \approx 1.8\times$, plus three nonlinearities instead of one.
 
 **VGG-16 Architecture:**
+
 ```
 2x Conv(64, 3x3)  -> MaxPool  => 64 x 112 x 112
 2x Conv(128, 3x3) -> MaxPool  => 128 x 56 x 56
@@ -96,6 +99,7 @@ Flatten -> FC(4096) -> FC(4096) -> FC(1000)
 **Key insight:** Different spatial scales of features are useful simultaneously. Instead of choosing a single kernel size, apply multiple in parallel.
 
 **Inception Module:**
+
 ```
 Input (C_in channels)
   |--- 1x1 Conv(a) ---------------------------------> |
@@ -192,6 +196,7 @@ $$\mathcal{F}(\mathbf{x}) = W_3^{1\times1} \cdot \text{ReLU}(\text{BN}(W_2^{3\ti
 The 1x1 convolutions reduce and restore channel dimensions, making the 3x3 convolution operate on a smaller channel count (typically 4x reduction).
 
 **ResNet-50 Architecture:**
+
 ```
 Conv(64, 7x7, stride=2) -> BN -> ReLU -> MaxPool(3x3, stride=2)  => 64 x 56 x 56
 Stage 1: 3 x Bottleneck(64, 64, 256)                              => 256 x 56 x 56
@@ -474,7 +479,6 @@ class ResNet(nn.Module):
         x = self.fc(x)                                    # (N, num_classes)
         return x
 
-
 def resnet18(num_classes=1000):
     return ResNet(BasicBlock, [2, 2, 2, 2], num_classes)
 
@@ -602,15 +606,18 @@ compare_gradient_flow(depth=30)
 ## 7. Connections and Extensions
 
 ### 7.1 Prior Modules
+
 - **Module 01:** Optimization (SGD, momentum, Adam) is critical for training deep architectures. Weight initialization (Kaiming) depends on the analysis from Module 01.
 - **Lecture 02a:** The convolutional layers within each residual block follow the theory of equivariance and receptive fields.
 
 ### 7.2 Future Modules
+
 - **Lecture 02c:** Batch normalization is integral to ResNet; its analysis follows next.
 - **Lecture 02d:** ResNet serves as the backbone for detection (Faster R-CNN) and segmentation (U-Net, FPN).
 - **Module 04 (Transformers):** The attention mechanism can be seen as a generalization of the skip connection pattern. ViT replaces convolutions with self-attention but retains residual connections.
 
 ### 7.3 Extensions
+
 - **ResNeXt (Xie et al., 2017):** Grouped convolutions within residual blocks — "cardinality" as a new dimension alongside depth and width.
 - **Squeeze-and-Excitation Networks (Hu et al., 2018):** Channel attention modules recalibrate feature responses.
 - **EfficientNet (Tan & Le, 2019):** Compound scaling of depth, width, and resolution using neural architecture search.
@@ -620,10 +627,12 @@ compare_gradient_flow(depth=30)
 ## 8. Seminal Paper Reading List
 
 ### Required
+
 1. K. He, X. Zhang, S. Ren, and J. Sun. "Deep Residual Learning for Image Recognition." *CVPR*, 2016a.
 2. K. He, X. Zhang, S. Ren, and J. Sun. "Identity Mappings in Deep Residual Networks." *ECCV*, 2016b.
 
 ### Recommended
+
 3. Y. LeCun, L. Bottou, Y. Bengio, and P. Haffner. "Gradient-Based Learning Applied to Document Recognition." *Proceedings of the IEEE*, 86(11):2278-2324, 1998.
 4. A. Krizhevsky, I. Sutskever, and G. E. Hinton. "ImageNet Classification with Deep Convolutional Neural Networks." *NeurIPS*, 2012.
 5. K. Simonyan and A. Zisserman. "Very Deep Convolutional Networks for Large-Scale Image Recognition." *ICLR*, 2015.

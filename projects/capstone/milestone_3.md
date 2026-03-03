@@ -54,11 +54,13 @@ This is the most critical section for this milestone. It must include:
 - **Analysis:** Interpretation of results. What works? What does not? Why?
 
 It is acceptable if:
+
 - Some additional experiments are planned but not yet run
 - The analysis is not yet as deep as it will be in the final version
 - Some figures are not yet publication-quality
 
 It is not acceptable if:
+
 - You have no main results at all
 - You have results but no baselines to compare against
 - Your experimental section is a placeholder
@@ -99,23 +101,31 @@ Review assignments will be posted by Week 14. You will be assigned projects in r
 For each assigned paper, write a structured review covering:
 
 #### Summary (3-5 sentences)
+
 Summarize the paper's contribution in your own words. This demonstrates that you understood the paper.
 
 #### Strengths (3-5 bullet points)
+
 What does the paper do well? Be specific. Examples:
+
 - "The ablation study in Table 3 clearly isolates the contribution of the proposed attention modification."
 - "The related work section thoroughly covers recent flow-based generative models."
 
 #### Weaknesses (3-5 bullet points)
+
 What could be improved? Be constructive and specific. Examples:
+
 - "The comparison in Table 2 does not include [Method X], which is a strong baseline for this task."
 - "The paper claims the method is efficient but does not report wall-clock training or inference times."
 
 #### Questions for the Authors (2-3 questions)
+
 Ask clarifying questions that would strengthen the paper if addressed.
 
 #### Overall Assessment
+
 Rate the paper on a scale of 1-5:
+
 - 5: Strong accept. Near-publishable quality.
 - 4: Weak accept. Good project with room for improvement.
 - 3: Borderline. Significant issues but potential is visible.
@@ -125,6 +135,7 @@ Rate the paper on a scale of 1-5:
 Provide a 2-3 sentence justification for your rating.
 
 #### Suggestions for Improvement (2-3 specific, actionable suggestions)
+
 What would most improve this paper for the final version?
 
 ### Review Guidelines

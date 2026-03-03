@@ -9,6 +9,7 @@
 This course provides a rigorous, self-contained treatment of deep learning at the level expected of PhD students at top research universities. Every topic is developed from first principles with full mathematical derivations, implemented from scratch in PyTorch, and connected to seminal research papers.
 
 **What makes this course different:**
+
 - Full proofs and derivations — not just "it can be shown that..."
 - Every model is built from raw tensors before using library abstractions
 - Coverage of frontier topics: LLMs, RLHF/DPO, diffusion models, state-space models, mixture of experts, and AI agents
@@ -46,6 +47,7 @@ See [TEAM.md](TEAM.md) for the full teaching staff, office hours, grading pipeli
 ## How to Use This Course
 
 ### As a Self-Learner
+
 1. Read [PREREQUISITES.md](PREREQUISITES.md) and complete the self-assessment
 2. Follow [SETUP.md](SETUP.md) to configure your environment
 3. Work through modules sequentially — each builds on the previous
@@ -53,12 +55,14 @@ See [TEAM.md](TEAM.md) for the full teaching staff, office hours, grading pipeli
 5. Read at least the required papers for each module
 
 ### As a Course Instructor
+
 - [SYLLABUS.md](SYLLABUS.md) contains a week-by-week schedule
 - Lectures are designed for 75-minute sessions
 - Recitations provide hands-on coding walkthroughs
 - Homeworks and projects have detailed rubrics
 
 ### As a Researcher
+
 - Jump to specific modules as needed
 - Each lecture is self-contained with explicit prerequisites listed
 - Use [resources/bibliography.md](resources/bibliography.md) as an annotated reading list
@@ -66,6 +70,7 @@ See [TEAM.md](TEAM.md) for the full teaching staff, office hours, grading pipeli
 ## Prerequisites
 
 See [PREREQUISITES.md](PREREQUISITES.md) for details. In brief:
+
 - **Mathematics**: Linear algebra (through SVD), multivariate calculus, probability theory, basic optimization
 - **Programming**: Python fluency, NumPy, basic PyTorch
 - **ML**: Supervised/unsupervised learning fundamentals (at the level of Andrew Ng's course or Bishop Ch. 1–4)
@@ -85,6 +90,7 @@ See [NOTATION.md](NOTATION.md) for the global notation reference used throughout
 ## Acknowledgments
 
 This course draws inspiration from:
+
 - Stanford CS231n, CS224n, CS236
 - MIT 6.S898, 6.S965
 - CMU 10-708, 11-785

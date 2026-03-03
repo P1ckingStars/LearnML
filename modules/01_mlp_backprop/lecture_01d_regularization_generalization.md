@@ -191,11 +191,13 @@ where $\alpha = p/(1-p)$ matches the variance of Bernoulli dropout. This is diff
 ### 5.4 When Dropout Works and When It Doesn't
 
 **Works well:**
+
 - Fully connected layers with many parameters.
 - When the model is overparameterized relative to the data.
 - Dropout rate $p = 0.5$ for hidden layers, $p = 0.1$-$0.2$ for input layers.
 
 **Works less well:**
+
 - Convolutional layers: spatial dropout (drop entire channels) is better than element-wise dropout.
 - Batch normalization layers: BN provides its own regularization; combining with dropout can cause issues (variance mismatch between train and test).
 - Very small models: dropout removes too much capacity.
@@ -211,12 +213,14 @@ For a mini-batch $\{z_i\}_{i=1}^B$ of pre-activations at some layer, Batch Norma
 $$\hat{z}_i = \frac{z_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}} \cdot \gamma + \beta$$
 
 where:
+
 - $\mu_B = \frac{1}{B}\sum_{i=1}^B z_i$ (batch mean)
 - $\sigma_B^2 = \frac{1}{B}\sum_{i=1}^B (z_i - \mu_B)^2$ (batch variance)
 - $\gamma, \beta$ are learnable scale and shift parameters
 - $\epsilon \approx 10^{-5}$ for numerical stability
 
 **Shape annotations** (for a layer with $d$ features):
+
 - $z_i \in \mathbb{R}^d$, $\mu_B \in \mathbb{R}^d$, $\sigma_B^2 \in \mathbb{R}^d$ (computed per-feature)
 - $\gamma \in \mathbb{R}^d$, $\beta \in \mathbb{R}^d$ (learnable, per-feature)
 
@@ -746,11 +750,13 @@ if __name__ == '__main__':
 ## 11. Connections and Extensions
 
 ### 11.1 Links Within This Module
+
 - **Lecture 01a (UAT):** The UAT says we can approximate any function; regularization limits which approximation we find.
 - **Lecture 01b (Backprop):** BN and dropout modify the backward pass. Understanding their gradients is essential.
 - **Lecture 01c (Optimization):** Weight decay is part of the optimizer; BN smooths the loss landscape.
 
 ### 11.2 Links to Future Modules
+
 - **Module 02 (CNNs):** Batch Norm is ubiquitous. Data augmentation is the primary regularizer.
 - **Module 05 (Transformers):** Layer Norm replaces BN. Dropout is applied to attention weights and FFN outputs.
 - **Module 06 (Generative Models):** Regularization in VAEs (KL divergence) and GANs (spectral normalization).
@@ -796,6 +802,7 @@ if __name__ == '__main__':
 **Exercise 4.1.** Derive the bias-variance decomposition for the **0-1 classification loss**. Show that the decomposition is not as clean as for squared loss (define appropriate analogs of bias and variance).
 
 **Exercise 4.2.** For L2 regularization on linear regression with design matrix $X \in \mathbb{R}^{N \times p}$ and SVD $X = U\Sigma V^\top$:
+
 - (a) Show that the ridge solution can be written as $\hat{\theta}_{\text{ridge}} = V D_\lambda \Sigma^{-1} U^\top y$ where $D_\lambda = \text{diag}\left(\frac{\sigma_j^2}{\sigma_j^2 + N\lambda}\right)$.
 - (b) Compute the effective degrees of freedom: $\text{df}(\lambda) = \text{tr}(X(X^\top X + N\lambda I)^{-1} X^\top) = \sum_j \frac{\sigma_j^2}{\sigma_j^2 + N\lambda}$.
 - (c) Show that $\text{df}(\lambda) \to p$ as $\lambda \to 0$ and $\text{df}(\lambda) \to 0$ as $\lambda \to \infty$.
@@ -809,6 +816,7 @@ Interpret the second term as an input-dependent weight penalty.
 **Exercise 4.4.** Derive the complete backward pass for Layer Normalization. Compare the computational complexity with Batch Normalization.
 
 **Exercise 4.5.** (Double descent) Consider the minimum-norm least-squares solution for an overparameterized linear model ($p > N$): $\hat{\theta} = X^\top (XX^\top)^{-1}y$.
+
 - (a) Show that this is the minimum $\ell_2$-norm interpolator.
 - (b) Compute the test risk and show it has a spike at $p \approx N$.
 - (c) Show that the test risk decreases for $p \gg N$ (the overparameterized regime).
@@ -818,15 +826,18 @@ Interpret the second term as an input-dependent weight penalty.
 **Exercise 4.6.** Implement Batch Normalization from scratch (forward and backward) using only NumPy. Verify against `torch.nn.BatchNorm1d` by comparing outputs and gradients.
 
 **Exercise 4.7.** Implement inverted dropout from scratch and verify:
+
 - (a) That $\mathbb{E}[\text{output}] = \text{input}$ (test empirically by averaging over many forward passes).
 - (b) That the variance of the output increases by a factor of $1/(1-p)$.
 
 **Exercise 4.8.** Reproduce the double descent curve:
+
 - Train polynomial regression models of degree $d = 1, 2, \ldots, 100$ on $N = 20$ noisy data points.
 - Plot test MSE vs. model complexity $d$.
 - Identify the interpolation threshold and the second descent.
 
 **Exercise 4.9.** Run the regularization comparison experiment from Section 9 on MNIST:
+
 - Compare: no regularization, L2 only, dropout only, BN only, all combined.
 - Report both training and test accuracy/loss curves.
 - Which combination gives the best test accuracy? The smallest train-test gap?

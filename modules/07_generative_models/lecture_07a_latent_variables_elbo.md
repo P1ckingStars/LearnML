@@ -24,6 +24,7 @@ $$p_\theta(x) = \int p_\theta(x, z) \, dz = \int p_\theta(x \mid z) \, p(z) \, d
 where $x$ is observed data, $z$ is a latent (unobserved) variable, and $\theta$ parameterizes the model.
 
 **Why this framework matters:**
+
 - It provides a principled way to model complex distributions through simpler conditionals.
 - It enables unsupervised learning of meaningful representations.
 - It underpins nearly every modern generative model: VAEs, diffusion models, mixture models, and more.
@@ -52,6 +53,7 @@ But computing $\log p_\theta(x) = \log \int p_\theta(x \mid z) p(z) \, dz$ requi
 ### 3.1 Latent Variable Model Formulation
 
 **Definition 3.1 (Latent Variable Model).** A latent variable model specifies:
+
 - A prior distribution $p(z)$ over latent variables $z \in \mathcal{Z}$.
 - A conditional likelihood $p_\theta(x \mid z)$ mapping latents to observations.
 - The marginal likelihood (evidence): $p_\theta(x) = \int_{\mathcal{Z}} p_\theta(x \mid z) \, p(z) \, dz$.
@@ -404,7 +406,6 @@ class SimpleLatentVariableModel(nn.Module):
 
         return elbo.mean(), recon.mean(), kl.mean()
 
-
 def compute_iwae_bound(model, x: torch.Tensor, K: int = 50):
     """
     Compute the Importance-Weighted Autoencoder (IWAE) bound.
@@ -513,7 +514,6 @@ def train_latent_variable_model(
             print(f"Epoch {epoch+1:4d} | ELBO: {avg_elbo:.2f} | "
                   f"Recon: {avg_recon:.2f} | KL: {avg_kl:.2f}")
 
-
 # --- Example usage ---
 if __name__ == "__main__":
     torch.manual_seed(42)
@@ -551,6 +551,7 @@ if __name__ == "__main__":
 ### 6.1 ELBO Landscape
 
 When training a VAE on MNIST:
+
 - **Early training**: The KL term is near zero (the encoder outputs near-prior distributions), and the reconstruction term dominates. The model first learns to use the latent space.
 - **Mid training**: KL rises as the encoder learns to encode information about each digit. Reconstruction improves rapidly.
 - **Late training**: Both terms stabilize. The ELBO gap (difference from true log-likelihood) depends on the expressiveness of $q_\phi$.
@@ -569,6 +570,7 @@ When training a VAE on MNIST:
 ### 6.3 ELBO vs. True Log-Likelihood
 
 For a Gaussian mixture model (where we can compute exact $\log p(x)$):
+
 - With a mean-field variational family, the ELBO can be significantly below $\log p(x)$.
 - The gap increases as the true posterior becomes more correlated (violating mean-field assumption).
 - The IWAE bound monotonically tightens the gap as $K$ increases.
@@ -599,6 +601,7 @@ For a Gaussian mixture model (where we can compute exact $\log p(x)$):
 ### 7.3 Broader Context
 
 The ELBO framework unifies much of modern generative modeling:
+
 - **GANs** avoid explicit density estimation entirely (no ELBO needed).
 - **Diffusion models** use a specific multi-step latent variable structure where each ELBO term becomes a denoising objective.
 - **Autoregressive models** have $z = \emptyset$ (no latent variables) and tractable likelihood.

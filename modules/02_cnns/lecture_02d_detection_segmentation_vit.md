@@ -38,6 +38,7 @@ The success of Transformers in NLP (Vaswani et al., 2017) prompted the question:
 #### 3.1.1 R-CNN (Girshick et al., 2014)
 
 **Pipeline:**
+
 1. **Region proposals:** Use Selective Search to generate ~2,000 candidate regions per image.
 2. **Feature extraction:** Warp each region to 227x227 and pass through AlexNet to obtain a 4096-dim feature vector.
 3. **Classification:** Train a linear SVM per class on the features.
@@ -50,6 +51,7 @@ The success of Transformers in NLP (Vaswani et al., 2017) prompted the question:
 **Key insight:** Compute the CNN features *once* for the entire image, then extract features for each region from the shared feature map.
 
 **Pipeline:**
+
 1. Pass the full image through a CNN backbone (e.g., VGG-16) to get a feature map.
 2. For each region proposal, use **RoI Pooling** to extract a fixed-size feature vector.
 3. Pass through FC layers to produce class probabilities and bounding box refinements.
@@ -69,6 +71,7 @@ The success of Transformers in NLP (Vaswani et al., 2017) prompted the question:
 **Key insight:** Replace Selective Search with a **Region Proposal Network (RPN)** that shares convolutional features with the detection network.
 
 **Architecture overview:**
+
 ```
 Image -> Backbone CNN -> Feature Map
                           |
@@ -86,6 +89,7 @@ Image -> Backbone CNN -> Feature Map
 Each anchor box $a$ is parameterized by its center $(x_a, y_a)$, width $w_a$, and height $h_a$ in image coordinates.
 
 **RPN outputs (per anchor):**
+
 - **Objectness score:** $p \in [0, 1]$ — probability that the anchor contains an object (vs. background).
 - **Box regression:** $\Delta = (t_x, t_y, t_w, t_h)$ — offsets to refine the anchor into a proposal.
 
@@ -101,6 +105,7 @@ This parameterization is scale-invariant: the same $t$ values produce proportion
 $$\mathcal{L}_{\text{RPN}} = \frac{1}{N_{\text{cls}}} \sum_i L_{\text{cls}}(p_i, p_i^*) + \lambda \frac{1}{N_{\text{reg}}} \sum_i p_i^* \cdot L_{\text{reg}}(t_i, t_i^*)$$
 
 where:
+
 - $p_i^* = 1$ if anchor $i$ is positive (IoU with ground truth > 0.7), $p_i^* = 0$ if negative (IoU < 0.3), ignored otherwise.
 - $L_{\text{cls}}$ is binary cross-entropy.
 - $L_{\text{reg}}$ is smooth $L_1$ loss: $\text{smooth}_{L_1}(x) = \begin{cases} 0.5x^2 & |x| < 1 \\ |x| - 0.5 & \text{otherwise} \end{cases}$
@@ -132,6 +137,7 @@ C5 (stride 32)    ----lateral--->
 1. **Bottom-up:** Standard CNN backbone (e.g., ResNet) produces feature maps $\{C_2, C_3, C_4, C_5\}$ at strides $\{4, 8, 16, 32\}$.
 2. **Top-down:** Starting from $C_5$, build $P_5 = \text{Conv}_{1\times1}(C_5)$. For each level $\ell$ from 4 down to 2:
    $$P_\ell = \text{Conv}_{1\times1}(C_\ell) + \text{Upsample}_{2\times}(P_{\ell+1})$$
+
 3. **Post-processing:** Apply a 3x3 convolution to each $P_\ell$ to reduce aliasing from upsampling.
 
 Each pyramid level $P_\ell$ has the same channel dimension (typically 256), enabling a single detection head to be shared across scales.
@@ -277,6 +283,7 @@ The "/16" and "/14" denote patch size $P$.
 **Final result:** ConvNeXt-T (28.6M params) achieves 82.1% ImageNet top-1, matching Swin-T (28.3M params, 81.3%) while being a pure CNN.
 
 **ConvNeXt Block:**
+
 ```
 Input x ∈ R^{C × H × W}
   -> DepthwiseConv(7x7)           // spatial mixing
@@ -406,7 +413,6 @@ class RPN(nn.Module):
         bbox_deltas = self.reg_head(t)               # (N, num_anchors*4, H, W)
         return cls_scores, bbox_deltas
 
-
 def generate_anchors(feature_h: int, feature_w: int, stride: int,
                      scales: list = [128, 256, 512],
                      ratios: list = [0.5, 1.0, 2.0]) -> torch.Tensor:
@@ -443,7 +449,6 @@ def generate_anchors(feature_h: int, feature_w: int, stride: int,
     anchors = anchors.reshape(-1, 4)                              # (H*W*K, 4)
     return anchors
 
-
 # --- Demo ---
 rpn = RPN(in_channels=256, num_anchors=9)
 feat = torch.randn(2, 256, 14, 14)                              # (N=2, C=256, H=14, W=14)
@@ -474,7 +479,6 @@ class UNetBlock(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.block(x)
-
 
 class UNet(nn.Module):
     """
@@ -544,7 +548,6 @@ class UNet(nn.Module):
 
         return self.final(d1)                     # (N, num_classes, H, W)
 
-
 # --- Verification ---
 model = UNet(in_channels=3, num_classes=21)
 x = torch.randn(2, 3, 256, 256)                                 # (N=2, C=3, H=256, W=256)
@@ -578,7 +581,6 @@ class PatchEmbedding(nn.Module):
         x = x.flatten(2)                                           # (N, D, num_patches)
         x = x.transpose(1, 2)                                     # (N, num_patches, D)
         return x
-
 
 class MultiHeadSelfAttention(nn.Module):
     """Multi-head self-attention."""
@@ -615,7 +617,6 @@ class MultiHeadSelfAttention(nn.Module):
         x = self.proj(x)                                           # (N, L, D)
         return x
 
-
 class TransformerBlock(nn.Module):
     """Single transformer encoder block with pre-norm."""
 
@@ -644,7 +645,6 @@ class TransformerBlock(nn.Module):
         x = x + self.attn(self.norm1(x))                          # (N, L, D) residual
         x = x + self.mlp(self.norm2(x))                           # (N, L, D) residual
         return x
-
 
 class VisionTransformer(nn.Module):
     """
@@ -713,7 +713,6 @@ class VisionTransformer(nn.Module):
         x = self.head(x)                                           # (N, num_classes)
         return x
 
-
 # --- Verification ---
 vit = VisionTransformer(
     img_size=224, patch_size=16, num_classes=100,
@@ -764,7 +763,6 @@ class ConvNeXtBlock(nn.Module):
         x = residual + x                                               # skip connection
         return x
 
-
 # --- Demo ---
 block = ConvNeXtBlock(dim=96)
 x = torch.randn(2, 96, 56, 56)
@@ -807,16 +805,19 @@ print(f"ConvNeXt block: {x.shape} -> {y.shape}")   # (2, 96, 56, 56) -> (2, 96, 
 ## 7. Connections and Extensions
 
 ### 7.1 Prior Modules
+
 - **Lecture 02a:** Convolution theory underlies all backbone networks.
 - **Lecture 02b:** ResNet is the standard backbone for detection and segmentation.
 - **Lecture 02c:** BN/GN are essential for training these architectures.
 
 ### 7.2 Future Modules
+
 - **Module 04 (Transformers):** ViT is a direct application of the transformer architecture; full attention mechanism theory is covered there.
 - **Module 07 (Self-Supervised Learning):** MAE (Masked Autoencoders) uses ViT for self-supervised pretraining by masking patches.
 - **Module 09 (Diffusion Models):** U-Net is the standard architecture for diffusion model denoising networks.
 
 ### 7.3 Extensions
+
 - **DETR (Carion et al., 2020):** End-to-end object detection with transformers, eliminating NMS and anchor boxes.
 - **Swin Transformer (Liu et al., 2021):** Hierarchical vision transformer with shifted windows for linear complexity.
 - **Segment Anything (Kirillov et al., 2023):** Foundation model for segmentation using ViT with prompt-based interface.
@@ -826,12 +827,14 @@ print(f"ConvNeXt block: {x.shape} -> {y.shape}")   # (2, 96, 56, 56) -> (2, 96, 
 ## 8. Seminal Paper Reading List
 
 ### Required
+
 1. R. Girshick, J. Donahue, T. Darrell, and J. Malik. "Rich feature hierarchies for accurate object detection and semantic segmentation." *CVPR*, 2014.
 2. O. Ronneberger, P. Fischer, and T. Brox. "U-Net: Convolutional Networks for Biomedical Image Segmentation." *MICCAI*, 2015.
 3. A. Dosovitskiy et al. "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale." *ICLR*, 2021.
 4. Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell, and S. Xie. "A ConvNet for the 2020s." *CVPR*, 2022.
 
 ### Recommended
+
 5. S. Ren, K. He, R. Girshick, and J. Sun. "Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks." *NeurIPS*, 2015.
 6. T.-Y. Lin, P. Dollar, R. Girshick, K. He, B. Hariharan, and S. Belongie. "Feature Pyramid Networks for Object Detection." *CVPR*, 2017.
 7. J. Long, E. Shelhamer, and T. Darrell. "Fully Convolutional Networks for Semantic Segmentation." *CVPR*, 2015.

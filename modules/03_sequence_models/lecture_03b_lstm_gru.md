@@ -70,6 +70,7 @@ $$o_t = \sigma(W_o [h_{t-1}, x_t] + b_o)$$
 $$h_t = o_t \odot \tanh(c_t)$$
 
 Here:
+
 - $[h_{t-1}, x_t]$ denotes concatenation, yielding a vector in $\mathbb{R}^{n+d}$.
 - $W_f, W_i, W_c, W_o \in \mathbb{R}^{n \times (n+d)}$ are weight matrices.
 - $b_f, b_i, b_c, b_o \in \mathbb{R}^n$ are bias vectors.
@@ -192,6 +193,7 @@ $$\tilde{h}_t = \tanh(W_h [r_t \odot h_{t-1}, x_t] + b_h)$$
 $$h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t$$
 
 Here:
+
 - $W_r, W_z, W_h \in \mathbb{R}^{n \times (n+d)}$ are weight matrices.
 - $b_r, b_z, b_h \in \mathbb{R}^n$ are bias vectors.
 
@@ -207,12 +209,14 @@ $$h_t = \gamma_t \odot \phi(m_t)$$
 where $\alpha_t, \beta_t, \gamma_t$ are gate vectors derived from the inputs and states, and $\tilde{m}_t$ is a candidate state.
 
 **LSTM instantiation:**
+
 - $m_t = c_t$ (cell state), $h_t$ is the hidden state.
 - $\alpha_t = f_t$ (forget gate), $\beta_t = i_t$ (input gate): **independent** gates.
 - $\gamma_t = o_t$ (output gate), $\phi = \tanh$.
 - 4 parameter matrices, 3 independent gates.
 
 **GRU instantiation:**
+
 - $m_t = h_t$ (no separate cell state).
 - $\alpha_t = (1 - z_t)$, $\beta_t = z_t$: **coupled** gates ($\alpha + \beta = 1$).
 - $\gamma_t = I$ (identity, no output gate), $\phi = \text{id}$.
@@ -421,7 +425,6 @@ class LSTMCellScratch(nn.Module):
 
         return h_t, (h_t, c_t)
 
-
 class LSTMScratch(nn.Module):
     """
     Full LSTM that processes a sequence using LSTMCellScratch.
@@ -531,7 +534,6 @@ class GRUCellScratch(nn.Module):
         h_t = (1 - z_t) * h_prev + z_t * h_tilde          # (B, n)
 
         return h_t
-
 
 class GRUScratch(nn.Module):
     """
@@ -711,6 +713,7 @@ From Greff et al. (2017) and Chung et al. (2014):
 | Training speed (wall clock) | 1.0x | ~1.3x faster | GRU has fewer params |
 
 **Rules of thumb:**
+
 - Default to LSTM for large-scale tasks or when long-range memory is critical.
 - Use GRU when training speed or model size matters, or on smaller datasets.
 - Always try both if computational budget allows.

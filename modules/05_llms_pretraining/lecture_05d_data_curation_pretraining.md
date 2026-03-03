@@ -45,6 +45,7 @@ Training infrastructure at this scale requires distributing computation across t
 **Common Crawl.** The largest publicly available web scrape, containing ~250 billion pages since 2008. Each monthly snapshot is ~3–5 billion pages. Raw data includes HTML, which must be extracted (using tools like `trafilatura` or `resiliparse`) to plain text.
 
 **Characteristics of raw web data:**
+
 - **Low quality**: much of the text is boilerplate, navigation menus, ads, spam, SEO content, machine-translated garbage.
 - **Duplication**: 30–50% of documents are near-duplicates.
 - **PII**: names, emails, phone numbers, addresses appear frequently.
@@ -119,6 +120,7 @@ $$P(s) = 1 - (1 - s^r)^b$$
 This function approximates a step function: it is near 0 for $s \ll s^*$ and near 1 for $s \gg s^*$, where the threshold $s^* = (1/b)^{1/r}$.
 
 **Example.** With $k = 128$ MinHash values, $b = 16$ bands, $r = 8$ rows:
+
 - $s = 0.5$: $P = 1 - (1 - 0.5^8)^{16} = 0.063$ (6.3% chance of detection)
 - $s = 0.8$: $P = 1 - (1 - 0.8^8)^{16} = 0.998$ (99.8% chance of detection)
 - Threshold: $s^* = (1/16)^{1/8} \approx 0.72$
@@ -262,6 +264,7 @@ This keeps small gradients above the fp16 underflow threshold ($\sim 6 \times 10
 3. **Learning rate**: too high in combination with a difficult batch.
 
 **Mitigations:**
+
 - Skip batches where loss exceeds $k$ standard deviations of the running mean.
 - Clip gradient norms: $\|g\| \leq G_{\max}$ (typically $G_{\max} = 1.0$).
 - Use $z$-loss regularization: add $\alpha \cdot \log^2 Z$ to the loss, where $Z = \sum_v \exp(\ell_v)$ is the softmax partition function. This prevents logit magnitudes from growing.
@@ -282,6 +285,7 @@ Typical values: $\eta_{\max} = 3 \times 10^{-4}$, $\eta_{\min} = \eta_{\max} / 1
 $$\text{PPL} = \exp\left(-\frac{1}{T}\sum_{t=1}^T \log p_\theta(x_t \mid x_{<t})\right)$$
 
 **Downstream Probes.** Periodically evaluate on benchmark tasks without fine-tuning:
+
 - **HellaSwag**: commonsense reasoning (accuracy)
 - **ARC**: science questions (accuracy)
 - **MMLU**: multi-domain knowledge (accuracy)
@@ -423,7 +427,6 @@ import struct
 import collections
 from typing import List, Set, Tuple, Dict
 import numpy as np
-
 
 class MinHashDeduplicator:
     """Near-duplicate detection using MinHash + LSH."""
@@ -581,7 +584,6 @@ class MinHashDeduplicator:
         print(f"  Removed {removed} duplicates ({100*removed/N:.1f}%)")
         return keep_indices
 
-
 def demo_deduplication():
     """Demonstrate MinHash deduplication."""
     documents = [
@@ -609,7 +611,6 @@ def demo_deduplication():
 import torch
 import math
 import matplotlib.pyplot as plt
-
 
 class CosineWarmupScheduler(torch.optim.lr_scheduler._LRScheduler):
     """Learning rate schedule with linear warmup and cosine decay.
@@ -641,7 +642,6 @@ class CosineWarmupScheduler(torch.optim.lr_scheduler._LRScheduler):
             scale = self.min_lr_ratio + 0.5 * (1.0 - self.min_lr_ratio) * (1 + math.cos(math.pi * progress))
 
         return [base_lr * scale for base_lr in self.base_lrs]
-
 
 def plot_lr_schedule():
     """Visualize the cosine warmup learning rate schedule."""
@@ -676,7 +676,6 @@ def plot_lr_schedule():
 ```python
 import re
 from typing import Optional
-
 
 class QualityFilter:
     """Heuristic quality filters for web-crawled text, inspired by C4 and FineWeb."""
@@ -780,7 +779,6 @@ class QualityFilter:
             result = pattern.sub(replacement, result)
         return result
 
-
 def demo_quality_filter():
     """Demonstrate quality filtering."""
     qf = QualityFilter()
@@ -815,7 +813,6 @@ def demo_quality_filter():
     print(f"  Before: {text_with_pii}")
     print(f"  After:  {cleaned}")
 
-
 if __name__ == "__main__":
     demo_deduplication()
     print("\n" + "=" * 60 + "\n")
@@ -831,6 +828,7 @@ if __name__ == "__main__":
 ### 5.1 How Much Data Filtering Matters
 
 The FineWeb paper (Penedo et al., 2024) showed that:
+
 - Raw Common Crawl: $\text{PPL} \approx 35$ on validation set after 1T tokens of training.
 - After URL dedup: $\text{PPL} \approx 30$ (14% improvement).
 - After quality filtering: $\text{PPL} \approx 25$ (further 17% improvement).
@@ -841,6 +839,7 @@ This improvement from filtering is equivalent to approximately $4\times$ more co
 ### 5.2 Data Repetition
 
 When data is limited, some repetition is inevitable. Muennighoff et al. (2023) found:
+
 - 1–4 epochs: minimal degradation.
 - 4–16 epochs: gradual degradation, roughly equivalent to using $D_{\text{eff}} \approx D / \log(\text{epochs})$ unique tokens.
 - >16 epochs: severe memorization and overfitting.

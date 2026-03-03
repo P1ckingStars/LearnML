@@ -28,6 +28,7 @@ Your report must include all of the following sections. The suggested page alloc
 #### Abstract (0.25 pages)
 
 A concise summary (200-250 words) covering:
+
 - The problem you address and why it matters
 - Your approach at a high level
 - Key results (include specific numbers)

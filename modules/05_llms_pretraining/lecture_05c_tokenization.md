@@ -223,6 +223,7 @@ This creates a 1-to-1 mapping from bytes to visible characters, ensuring the voc
 $$\texttt{pat} = \texttt{r"'s|'t|'re|'ve|'m|'ll|'d| ?\p\{L\}+| ?\p\{N\}+| ?[^\s\p\{L\}\p\{N\}]+|\s+"}$$
 
 This regex splits text into:
+
 - Contractions (`'s`, `'t`, etc.)
 - Words (with optional leading space)
 - Numbers
@@ -266,6 +267,7 @@ $$\phi_\ell = \frac{\mathbb{E}_{s \sim \mathcal{D}_\ell}[|\tau(s)|]}{\mathbb{E}_
 | Amharic | 6.1 | 4.7x |
 
 **Implications:**
+
 1. **Cost**: Users of high-fertility languages pay more per API call (billed per token).
 2. **Context window**: The same text in Hindi uses 3.2x more of the context window than in English.
 3. **Performance**: Fewer tokens of content means the model has less "reasoning space" per concept.
@@ -356,7 +358,6 @@ Complexity: O(n * max_token_len) per string
 import re
 import collections
 from typing import Dict, List, Tuple, Optional
-
 
 class BPETokenizer:
     """Byte Pair Encoding tokenizer, implemented from scratch.
@@ -566,7 +567,6 @@ class BPETokenizer:
         tokens = self.encode(text)
         return len(tokens) / max(len(words), 1)
 
-
 # ─── Demo ────────────────────────────────────────────────────────────────
 
 def demo_bpe():
@@ -599,7 +599,6 @@ def demo_bpe():
     assert decoded == test_text, f"Roundtrip failed: '{decoded}' != '{test_text}'"
     print("Roundtrip encoding/decoding: PASSED")
 
-
 if __name__ == "__main__":
     demo_bpe()
 ```
@@ -610,7 +609,6 @@ if __name__ == "__main__":
 import math
 import numpy as np
 from typing import Dict, List, Tuple
-
 
 class UnigramTokenizer:
     """Simplified Unigram (SentencePiece-style) tokenizer.
@@ -803,7 +801,6 @@ class UnigramTokenizer:
         """Tokenize text using Viterbi decoding."""
         return self._viterbi_tokenize(text, self.token_probs)
 
-
 def _logsumexp(values: List[float]) -> float:
     """Numerically stable log-sum-exp."""
     if not values:
@@ -846,7 +843,6 @@ def compare_tokenizers():
         print(f"  BPE ({len(bpe_tokens)} tokens): {bpe_strs}")
         print(f"  Fertility: {len(bpe_tokens) / len(sent.split()):.2f}")
 
-
 def fertility_analysis():
     """Analyze tokenizer fertility across different types of text."""
     import json
@@ -877,7 +873,6 @@ def fertility_analysis():
         effective = int(context_window / data["fertility"])
         print(f"{lang:<12} {effective:>25,}")
 
-
 if __name__ == "__main__":
     demo_bpe()
     print("\n" + "=" * 60 + "\n")
@@ -893,6 +888,7 @@ if __name__ == "__main__":
 ### 5.1 Vocabulary Size Sweet Spot
 
 Empirical studies (Gowda & May, 2020) show that:
+
 - Too small ($|\mathcal{V}| < 8$K): sequences are too long, attention cost dominates.
 - Too large ($|\mathcal{V}| > 128$K): embedding matrix is large, rare tokens have poor embeddings.
 - Sweet spot: $|\mathcal{V}| \in [32\text{K}, 64\text{K}]$ for English-centric models; $|\mathcal{V}| \in [64\text{K}, 128\text{K}]$ for multilingual models.

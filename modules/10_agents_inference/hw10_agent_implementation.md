@@ -25,6 +25,7 @@ where $\bar{o}$ is the average observation length and $b_t^*$ is the true belief
 ### Problem A.2: Chain-of-Thought and Computational Complexity (10%)
 
 **(a)** (4%) Prove that a transformer with $L$ layers, $H$ attention heads, head dimension $d_h$, and log-precision weights is contained in $\mathsf{TC}^0$. Your proof should explicitly:
+
 1. Show that attention (matrix multiply, softmax, weighted sum) can be computed by $\mathsf{TC}^0$ circuits.
 2. Show that the FFN layers (matrix multiply, ReLU/GELU) can be computed by $\mathsf{TC}^0$ circuits.
 3. Argue that the composition of $L$ such layers remains in $\mathsf{TC}^0$.
@@ -32,6 +33,7 @@ where $\bar{o}$ is the average observation length and $b_t^*$ is the true belief
 **(b)** (3%) Now consider a transformer generating $T$ chain-of-thought tokens autoregressively. Prove that the computational class of this system is at least as powerful as $\mathsf{DTIME}(T \cdot \text{poly}(n))$ where $n$ is the input length. Specifically, show that such a system can simulate a Turing machine running for $T$ steps on input of length $n$.
 
 **(c)** (3%) Graph connectivity is in $\mathsf{L}$ (logspace) but is believed to be outside $\mathsf{TC}^0$. Construct an explicit CoT trace that solves $s$-$t$ connectivity on a graph with $n$ nodes and $m$ edges. Your trace should:
+
 1. Have length $O(n^2)$ tokens.
 2. Be verifiable in $O(n + m)$ time (i.e., each step can be checked locally).
 3. Handle both connected and disconnected cases.
@@ -83,6 +85,7 @@ $$\text{Var}(V) = Kp(1-p)(1 + (K-1)\rho)$$
 and use Chebyshev's inequality to bound the error probability. For what value of $\rho$ does self-consistency become no better than a single sample?
 
 **(c)** (3%) Design a **diversified sampling** strategy that provably reduces $\rho$ below standard temperature sampling. Your strategy should:
+
 1. Sample with different prompts/templates
 2. Use different few-shot exemplars per chain
 3. Formally model why this reduces correlation
@@ -120,22 +123,26 @@ where $G_{\text{no\_context}}$ is the generator's accuracy without relevant cont
 Build a complete ReAct agent from scratch.
 
 **(a)** (5%) Implement the core agent loop with the following tools:
+
 - **Calculator**: Evaluate mathematical expressions (use Python's `ast` module for safe evaluation).
 - **Web search**: Use a real search API (e.g., DuckDuckGo via the `duckduckgo-search` library, or mock it).
 - **Code executor**: Safely execute Python code in a sandboxed environment (use `subprocess` with timeouts).
 
 Your implementation should:
+
 - Parse the LLM's structured output (thought/action/action_input format).
 - Handle tool execution errors gracefully.
 - Maintain conversation history within the context window.
 - Stop after finding a final answer or reaching a maximum number of steps.
 
 **(b)** (5%) Implement **structured output generation** with schema validation:
+
 - Define JSON schemas for each tool's input.
 - Implement constrained decoding that ensures the output conforms to the schema (you may use guided generation libraries like `outlines` or implement a simple version yourself).
 - Add retry logic when the model produces malformed output.
 
 **(c)** (5%) Evaluate your agent:
+
 - Create a test set of 20 questions that require different tool combinations:
   - 5 questions requiring only calculation
   - 5 questions requiring only search
@@ -150,11 +157,13 @@ Your implementation should:
 Build an end-to-end RAG pipeline.
 
 **(a)** (3%) Implement document processing:
+
 - Load a corpus of at least 100 documents (use Wikipedia articles via the `wikipedia` library, or a subset of SQuAD passages).
 - Implement three chunking strategies: (i) fixed-size, (ii) sentence-boundary-aware, (iii) recursive with semantic boundaries.
 - Compare chunk size distributions and overlap statistics for each strategy.
 
 **(b)** (4%) Implement the retrieval pipeline:
+
 - Embed all chunks using a pretrained embedding model (e.g., `sentence-transformers/all-MiniLM-L6-v2`).
 - Build a FAISS index (try both Flat and IVF).
 - Implement BM25 as a baseline retriever.
@@ -162,6 +171,7 @@ Build an end-to-end RAG pipeline.
 - Report Recall@{1, 5, 10, 20} for each retriever on a held-out query set.
 
 **(c)** (3%) Implement the generation pipeline:
+
 - Format retrieved chunks as context for the LLM.
 - Implement basic answer extraction.
 - Compare RAG answers against a no-retrieval baseline.
@@ -174,17 +184,20 @@ Build an end-to-end RAG pipeline.
 Implement best-of-N sampling with reward model scoring for math problem solving.
 
 **(a)** (3%) Implement the best-of-N framework:
+
 - Generate $N$ CoT solutions for each problem at temperature $T = 0.7$.
 - Implement three scoring methods: (i) random selection (baseline), (ii) majority vote on final answer, (iii) reward model scoring.
 - For the reward model, fine-tune a small classifier (e.g., `distilbert-base`) on (question, solution, correct/incorrect) triples, or use a pretrained reward model.
 
 **(b)** (4%) Evaluate scaling behavior:
+
 - Test with $N \in \{1, 2, 4, 8, 16, 32, 64\}$ on 100 GSM8K problems (or similar math dataset).
 - Plot accuracy vs. $N$ for each scoring method.
 - Plot accuracy vs. total compute (tokens generated) to create compute-normalized curves.
 - Fit the scaling law $\text{Acc}(N) = a - b \cdot N^{-\alpha}$ and report the fitted parameters.
 
 **(c)** (3%) Analyze reward hacking:
+
 - Identify cases where the reward model selects an incorrect solution over a correct one.
 - Compute the "hacking rate": how often does the RM-selected answer differ from the majority vote answer, and which is correct more often?
 - Propose and implement one mitigation strategy (e.g., combining RM score with majority vote).
@@ -196,18 +209,21 @@ Implement best-of-N sampling with reward model scoring for math problem solving.
 Implement and evaluate tree search methods for mathematical reasoning.
 
 **(a)** (5%) Implement Tree of Thought:
+
 - Implement the propose function: given a partial solution, generate $b$ candidate next steps.
 - Implement the evaluate function: score each partial solution's promise using the LLM.
 - Implement beam search over the thought tree with beam width $w$.
 - Test on 50 math problems from GSM8K or MATH.
 
 **(b)** (5%) Implement MCTS:
+
 - Implement the full MCTS loop: selection (UCB1 and PUCT), expansion, simulation (rollout), backpropagation.
 - Use a simple reward: 1 if the final answer is correct, 0 otherwise.
 - Implement an optional PRM: train a step-level classifier on rollout data and use it to guide selection.
 - Compare MCTS with UCB1 vs. PUCT vs. random selection.
 
 **(c)** (5%) Comprehensive evaluation:
+
 - Compare the following methods on the same 50 problems:
   1. Greedy decoding (baseline)
   2. Self-consistency ($K = 10$)

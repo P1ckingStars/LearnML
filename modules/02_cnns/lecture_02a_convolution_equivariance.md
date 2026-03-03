@@ -117,6 +117,7 @@ $$\text{Parameters} = C_{\text{out}} \times (C_{\text{in}} \times K^2 + 1)$$
 A fully connected layer mapping the same spatial input $C_{\text{in}} \times H \times W$ to output $C_{\text{out}} \times H' \times W'$ would require $(C_{\text{in}} \cdot H \cdot W) \times (C_{\text{out}} \cdot H' \cdot W')$ parameters.
 
 **Example.** For $C_{\text{in}} = 64$, $C_{\text{out}} = 128$, $K = 3$, $H = W = 56$:
+
 - Conv parameters: $128 \times (64 \times 9 + 1) = 73,856$
 - FC parameters: $(64 \times 56 \times 56) \times (128 \times 56 \times 56) \approx 8.1 \times 10^{10}$
 
@@ -200,6 +201,7 @@ $$\left\lfloor \frac{H_{\text{in}} + 2p - d(k-1) - 1}{s} \right\rfloor + 1$$
 $\square$
 
 **Common special cases:**
+
 - "Same" padding ($s = 1$, $d = 1$): $p = \lfloor k/2 \rfloor$ gives $H_{\text{out}} = H_{\text{in}}$.
 - "Valid" padding: $p = 0$, so $H_{\text{out}} = H_{\text{in}} - k + 1$ (for $s=1$, $d=1$).
 
@@ -318,7 +320,6 @@ def manual_conv2d(x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor = No
         out = out + bias.view(1, C_out, 1, 1)                                  # broadcast bias
 
     return out
-
 
 # --- Verification against PyTorch ---
 torch.manual_seed(42)
@@ -496,15 +497,18 @@ print(f"Dilated 3x(3x3) receptive field: {compute_receptive_field(dilated_layers
 ## 7. Connections and Extensions
 
 ### 7.1 Links to Prior Modules
+
 - **Module 01 (Foundations):** Convolution layers are composed with the nonlinearities and optimization techniques from Module 01. The gradient computations for convolution follow the same chain rule principles.
 
 ### 7.2 Links to Future Modules
+
 - **Module 02b (Architectures):** The convolutional building block is assembled into deep architectures (ResNet, etc.).
 - **Module 02c (Normalization):** Batch/layer normalization is inserted between conv layers.
 - **Module 02d (Detection/Segmentation/ViT):** Convolutional features feed into task-specific heads. ViT replaces spatial convolution with self-attention, trading the translation equivariance prior for more flexibility.
 - **Module 05 (Sequence Models):** 1D convolutions are used in temporal CNNs (TCN, WaveNet).
 
 ### 7.3 Extensions
+
 - **Group equivariant CNNs (Cohen & Welling 2016):** Extend equivariance from translations to rotations, reflections via group convolutions.
 - **Steerable CNNs (Cohen & Welling 2017):** Continuous rotation equivariance using steerable filters.
 - **Deformable convolutions (Dai et al. 2017):** Learn spatial offsets for each kernel position, breaking the rigid grid structure.
@@ -514,10 +518,12 @@ print(f"Dilated 3x(3x3) receptive field: {compute_receptive_field(dilated_layers
 ## 8. Seminal Paper Reading List
 
 ### Required
+
 1. Y. LeCun, B. Boser, J. S. Denker, D. Henderson, R. E. Howard, W. Hubbard, and L. D. Jackel. "Backpropagation Applied to Handwritten Zip Code Recognition." *Neural Computation*, 1(4):541-551, 1989.
 2. T. S. Cohen and M. Welling. "Group Equivariant Convolutional Networks." *ICML*, 2016.
 
 ### Recommended
+
 3. K. Fukushima. "Neocognitron: A Self-organizing Neural Network Model for a Mechanism of Pattern Recognition Unaffected by Shift in Position." *Biological Cybernetics*, 36(4):193-202, 1980.
 4. V. Dumoulin and F. Visin. "A Guide to Convolution Arithmetic for Deep Learning." *arXiv:1603.07285*, 2016.
 5. J. Dai, H. Qi, Y. Xiong, Y. Li, G. Zhang, H. Hu, and Y. Wei. "Deformable Convolutional Networks." *ICCV*, 2017.

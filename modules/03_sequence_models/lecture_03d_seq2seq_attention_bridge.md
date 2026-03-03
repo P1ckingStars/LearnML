@@ -170,6 +170,7 @@ Attention computes a **soft alignment**: instead of a single source position, it
 $$P(y_t \mid y_{<t}, \mathbf{x}) = \sum_{j=1}^{T} P(a_t = j \mid y_{<t}, \mathbf{x}) \cdot P(y_t \mid y_{<t}, x_j, \mathbf{x})$$
 
 Attention approximates this by:
+
 - $P(a_t = j) \approx \alpha_{t,j}$ (the attention weight),
 - $P(y_t \mid \ldots) \approx$ decoder output conditioned on $c_t = \sum_j \alpha_{t,j} h_j$.
 
@@ -457,7 +458,6 @@ class BahdanauAttention(nn.Module):
 
         return context, attn_weights
 
-
 class LuongDotAttention(nn.Module):
     """
     Dot-product (Luong) attention.
@@ -660,7 +660,6 @@ class Seq2Seq(nn.Module):
 
         return logits, attn
 
-
 # === Instantiation example ===
 def build_model(
     src_vocab_size: int = 10000,
@@ -729,7 +728,6 @@ def plot_attention(
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
     plt.show()
 
-
 # Usage example:
 # attn = model_output['attn_weights'][0].cpu().numpy()  # First example in batch
 # plot_attention(attn, src_tokens, tgt_tokens)
@@ -756,7 +754,6 @@ class BeamHypothesis:
     def normalized_score(self, alpha: float = 0.7) -> float:
         """Length-normalized log probability."""
         return self.log_prob / (self.length ** alpha)
-
 
 @torch.no_grad()
 def beam_search(

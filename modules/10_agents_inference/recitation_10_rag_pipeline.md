@@ -84,7 +84,6 @@ def load_corpus(num_documents: int = 200) -> list[dict]:
 
     return doc_list
 
-
 # --- Alternative: Load from local files ---
 
 def load_from_directory(directory: str) -> list[dict]:
@@ -125,7 +124,6 @@ class Chunk:
     start_char: int
     end_char: int
     metadata: dict = field(default_factory=dict)
-
 
 # ============================================================
 # Strategy 1: Fixed-Size Chunking
@@ -174,7 +172,6 @@ def chunk_fixed_size(
             break
 
     return chunks
-
 
 # ============================================================
 # Strategy 2: Sentence-Boundary-Aware Chunking
@@ -249,7 +246,6 @@ def chunk_sentence_aware(
         ))
 
     return chunks
-
 
 # ============================================================
 # Strategy 3: Recursive Chunking with Semantic Boundaries
@@ -337,7 +333,6 @@ def chunk_recursive(
 
     return chunks
 
-
 # ============================================================
 # Compare Chunking Strategies
 # ============================================================
@@ -391,7 +386,6 @@ We use `sentence-transformers` for embedding. This section covers model selectio
 
 ```python
 from sentence_transformers import SentenceTransformer
-
 
 class EmbeddingModel:
     """
@@ -487,7 +481,6 @@ FAISS provides efficient approximate nearest neighbor search. We build and compa
 
 ```python
 import faiss
-
 
 class FAISSIndex:
     """
@@ -598,7 +591,6 @@ class FAISSIndex:
         """Number of vectors in the index."""
         return self.index.ntotal
 
-
 def compare_index_types(
     embeddings: np.ndarray,
     chunks: list[Chunk],
@@ -661,7 +653,6 @@ We implement BM25 as a sparse retrieval baseline for comparison with dense retri
 ```python
 from rank_bm25 import BM25Okapi
 import string
-
 
 class BM25Retriever:
     """
@@ -828,7 +819,6 @@ A cross-encoder processes the query and document jointly, enabling richer intera
 ```python
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-
 class CrossEncoderReranker:
     """
     Cross-encoder re-ranker using a pretrained model.
@@ -973,7 +963,6 @@ class RAGGenerator:
             "sources": [(c.doc_title, c.chunk_id) for c in selected],
             "prompt_length": len(prompt.split()),
         }
-
 
 class NoRetrievalBaseline:
     """Baseline: answer questions without any retrieval."""
@@ -1506,7 +1495,6 @@ def main():
     # evaluator = RAGEvaluator(pipeline, eval_data)
     # results = evaluator.full_evaluation()
 
-
 if __name__ == "__main__":
     main()
 ```
@@ -1518,6 +1506,7 @@ if __name__ == "__main__":
 ### Exercise 1: Chunking Comparison (30 min)
 
 Run `compare_chunking_strategies` on your corpus and answer:
+
 1. Which strategy produces the most uniform chunk sizes?
 2. Which strategy produces the most chunks? Why?
 3. Pick 5 example chunks from each strategy and qualitatively assess which preserves semantic coherence best.
