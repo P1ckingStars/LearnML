@@ -204,7 +204,160 @@ In 2020, the seL4 Foundation was established under the Linux Foundation to suppo
 
 ---
 
-## 5. Comparison with Other Verified Systems
+## 5. A Taste of the Abstract Specification
+
+This section previews what the abstract specification actually looks like in Isabelle, giving you concrete code to anchor the high-level descriptions above.
+
+### 5.1 The Kernel State Record
+
+The abstract kernel state is defined in `Structures_A.thy`. A simplified view of the record (omitting some fields for clarity):
+
+```isabelle
+record abstract_state =
+  kheap            :: "obj_ref \<Rightarrow> kernel_object option"
+                        (* the kernel heap: a partial map from addresses to objects *)
+  cdt              :: "cslot_ptr \<Rightarrow> cslot_ptr option"
+                        (* capability derivation tree: parent pointers *)
+  is_original_cap  :: "cslot_ptr \<Rightarrow> bool"
+                        (* tracks which caps are originals vs. derived copies *)
+  cur_thread       :: obj_ref
+                        (* the currently running thread *)
+  idle_thread      :: obj_ref
+                        (* the designated idle thread *)
+  scheduler_action :: scheduler_action
+                        (* what the scheduler should do next:
+                           ResumeCurrentThread | ChooseNewThread | SwitchToThread t *)
+  ready_queues     :: "domain \<Rightarrow> priority \<Rightarrow> obj_ref list"
+                        (* per-domain, per-priority run queues *)
+  machine_state    :: machine_state
+                        (* abstraction of the hardware state *)
+  interrupt_irq_node :: "irq \<Rightarrow> obj_ref"
+                        (* maps IRQ numbers to handler capability slots *)
+```
+
+Key observations:
+
+- **`kheap`** is a *partial function*: `obj_ref \<Rightarrow> kernel_object option`. Every kernel object (TCBs, endpoints, CNodes, page tables, etc.) lives in this single map, keyed by its address. This is the most abstract possible representation --- no memory layout, no alignment, no pointer arithmetic.
+- **`scheduler_action`** is a small datatype with three constructors. This tells the scheduler what to do at the next scheduling point: resume the current thread, pick a new one from the ready queues, or switch to a specific thread.
+- **`ready_queues`** is indexed by both *domain* (for domain scheduling / temporal isolation) and *priority*. Each queue is a simple list of thread references.
+- **`cdt`** represents the capability derivation tree as a parent-pointer structure. Each capability slot optionally points to its parent. This is used during `revoke` to find and delete all children of a capability.
+
+### 5.2 The `handle_event` Function
+
+The top-level entry point for kernel execution is `handle_event` in `Syscall_A.thy`. This is the function that the refinement proof ultimately targets: everything the kernel does is a response to an event.
+
+```isabelle
+definition handle_event :: "event \<Rightarrow> (unit, 'z::state_ext) p_monad"
+where
+  "handle_event ev \<equiv> case ev of
+     SyscallEvent call \<Rightarrow> handle_syscall call
+   | UnknownSyscall n \<Rightarrow> do
+       thread \<leftarrow> gets cur_thread;
+       handle_fault thread (UnknownSyscallException n);
+       return ()
+     od
+   | UserLevelFault w1 w2 \<Rightarrow> do
+       thread \<leftarrow> gets cur_thread;
+       handle_fault thread (UserException w1 (w2 && mask 29));
+       return ()
+     od
+   | Interrupt \<Rightarrow> do
+       active \<leftarrow> do_machine_op getActiveIRQ;
+       case active of
+         Some irq \<Rightarrow> handle_interrupt irq
+       | None \<Rightarrow> return ()
+     od
+   | VMFaultEvent data \<Rightarrow> do
+       thread \<leftarrow> gets cur_thread;
+       handle_vm_fault thread data;
+       return ()
+     od"
+```
+
+Walk through the dispatch:
+
+1. **`SyscallEvent call`**: A user thread invoked a system call. The `call` is a constructor of the `syscall` datatype (`SysSend`, `SysRecv`, `SysCall`, `SysReply`, `SysReplyRecv`, `SysYield`, `SysNBSend`, `SysNBRecv`). This delegates to `handle_syscall`.
+2. **`UnknownSyscall n`**: The user invoked a system call number the kernel does not recognize. This is treated as a fault on the current thread.
+3. **`UserLevelFault`**: A user-level exception (e.g., illegal instruction). Again treated as a fault.
+4. **`Interrupt`**: A hardware interrupt occurred. The kernel queries the hardware for the active IRQ and dispatches to `handle_interrupt`.
+5. **`VMFaultEvent`**: A virtual memory fault (page fault). Dispatched to the VM fault handler.
+
+### 5.3 System Call Dispatch
+
+`handle_syscall` further dispatches based on the system call type:
+
+```isabelle
+definition handle_syscall :: "syscall \<Rightarrow> (unit, 'z::state_ext) p_monad"
+where
+  "handle_syscall call \<equiv> case call of
+     SysSend \<Rightarrow> handle_send True
+   | SysNBSend \<Rightarrow> handle_send False
+   | SysCall \<Rightarrow> handle_call
+   | SysRecv \<Rightarrow> handle_recv True
+   | SysReply \<Rightarrow> handle_reply
+   | SysReplyRecv \<Rightarrow> do handle_reply; handle_recv True od
+   | SysYield \<Rightarrow> handle_yield
+   | SysNBRecv \<Rightarrow> handle_recv False"
+```
+
+For example, `handle_send blocking` proceeds as follows:
+
+1. Look up the current thread's message info register to determine the operation.
+2. Decode the system call: look up the capability being invoked, check permissions, parse arguments.
+3. Perform the operation: this eventually calls `send_ipc` (for endpoint operations), `send_signal` (for notifications), or other object-specific operations.
+
+The `handle_send` function illustrates the error-handling pattern used throughout the abstract specification:
+
+```isabelle
+definition handle_send :: "bool \<Rightarrow> (unit, 'z::state_ext) p_monad"
+where
+  "handle_send blocking \<equiv> do
+     thread \<leftarrow> gets cur_thread;
+     reply_cap_slot \<leftarrow> get_cap (thread, tcb_cnode_index 2);
+     ep_cap \<leftarrow> liftE $ lookup_cap thread;
+     case ep_cap of
+       EndpointCap ref badge rights \<Rightarrow>
+         if AllowSend \<in> rights
+         then liftE $ send_ipc blocking False badge True thread ref
+         else throwError (FailedLookup ...)
+     | _ \<Rightarrow> throwError (InvalidCapability 0)
+   od <catch> (\<lambda>fault. handle_fault thread fault)"
+```
+
+The `<catch>` combinator at the end catches any exception that occurs during capability lookup or invocation and redirects it to the fault handler.
+
+### 5.4 Invariants at the Abstract Layer
+
+The abstract refinement proof requires that certain *invariants* hold on the abstract state. These are collected under the name `einvs` ("extended invariants"):
+
+```isabelle
+definition einvs :: "abstract_state \<Rightarrow> bool"
+where
+  "einvs s \<equiv>
+     valid_objs s \<and>            (* all objects in the heap are well-formed *)
+     pspace_aligned s \<and>        (* object addresses are properly aligned *)
+     valid_mdb s \<and>             (* the capability derivation tree is well-formed *)
+     valid_ioc s \<and>             (* is_original_cap is consistent with the mdb *)
+     valid_idle s \<and>            (* the idle thread is in the correct state *)
+     only_idle s \<and>             (* only the idle thread is in the Idle thread state *)
+     if_unsafe_then_cap s \<and>    (* every non-idle thread has a fault handler cap *)
+     valid_reply_caps s \<and>      (* reply caps are consistent *)
+     valid_global_refs s \<and>     (* global objects are not deleted *)
+     valid_arch_state s \<and>      (* arch-specific state is well-formed *)
+     valid_irq_node s \<and>        (* IRQ node entries are valid *)
+     valid_irq_handlers s \<and>   (* IRQ handler caps are consistent *)
+     valid_irq_states s \<and>     (* IRQ states are consistent with masks *)
+     cur_tcb s \<and>              (* cur_thread points to a valid TCB *)
+     valid_list s              (* ready queue lists are well-formed *)"
+```
+
+These invariants appear as preconditions in almost every refinement lemma. For example, when proving that `send_ipc` at the abstract level is refined by `sendIPC` at the design level, the proof assumes `einvs` holds and must show that `einvs` is preserved. The invariant preservation proofs live in `proof/invariant-abstract/`.
+
+Understanding `einvs` is crucial for reading the proofs: when you see a goal like `einvs s` in a proof obligation, it means the proof system needs to know that the kernel state is well-formed at that point.
+
+---
+
+## 6. Comparison with Other Verified Systems
 
 ### 5.1 CompCert (Verified C Compiler)
 
@@ -239,7 +392,7 @@ These projects use Dafny and Boogie for verification, leveraging SMT solvers for
 
 ---
 
-## 6. Exercises
+## 7. Exercises
 
 ### Theory
 

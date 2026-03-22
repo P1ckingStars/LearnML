@@ -159,21 +159,78 @@ lemma sum_to_n_correct:
   done
 ```
 
-Alternatively, using annotated while loops with the `acom` datatype and the full VCG:
+Alternatively, using the VCG with an annotated while loop. In HOL-IMP, the VCG expects loop invariants to be supplied inline using annotated commands (`acom`). The key is to wrap the while loop with the `WHILE _ INV _ DO` syntax (provided by `HOL-IMP.VCG`):
 
 ```isabelle
 lemma sum_to_n_correct_vcg:
   "\<turnstile> {\<lambda>st. st n \<ge> 0}
       s ::= N 0;;
       i ::= N 1;;
-      WHILE Not (Less (V n) (V i)) DO (
+      WHILE Not (Less (V n) (V i))
+        INV {\<lambda>st. 2 * st s = (st i - 1) * st i
+                  \<and> 1 \<le> st i \<and> st i \<le> st n + 1}
+      DO (
         s ::= Plus (V s) (V i);;
         i ::= Plus (V i) (N 1)
       )
      {\<lambda>st. 2 * st s = st n * (st n + 1)}"
-  -- supply invariant and use vcg
-  sorry  -- full proof requires annotation mechanism
+  by vcg_simp
 ```
+
+Let us also see what happens if we break this into steps to understand the VCG's output:
+
+```isabelle
+lemma sum_to_n_correct_vcg_detailed:
+  "\<turnstile> {\<lambda>st. st n \<ge> 0}
+      s ::= N 0;;
+      i ::= N 1;;
+      WHILE Not (Less (V n) (V i))
+        INV {\<lambda>st. 2 * st s = (st i - 1) * st i
+                  \<and> 1 \<le> st i \<and> st i \<le> st n + 1}
+      DO (
+        s ::= Plus (V s) (V i);;
+        i ::= Plus (V i) (N 1)
+      )
+     {\<lambda>st. 2 * st s = st n * (st n + 1)}"
+  apply vcg
+```
+
+After `apply vcg`, three subgoals appear:
+
+**Subgoal 1** (initialization --- the precondition implies the invariant after `s := 0; i := 1`):
+
+```
+\<And>st. st n \<ge> 0
+  \<Longrightarrow> 2 * 0 = (1 - 1) * 1 \<and> 1 \<le> 1 \<and> 1 \<le> st n + 1
+```
+
+**Subgoal 2** (preservation --- the invariant and guard imply the invariant after one iteration):
+
+```
+\<And>st. \<lbrakk> 2 * st s = (st i - 1) * st i;
+         1 \<le> st i; st i \<le> st n + 1;
+         \<not> st n < st i \<rbrakk>
+  \<Longrightarrow> 2 * (st s + st i) = ((st i + 1) - 1) * (st i + 1)
+      \<and> 1 \<le> st i + 1 \<and> st i + 1 \<le> st n + 1
+```
+
+**Subgoal 3** (postcondition --- the invariant and negated guard imply the postcondition):
+
+```
+\<And>st. \<lbrakk> 2 * st s = (st i - 1) * st i;
+         1 \<le> st i; st i \<le> st n + 1;
+         st n < st i \<rbrakk>
+  \<Longrightarrow> 2 * st s = st n * (st n + 1)
+```
+
+All three are discharged by `auto` (which handles the linear and polynomial arithmetic):
+
+```isabelle
+    apply auto
+  done
+```
+
+The complete proof is just `by vcg_simp` (which combines `vcg` and `simp`), but the step-by-step version above is instructive for understanding what the VCG produces.
 
 ### 4.5 Discussion
 
@@ -216,15 +273,156 @@ $$I \equiv \gcd(x, y) = \gcd(a, b) \wedge x > 0 \wedge y > 0$$
 2. *Preservation*: If $x \ne y$ and $x < y$, then $\gcd(x, y - x) = \gcd(x, y)$ (standard property of GCD). Similarly if $x \ge y$. Also $y - x > 0$ since $y > x > 0$.
 3. *Postcondition*: When $x = y$: $\gcd(x, y) = x = \gcd(a, b)$. Good.
 
-### 5.4 Discussion
+### 5.4 Supporting Lemmas
 
-The GCD invariant requires a mathematical property of GCD: $\gcd(a, b) = \gcd(a, b - a)$ for $b > a$. This must be proved as a separate lemma:
+The GCD invariant requires mathematical properties of GCD. We first establish the key lemma: $\gcd(a, b) = \gcd(a, b - a)$ when $b > a > 0$. In Isabelle, the `gcd` function is defined on natural numbers, so we work with `nat`.
+
+Since IMP operates on integers, we need a version of the GCD program that works with `nat`. In practice, the precondition `a > 0 \<and> b > 0` ensures the values stay positive, so we can use the `nat` version of `gcd`. Isabelle's library already provides the key fact we need:
 
 ```isabelle
-lemma gcd_subtract: "b > a \<Longrightarrow> a > 0 \<Longrightarrow> gcd a (b - a) = gcd a b"
+lemma gcd_diff1: "b > a \<Longrightarrow> a > 0 \<Longrightarrow> gcd a (b - a) = gcd a (b::nat)"
+  by (metis gcd.commute gcd_diff2 less_imp_le)
 ```
 
-This illustrates the general pattern: the VCG reduces program verification to mathematical obligations, but those obligations may themselves require non-trivial proofs.
+Here `gcd_diff2` from the Isabelle library states `a \<le> b \<Longrightarrow> gcd (b - a) a = gcd b a`. We also need the symmetric case:
+
+```isabelle
+lemma gcd_diff_sym: "a > b \<Longrightarrow> b > 0 \<Longrightarrow> gcd (a - b) b = gcd a (b::nat)"
+  by (metis gcd_diff2 less_imp_le)
+```
+
+And a fact about GCD when the two arguments are equal:
+
+```isabelle
+lemma gcd_self: "gcd a a = (a::nat)"
+  by simp
+```
+
+### 5.5 The Complete GCD Proof (Using Hoare Rules)
+
+We define the program using `nat`-valued variables (extending IMP with subtraction as noted above). The while guard encodes `x \<noteq> y`:
+
+```isabelle
+definition gcd_prog :: com where
+  "gcd_prog =
+    WHILE Not (And (Not (Less (V x) (V y)))
+                   (Not (Less (V y) (V x)))) DO (
+      IF Less (V x) (V y) THEN
+        y ::= Minus (V y) (V x)
+      ELSE
+        x ::= Minus (V x) (V y)
+    )"
+```
+
+The proof proceeds by supplying the invariant $\gcd(x, y) = \gcd(a, b) \wedge x > 0 \wedge y > 0$:
+
+```isabelle
+lemma gcd_prog_correct:
+  "\<turnstile> {\<lambda>st. st x = a \<and> st y = b \<and> a > 0 \<and> b > 0}
+      gcd_prog
+     {\<lambda>st. st x = gcd a b}"
+  unfolding gcd_prog_def
+  apply (rule While'[where P="\<lambda>st. gcd (st x) (st y) = gcd a b
+                                     \<and> st x > 0 \<and> st y > 0"])
+  -- Subgoal 1: Invariant is preserved by the loop body
+  -- Subgoal 2: Invariant + negated guard implies postcondition
+  -- Subgoal 3: Precondition implies invariant
+  defer
+  -- Handle the postcondition subgoal first (easiest):
+  -- When the guard is false, x = y, so gcd(x,y) = x = gcd(a,b).
+    apply clarsimp
+    apply (metis gcd_self le_antisym not_less)
+  -- Handle the invariant preservation:
+  -- The body is IF x < y THEN y := y - x ELSE x := x - y.
+   apply (rule If)
+    -- Case: x < y, so we do y := y - x
+    apply (rule Assign')
+    apply clarsimp
+    apply (metis gcd_diff1)
+   -- Case: x >= y, so we do x := x - y
+   apply (rule Assign')
+   apply clarsimp
+   apply (smt (verit) gcd_diff_sym linorder_neqE_nat)
+  -- Handle initialization: precondition implies invariant
+  apply simp
+  done
+```
+
+### 5.6 The GCD Proof Using VCG
+
+The VCG version is more concise. We supply the invariant inline:
+
+```isabelle
+lemma gcd_prog_correct_vcg:
+  "\<turnstile> {\<lambda>st. st x = a \<and> st y = b \<and> a > 0 \<and> b > 0}
+      WHILE Not (And (Not (Less (V x) (V y)))
+                     (Not (Less (V y) (V x))))
+        INV {\<lambda>st. gcd (st x) (st y) = gcd a b
+                  \<and> st x > 0 \<and> st y > 0}
+      DO (
+        IF Less (V x) (V y) THEN
+          y ::= Minus (V y) (V x)
+        ELSE
+          x ::= Minus (V x) (V y)
+      )
+     {\<lambda>st. st x = gcd a b}"
+  apply vcg
+```
+
+The VCG generates three subgoals. Unlike the summation example, these are *not* simple arithmetic --- they require reasoning about GCD:
+
+**Subgoal 1** (preservation, case `x < y`):
+
+```
+\<And>st. \<lbrakk> gcd (st x) (st y) = gcd a b;
+         st x > 0; st y > 0; st x < st y \<rbrakk>
+  \<Longrightarrow> gcd (st x) (st y - st x) = gcd a b
+      \<and> st x > 0 \<and> st y - st x > 0
+```
+
+**Subgoal 2** (preservation, case `x >= y` and `x \<noteq> y`):
+
+```
+\<And>st. \<lbrakk> gcd (st x) (st y) = gcd a b;
+         st x > 0; st y > 0; \<not> st x < st y; st y < st x \<rbrakk>
+  \<Longrightarrow> gcd (st x - st y) (st y) = gcd a b
+      \<and> st x - st y > 0 \<and> st y > 0
+```
+
+**Subgoal 3** (postcondition):
+
+```
+\<And>st. \<lbrakk> gcd (st x) (st y) = gcd a b;
+         st x > 0; st y > 0;
+         \<not> st x < st y; \<not> st y < st x \<rbrakk>
+  \<Longrightarrow> st x = gcd a b
+```
+
+We discharge them using our supporting lemmas:
+
+```isabelle
+  apply (auto simp: gcd_diff1 gcd_diff_sym
+              intro: le_antisym dest: not_less[THEN iffD1])
+  done
+```
+
+Alternatively, if `auto` does not close everything in one shot, we can be more explicit:
+
+```isabelle
+  apply clarsimp
+  apply (safe; (metis gcd_diff1 gcd_diff_sym gcd_self le_antisym
+                      linorder_neqE_nat less_imp_le)?)
+  done
+```
+
+### 5.7 Discussion
+
+The GCD example illustrates a key difference from the summation example: the VCG-generated subgoals require *domain-specific mathematical reasoning* (properties of GCD) rather than just arithmetic simplification. This is the general pattern:
+
+1. The VCG is a *syntax-directed* procedure that decomposes the program.
+2. The resulting subgoals are *semantic* --- they depend on the mathematical content of the program.
+3. Simple programs (summation, swap) produce subgoals that `auto` or `arith` can handle.
+4. Programs involving richer mathematics (GCD, sorting, cryptography) require lemmas from Isabelle's library or custom-proved mathematical facts.
 
 ---
 

@@ -193,10 +193,192 @@ Several things to note:
 
 - **Parameters become local state**: the function parameters `a` and `b` are fields `a_'` and `b_'` in a local variables record.
 - **The body is a SIMPL `com`**: a deeply embedded command in the SIMPL language (which we studied in Module 08).
-- **Return is modeled via exceptions**: `creturn` sets a return variable and throws an exception caught by the `TRY`/`CATCH` wrapper.
-- **Unsigned comparison**: `unat` converts a machine word to a natural number for comparison.
+- **Return is modeled via exceptions**: `creturn` sets a return variable and throws an exception caught by the `TRY`/`CATCH` wrapper. See Section 4.1.2 below for details.
+- **Unsigned comparison**: `unat` converts a machine word to a natural number for comparison. See Section 4.1.1 below for the full family of word conversion functions.
 
-### 4.2 Struct Type Definitions
+#### 4.1.1 Word Conversion Functions: `unat`, `scast`, `ucast`
+
+The SIMPL output uses several functions to convert between machine words and mathematical values. Understanding these is essential for reading parser output.
+
+**`unat :: 'a::len word \<Rightarrow> nat`** converts an unsigned machine word to a natural number. For a 32-bit word `w`, `unat w` is the value of `w` interpreted as an unsigned integer in the range `[0, 2^32 - 1]`. This appears throughout the parser output whenever C performs unsigned comparisons or uses unsigned values in arithmetic guard conditions.
+
+```isabelle
+(* Examples *)
+unat (5 :: 32 word) = 5
+unat (0 :: 32 word) = 0
+unat (0xFFFFFFFF :: 32 word) = 4294967295
+```
+
+**`ucast :: 'a::len word \<Rightarrow> 'b::len word`** performs an unsigned cast between word types of different widths. When casting to a wider type, the value is zero-extended. When casting to a narrower type, the value is truncated. This models C's implicit integer conversions for unsigned types.
+
+```isabelle
+(* Widening: zero-extends *)
+ucast (0xFF :: 8 word) = (0x000000FF :: 32 word)
+
+(* Narrowing: truncates *)
+ucast (0x12345678 :: 32 word) = (0x78 :: 8 word)
+```
+
+**`scast :: 'a::len word \<Rightarrow> 'b::len word`** performs a signed cast. When casting to a wider type, the value is sign-extended. This models C's implicit conversions for signed types.
+
+```isabelle
+(* Sign-extends negative values *)
+scast (0xFF :: 8 signed word) = (0xFFFFFFFF :: 32 signed word)   (* -1 \<rightarrow> -1 *)
+```
+
+**`sint :: 'a::len word \<Rightarrow> int`** converts a machine word to a signed integer, interpreting the word using two's complement.
+
+These functions interact with C's "usual arithmetic conversions": when C promotes a `char` to an `int` or compares an `unsigned` with a `signed`, the parser inserts the appropriate cast function.
+
+#### 4.1.2 `creturn` and the Exception-Based Return Model
+
+C's `return` statement has a non-trivial semantics: it transfers control from an arbitrary point in the function body back to the caller, bypassing any remaining statements. In SIMPL, this is modeled using the `Throw` exception mechanism.
+
+The `creturn` combinator encapsulates this pattern:
+
+```isabelle
+definition creturn ::
+  "(('a \<Rightarrow> 'a) \<Rightarrow> ('c, 'd) state_scheme \<Rightarrow> ('c, 'd) state_scheme)
+   \<Rightarrow> (('e \<Rightarrow> 'e) \<Rightarrow> 'a \<Rightarrow> 'a)
+   \<Rightarrow> (('c, 'd) state_scheme \<Rightarrow> 'e)
+   \<Rightarrow> (('c, 'd) state_scheme, 'f, 'g) com"
+where
+  "creturn global_upd ret_upd v \<equiv>
+     Basic (\<lambda>s. global_upd (ret_upd (\<lambda>_. v s)) s) ;; Throw"
+```
+
+The three arguments are:
+
+1. **`global_upd`** (`globals_update`): the function that updates the global portion of the state. The return value is stored in a global variable because the caller needs to read it after the function returns.
+2. **`ret_upd`** (e.g., `ret__unsigned_update`): the field updater for the return-value variable in the globals record. Its name follows the pattern `ret__<type>_update`.
+3. **`v`**: a function from the current state to the return value. For `return a`, this is `\<lambda>s. a_' (locals s)`.
+
+The `Throw` at the end causes control to jump to the enclosing `CATCH` block. The entire function body is wrapped in `TRY ... CATCH SKIP END`, so the `Throw` exits the body and execution continues after the `CATCH` (i.e., the function returns to the caller).
+
+**Multiple returns.** If a function has multiple `return` statements, each becomes a separate `creturn` followed by `Throw`. Only the first one executed takes effect; subsequent code is skipped because `Throw` transfers control immediately.
+
+### 4.2 Example: A Function with Global State
+
+Now consider C functions that read and write a global variable:
+
+```c
+/* counter.c */
+unsigned counter;
+
+void increment(void) {
+    counter++;
+}
+
+unsigned get_and_reset(void) {
+    unsigned old = counter;
+    counter = 0;
+    return old;
+}
+```
+
+After `install_C_file "counter.c"`, the parser generates a global state record that includes `counter` as a field, and SIMPL procedures for both functions.
+
+**The global state record:**
+
+```isabelle
+record globals =
+  counter_' :: "32 word"
+  t_hrs_' :: "heap_raw_state"
+```
+
+The `counter_'` field holds the current value of the C global variable `counter`. The `t_hrs_'` field (typed heap representation state) is always present --- it represents the raw heap for dynamically allocated memory and pointer dereferences. Even if a program uses no pointers, `t_hrs_'` appears in the globals record because the parser conservatively includes it.
+
+**Understanding `t_hrs_'`:** The name stands for "typed heap raw state." It bundles the byte-level memory (`heap_mem`) with the type descriptor (`heap_type_desc`) that tracks which typed objects occupy which addresses. When a C function dereferences a pointer `*p`, the SIMPL output accesses `t_hrs_'` to read or update the heap. For functions that only manipulate global scalars (like `counter`), `t_hrs_'` is present in the record but untouched by the function body.
+
+**SIMPL output for `increment`:**
+
+```isabelle
+definition increment_body :: "(globals myvars, unit, strictc_errortype) com"
+where
+  "increment_body \<equiv>
+    Basic (\<lambda>s. globals_update
+      (counter_'_update (\<lambda>old. old + 1))
+      s)"
+```
+
+This is straightforward: `increment` reads the `counter_'` field from globals, adds 1 (using word arithmetic, so modular at `2^32`), and writes the result back. There is no `TRY`/`CATCH` because the function returns `void` --- there is no return value to communicate via `Throw`.
+
+**SIMPL output for `get_and_reset`:**
+
+```isabelle
+definition get_and_reset_body :: "(globals myvars, int, strictc_errortype) com"
+where
+  "get_and_reset_body \<equiv>
+    TRY
+      Basic (\<lambda>s. locals_update
+        (old_'_update (\<lambda>_. counter_' (globals s)))
+        s) ;;
+      Basic (\<lambda>s. globals_update
+        (counter_'_update (\<lambda>_. 0))
+        s) ;;
+      creturn globals_update ret__unsigned_update (\<lambda>s. old_' (locals s))
+    CATCH SKIP
+    END"
+```
+
+This shows a more complex interaction between locals and globals:
+
+1. **Read global into local**: the first `Basic` copies `counter_'` from the global state into the local variable `old_'`.
+2. **Write global**: the second `Basic` sets `counter_'` to zero. Note how `globals_update` wraps the field update, distinguishing global writes from local writes.
+3. **Return**: `creturn` sets the return value to `old_'` and throws an exception to exit.
+
+**The modifies proof for `increment`:**
+
+```isabelle
+lemma increment_modifies:
+  "\<forall>s. \<Gamma> \<turnstile>\<^bsub>/UNIV\<^esub>
+    {s} Call increment_'proc
+    {t. t may_only_modify_globals s in [counter]}"
+```
+
+This states that `increment` may only modify the `counter` global. The parser generates this automatically by analyzing the `counter_'_update` in the body. All other globals (and in particular `t_hrs_'`) are guaranteed unchanged.
+
+The `may_only_modify_globals s in [counter]` predicate expands to:
+
+```isabelle
+"t may_only_modify_globals s in [counter] \<equiv>
+   t_hrs_' (globals t) = t_hrs_' (globals s)
+   (* ... and all other globals fields equal ... *)"
+```
+
+Every global field except `counter_'` must have the same value in the post-state `t` as in the pre-state `s`.
+
+### 4.3 Inspecting Generated Definitions
+
+After `install_C_file`, you can inspect the generated definitions and theorems using standard Isabelle commands:
+
+```isabelle
+(* View the SIMPL body of a function *)
+thm max_body_def
+thm increment_body_def
+thm get_and_reset_body_def
+
+(* View the modifies proof *)
+thm increment_modifies
+thm max_modifies
+
+(* View type definitions *)
+print_record globals      (* show all fields in the globals record *)
+print_record point_C      (* show fields of a struct type *)
+
+(* View the locale context *)
+print_locale max_global_addresses
+```
+
+The `thm` command prints a named theorem. The `_body_def` suffix is the naming convention for SIMPL procedure bodies. The `_modifies` suffix names the automatically generated modifies lemma.
+
+**Tip**: if you are unsure what names the parser generated, use Isabelle's `find_theorems` command:
+
+```isabelle
+find_theorems name: "increment"   (* lists all theorems with "increment" in the name *)
+```
+
+### 4.4 Struct Type Definitions
 
 For a C struct:
 
@@ -217,7 +399,7 @@ record point_C =
 
 The field names are suffixed with `_C` to avoid clashes with Isabelle identifiers. The type `32 signed word` is a 32-bit signed machine word, matching C's `int` on a 32-bit platform.
 
-### 4.3 The Global State Record
+### 4.5 The Global State Record
 
 All global variables are collected into a single record:
 

@@ -382,12 +382,13 @@ where
      array_valid s arr n"
 ```
 
-The proof applies weakest precondition reasoning:
+The proof applies weakest precondition reasoning with the `whileLoop_wp` rule:
 
 ```isabelle
 proof -
   apply (unfold array_sum'_def)
-  apply (wp whileLoop_wp [where I = "\<lambda>(sum, i) s. sum_inv s arr n (sum, i)"])
+  apply (wp whileLoop_wp [where I = "\<lambda>(sum, i) s. sum_inv s arr n (sum, i)"
+                            and M = "\<lambda>((sum, i), s). n - i"])
     (* Invariant preserved *)
     apply (clarsimp simp: sum_inv_def array_valid_def)
     apply (subgoal_tac "[0..<Suc i] = [0..<i] @ [i]")
@@ -401,11 +402,218 @@ proof -
 qed
 ```
 
+### 5.6 The `whileLoop_wp` Rule in Detail
+
+The `whileLoop_wp` weakest-precondition rule is the primary tool for reasoning about loops in AutoCorres output. Its full invocation syntax is:
+
+```isabelle
+apply (wp whileLoop_wp [where I = "\<lambda>loop_var s. invariant_predicate"
+                          and M = "\<lambda>(loop_var, s). measure_expression"])
+```
+
+The two arguments are:
+
+**`I` (the loop invariant)**: A predicate `I :: 'a \<Rightarrow> 's \<Rightarrow> bool` where `'a` is the type of the loop-carried variable (often a tuple) and `'s` is the state type. The invariant must satisfy three conditions:
+
+1. **Initialization**: `I` holds for the initial loop variable value in the initial state.
+2. **Preservation**: if `I` holds and the loop guard is true, then after executing the loop body, `I` holds for the updated loop variable and state.
+3. **Postcondition**: if `I` holds and the loop guard is false, the desired postcondition follows.
+
+**`M` (the measure / variant)**: A function `M :: 'a \<times> 's \<Rightarrow> nat` that maps the loop variable and state to a natural number. This must strictly decrease on each iteration, proving termination. If the loop modifies only the loop-carried variables (not the state), the measure depends only on those variables.
+
+The `whileLoop_wp` rule generates three proof obligations corresponding to the three conditions above, plus a fourth obligation that `M` decreases:
+
+```isabelle
+whileLoop_wp:
+  "\<lbrakk> \<And>r s. \<lbrakk> I r s; C r s \<rbrakk> \<Longrightarrow> \<lbrace> \<lambda>s'. s' = s \<rbrace> B r \<lbrace> \<lambda>r' s'. I r' s' \<and> M (r', s') < M (r, s) \<rbrace>!;
+     \<And>r s. \<lbrakk> I r s; \<not> C r s \<rbrakk> \<Longrightarrow> Q r s;
+     I r0 s0
+   \<rbrakk> \<Longrightarrow> \<lbrace> \<lambda>s. s = s0 \<rbrace> whileLoop C B r0 \<lbrace> Q \<rbrace>!"
+```
+
+Where `C` is the loop condition and `B` is the loop body.
+
+**Common patterns for measures:**
+
+- Counting up to `n`: `M = \<lambda>((_, i), s). n - i`
+- Counting down from `n`: `M = \<lambda>((i, _), s). i`
+- Multiple variables: `M = \<lambda>((a, b), s). f a + g b` (a sum that decreases)
+
+**When `M` is omitted**: if you omit the `M` parameter, `whileLoop_wp` generates a partial correctness proof (the loop is correct *if* it terminates, but termination is not proved). This can be useful during proof development: get the invariant right first, then add the measure.
+
+```isabelle
+(* Partial correctness only --- no termination *)
+apply (wp whileLoop_wp [where I = "\<lambda>(sum, i) s. sum_inv s arr n (sum, i)"])
+```
+
+The resulting Hoare triple uses `\<lbrace> P \<rbrace> f \<lbrace> Q \<rbrace>` (without `!`) instead of `\<lbrace> P \<rbrace> f \<lbrace> Q \<rbrace>!` (with `!`), meaning the function is allowed to diverge.
+
 ---
 
-## 6. Common Proof Patterns
+## 6. Example 5: Inter-Function Verification
 
-### 6.1 The Unfold-WP-Clarsimp Pattern
+### 6.1 Motivation
+
+Real C programs consist of functions that call one another. To verify a caller, we need the callee's specification as a lemma, but we should not need to re-prove (or even re-examine) the callee's implementation. This is the essence of modular verification.
+
+The proof pattern is:
+1. Verify the callee in isolation, producing a Hoare triple or equality lemma.
+2. When verifying the caller, use the callee's specification as a rewrite rule or wp rule.
+
+### 6.2 C Source
+
+```c
+/* clamp.c */
+unsigned max(unsigned a, unsigned b) {
+    if (a > b) return a;
+    else return b;
+}
+
+unsigned min(unsigned a, unsigned b) {
+    if (a < b) return a;
+    else return b;
+}
+
+unsigned clamp(unsigned x, unsigned lo, unsigned hi) {
+    return min(max(x, lo), hi);
+}
+```
+
+Here `clamp` calls both `max` and `min`. We want to verify that `clamp` returns a value in the range `[lo, hi]` (assuming `lo \<le> hi`).
+
+### 6.3 Setup
+
+```isabelle
+theory ClampVerify
+  imports AutoCorres2.AutoCorres
+begin
+
+install_C_file "clamp.c"
+autocorres [unsigned_word_abs = max min clamp] "clamp.c"
+```
+
+After AutoCorres with word abstraction, the definitions are:
+
+```isabelle
+max' :: "nat \<Rightarrow> nat \<Rightarrow> nat"
+"max' a b \<equiv> if a > b then a else b"
+
+min' :: "nat \<Rightarrow> nat \<Rightarrow> nat"
+"min' a b \<equiv> if a < b then a else b"
+
+clamp' :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat"
+"clamp' x lo hi \<equiv> min' (max' x lo) hi"
+```
+
+Because all three functions are pure (no state, no heap), AutoCorres inlines the calls. The `clamp'` definition directly refers to `min'` and `max'`.
+
+### 6.4 Step 1: Verify the Callees
+
+First, we prove properties of `max'` and `min'`:
+
+```isabelle
+lemma max'_ge_left: "max' a b \<ge> a"
+  by (simp add: max'_def)
+
+lemma max'_ge_right: "max' a b \<ge> b"
+  by (simp add: max'_def)
+
+lemma min'_le_left: "min' a b \<le> a"
+  by (simp add: min'_def)
+
+lemma min'_le_right: "min' a b \<le> b"
+  by (simp add: min'_def)
+```
+
+### 6.5 Step 2: Verify the Caller Using Callee Specifications
+
+Now we verify `clamp'` using the callee lemmas:
+
+```isabelle
+lemma clamp_lower_bound:
+  "lo \<le> hi \<Longrightarrow> clamp' x lo hi \<ge> lo"
+  unfolding clamp'_def
+  apply (rule order_trans [OF max'_ge_right])
+  apply (rule min'_le_left)
+  done
+
+lemma clamp_upper_bound:
+  "lo \<le> hi \<Longrightarrow> clamp' x lo hi \<le> hi"
+  unfolding clamp'_def
+  by (rule min'_le_right)
+
+lemma clamp_in_range:
+  "lo \<le> hi \<Longrightarrow> lo \<le> clamp' x lo hi \<and> clamp' x lo hi \<le> hi"
+  using clamp_lower_bound clamp_upper_bound by blast
+```
+
+The key insight: we used `max'_ge_right` and `min'_le_left`/`min'_le_right` without unfolding the definitions of `max'` and `min'`. We treated the callees as black boxes with known specifications. In a large verification, this modularity is essential --- we verify each function once and reuse its specification everywhere it is called.
+
+### 6.6 The Monadic Case: Functions with Side Effects
+
+When the caller and callee are in the `nondet` monad (because they access global state or the heap), the pattern uses `wp` with the callee's Hoare triple:
+
+```c
+/* stateful_clamp.c */
+unsigned hi_bound;
+
+unsigned get_hi(void) {
+    return hi_bound;
+}
+
+unsigned clamp_to_hi(unsigned x) {
+    unsigned h = get_hi();
+    if (x > h) return h;
+    return x;
+}
+```
+
+After AutoCorres, `get_hi'` is in the `gets` monad (reads global state) and `clamp_to_hi'` is in the `nondet` monad. The verification pattern:
+
+```isabelle
+(* Step 1: Verify the callee *)
+lemma get_hi_correct:
+  "\<lbrace> \<lambda>s. True \<rbrace> get_hi' \<lbrace> \<lambda>rv s. rv = hi_bound_' (globals s) \<rbrace>!"
+  unfolding get_hi'_def
+  by wp
+
+(* Step 2: Verify the caller, using the callee's lemma *)
+lemma clamp_to_hi_correct:
+  "\<lbrace> \<lambda>s. True \<rbrace>
+   clamp_to_hi' x
+   \<lbrace> \<lambda>rv s. rv \<le> hi_bound_' (globals s) \<rbrace>!"
+  unfolding clamp_to_hi'_def
+  apply (wp get_hi_correct)   (* use the callee's Hoare triple *)
+  apply clarsimp
+  done
+```
+
+The `wp` tactic, when given `get_hi_correct` as an argument, uses it as a weakest-precondition rule for the call to `get_hi'`. This transforms the proof obligation from "reason about `get_hi'`'s implementation" to "reason about `get_hi'`'s specification." The callee's implementation is never unfolded in the caller's proof.
+
+**General pattern for monadic inter-function verification:**
+
+```isabelle
+(* 1. Prove callee correct *)
+lemma callee_spec:
+  "\<lbrace> P_callee \<rbrace> callee' args \<lbrace> Q_callee \<rbrace>!"
+
+(* 2. Prove caller correct using callee's spec *)
+lemma caller_correct:
+  "\<lbrace> P_caller \<rbrace> caller' args \<lbrace> Q_caller \<rbrace>!"
+  unfolding caller'_def
+  apply (wp callee_spec)    (* callee becomes a black box *)
+  apply clarsimp
+  (* ... discharge remaining proof obligations ... *)
+  done
+```
+
+This scales to any call depth: if `f` calls `g` which calls `h`, verify `h` first, then use `h`'s spec when verifying `g`, then use `g`'s spec when verifying `f`.
+
+---
+
+## 7. Common Proof Patterns
+
+### 7.1 The Unfold-WP-Clarsimp Pattern
 
 The most common proof pattern for AutoCorres verifications:
 
@@ -427,7 +635,7 @@ lemma my_lemma:
   by simp
 ```
 
-### 6.2 Word Arithmetic Simp Rules
+### 7.2 Word Arithmetic Simp Rules
 
 When reasoning about machine words (without word abstraction), useful simp rules include:
 
@@ -439,7 +647,7 @@ word_less_nat_alt   (* word comparison via unat *)
 uint_word_ariths    (* arithmetic on word values *)
 ```
 
-### 6.3 Handling Unsigned Overflow
+### 7.3 Handling Unsigned Overflow
 
 With word abstraction, overflow becomes a precondition. Without word abstraction, overflow is modular:
 
@@ -451,7 +659,7 @@ With word abstraction, overflow becomes a precondition. Without word abstraction
 "(a :: 32 word) + b = of_nat ((unat a + unat b) mod 2^32)"
 ```
 
-### 6.4 Pointer Validity Predicates
+### 7.4 Pointer Validity Predicates
 
 For heap-lifted functions, common predicates:
 
@@ -464,9 +672,9 @@ These appear as preconditions and are threaded through the proof.
 
 ---
 
-## 7. Debugging Failed Proofs
+## 8. Debugging Failed Proofs
 
-### 7.1 Examining AutoCorres Output
+### 8.1 Examining AutoCorres Output
 
 When a proof fails, the first step is to understand exactly what AutoCorres produced:
 
@@ -481,7 +689,7 @@ Common surprises:
 - Word abstraction was not applied. Check that the function is listed in `unsigned_word_abs` or `signed_word_abs`.
 - The definition looks different from what you expected. The C code may have been parsed differently than you thought.
 
-### 7.2 Identifying Missing Preconditions
+### 8.2 Identifying Missing Preconditions
 
 If `wp` produces unprovable subgoals, you likely need a stronger precondition. Common missing preconditions:
 
@@ -490,7 +698,7 @@ If `wp` produces unprovable subgoals, you likely need a stronger precondition. C
 - Non-zero divisor for a division operation.
 - Overflow bounds for word-abstracted arithmetic.
 
-### 7.3 Strengthening Loop Invariants
+### 8.3 Strengthening Loop Invariants
 
 If the loop invariant is too weak:
 
@@ -503,7 +711,7 @@ Common fixes:
 - Add the loop's own preconditions to the invariant (they are needed after each iteration).
 - Add preservation of validity predicates (the heap does not change in a read-only loop, but you must state this).
 
-### 7.4 Using `sorry` Strategically
+### 8.4 Using `sorry` Strategically
 
 During development, use `sorry` to skip subgoals and focus on the proof structure:
 
@@ -520,7 +728,7 @@ This lets you check that the overall proof strategy is correct before tackling i
 
 ---
 
-## 8. Exercises
+## 9. Exercises
 
 ### Theory
 

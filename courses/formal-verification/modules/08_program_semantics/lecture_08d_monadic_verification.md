@@ -151,7 +151,68 @@ definition select :: "'a set => ('s, 'a) nondet_monad" where
 
 Returns an arbitrary element of `S`; fails if `S` is empty.
 
-### 3.5 Monad Laws
+### 3.5 The whileLoop Combinator
+
+Loops are fundamental to imperative programs, and the monadic framework provides a dedicated combinator for them:
+
+```isabelle
+definition whileLoop ::
+  "('a \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow>
+   ('a \<Rightarrow> ('s, 'a) nondet_monad) \<Rightarrow>
+   'a \<Rightarrow> ('s, 'a) nondet_monad"
+```
+
+The type parameters are:
+- `'a`: the loop variable type (the value threaded through iterations).
+- `'s`: the state type.
+- The first argument is the *guard*: a predicate on the loop variable and state that determines whether to continue.
+- The second argument is the *body*: given the current loop variable, produce a monadic computation that returns the next loop variable.
+- The third argument is the *initial* loop variable.
+
+**Intuition.** A C while loop:
+
+```c
+while (cond(r, s)) {
+    r = body(r, s);
+}
+```
+
+is modeled as `whileLoop (\<lambda>r s. cond r s) (\<lambda>r. body_monad r) r_init`.
+
+**Example.** Counting down from `n` to `0`:
+
+```isabelle
+definition countdown :: "nat \<Rightarrow> ('s, nat) nondet_monad" where
+  "countdown \<equiv> whileLoop (\<lambda>n s. n > 0) (\<lambda>n. return (n - 1))"
+```
+
+**The Key Proof Rule: whileLoop_wp.**
+
+To verify a `whileLoop`, you supply a loop invariant, just as with SIMPL's While. The rule is:
+
+```isabelle
+lemma whileLoop_wp:
+  "\<lbrakk> \<And>r. \<lbrace>\<lambda>s. I r s \<and> C r s\<rbrace> B r \<lbrace>I\<rbrace>;
+     \<And>r s. \<lbrakk> I r s; \<not> C r s \<rbrakk> \<Longrightarrow> Q r s \<rbrakk>
+   \<Longrightarrow> \<lbrace>I r\<rbrace> whileLoop C B r \<lbrace>Q\<rbrace>"
+```
+
+This says: if the invariant `I` is preserved by each iteration of the body `B` (when the guard `C` holds), and the invariant plus the negated guard implies the postcondition `Q`, then the triple holds. This is the monadic analogue of the standard while rule in Hoare logic.
+
+For *total correctness* (proving termination), you additionally supply a well-founded measure:
+
+```isabelle
+lemma whileLoop_wp_inv:
+  "\<lbrakk> \<And>r. \<lbrace>\<lambda>s. I r s \<and> C r s\<rbrace> B r \<lbrace>I\<rbrace>!;
+     \<And>r s. \<lbrakk> I r s; C r s \<rbrakk> \<Longrightarrow> ((r', s'), (r, s)) \<in> R;
+     wf R;
+     \<And>r s. \<lbrakk> I r s; \<not> C r s \<rbrakk> \<Longrightarrow> Q r s \<rbrakk>
+   \<Longrightarrow> \<lbrace>I r\<rbrace> whileLoop C B r \<lbrace>Q\<rbrace>!"
+```
+
+Here `R` is a well-founded relation on `('a \<times> 's)` pairs. You must show that each iteration strictly decreases the measure, guaranteeing termination. The `!` notation for total correctness is explained in Section 4.3.
+
+### 3.6 Monad Laws
 
 The nondeterministic state monad satisfies the standard monad laws:
 
@@ -191,6 +252,38 @@ lemma "\<lbrace>\<lambda>s. x_' s > 0\<rbrace>
   unfolding valid_def modify_def
   by auto
 ```
+
+### 4.3 Total Correctness: validNF
+
+The `valid` predicate from Section 4.1 establishes *partial correctness*: if the precondition holds, then every result satisfies the postcondition, and the computation does not fail. However, `valid` does not guarantee *termination*. A computation that loops forever vacuously satisfies `valid` because there are no result pairs to check.
+
+For total correctness, the monadic framework provides `validNF` (valid with No Failure, including termination):
+
+```isabelle
+definition validNF :: "('s \<Rightarrow> bool) \<Rightarrow> ('s, 'a) nondet_monad \<Rightarrow>
+                        ('a \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool"
+  ("\<lbrace>_\<rbrace> _ \<lbrace>_\<rbrace>!") where
+  "\<lbrace>P\<rbrace> f \<lbrace>Q\<rbrace>! \<equiv>
+    \<lbrace>P\<rbrace> f \<lbrace>Q\<rbrace> \<and> (\<forall>s. P s \<longrightarrow> fst (f s) \<noteq> {})"
+```
+
+The `!` suffix is the distinguishing notation. The definition conjoins two requirements:
+
+1. **Partial correctness** (`\<lbrace>P\<rbrace> f \<lbrace>Q\<rbrace>`): every result satisfies `Q`, and the computation does not fail.
+2. **Non-emptiness** (`fst (f s) \<noteq> {}`): the computation produces at least one result. For a deterministic computation, this means it terminates. For a nondeterministic computation, it means at least one execution path terminates.
+
+**When to use `valid` vs. `validNF`:**
+
+| Property | `valid` (`\<lbrace>P\<rbrace> f \<lbrace>Q\<rbrace>`) | `validNF` (`\<lbrace>P\<rbrace> f \<lbrace>Q\<rbrace>!`) |
+|---|---|---|
+| Partial correctness | Yes | Yes |
+| No failure | Yes | Yes |
+| Termination | No | Yes |
+| Use case | Most proofs; sufficient for safety properties | When you must prove the program halts |
+
+In practice, most seL4 proofs use `valid` (partial correctness). Total correctness with `validNF` is used selectively --- for example, to prove that a scheduler loop always eventually returns, or that an allocation function does not diverge.
+
+The wp rules for `validNF` mirror those for `valid` but carry the additional non-emptiness obligation. For `whileLoop`, this is where the well-founded measure (from Section 3.5) becomes essential.
 
 ---
 
@@ -249,6 +342,27 @@ The `wp` method processes the monadic program from bottom to top:
 1. Start with the postcondition $Q$.
 2. At each combinator, apply the corresponding wp rule to compute the weakest precondition.
 3. When all combinators have been processed, the remaining goal is a pure logical implication between the user's precondition and the computed weakest precondition.
+
+### 5.4 Relationship Between wp and vcg
+
+Both `wp` (for monadic programs) and `vcg` (for SIMPL programs) are weakest-precondition-based proof methods. They serve the same conceptual purpose --- decomposing a program verification into pure mathematical subgoals --- but they target *different program representations*.
+
+| Aspect | `wp` | `vcg` |
+|---|---|---|
+| Target | Monadic programs (`('s, 'a) nondet_monad`) | SIMPL programs (`('s, 'p, 'f) com`) |
+| Triple | `\<lbrace>P\<rbrace> f \<lbrace>Q\<rbrace>` | `\<Gamma> \<turnstile> {P} c {Q}, {A}` |
+| Combinators | `return`, `>>=`, `modify`, `guard`, `whileLoop` | `Skip`, `Basic`, `Seq`, `Cond`, `While`, `Guard` |
+| Rule set | `wp_return`, `wp_bind`, `wp_modify`, etc. | Built into the `vcg` tactic from `Vcg.thy` |
+| Loop handling | `whileLoop_wp` (user supplies invariant) | `whileAnno` (user annotates with invariant) |
+| Used at layer | Abstract and executable specifications | C implementation (via C parser) |
+
+In the seL4 verification pipeline, a typical function is verified at three levels:
+
+1. **Abstract spec** (monadic): verified using `wp`.
+2. **Executable spec** (monadic): verified using `wp`, then shown to refine the abstract spec.
+3. **C implementation** (SIMPL): verified using `vcg`, then shown to refine the executable spec.
+
+The refinement proofs (using `corres`, see Section 8) bridge between the layers. A key practical consequence: you do *not* use `wp` and `vcg` in the same proof. They operate on different objects. If you are verifying a monadic program, use `wp`. If you are verifying a SIMPL program (produced by the C parser), use `vcg`.
 
 ---
 

@@ -383,9 +383,178 @@ The `sep_cancel` tactic automatically cancels matching conjuncts between a goal 
 
 ---
 
-## 5. Advanced Topics
+## 5. Worked Example: Separation Logic Proof
 
-### 5.1 The Burstall-Bornat Memory Model
+### 5.1 The `swap` Function
+
+Consider a C function that swaps two pointed-to unsigned values:
+
+```c
+/* swap.c */
+void swap(unsigned *a, unsigned *b) {
+    unsigned tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+```
+
+This function is a classic separation logic example because it requires reasoning about two pointers that must refer to disjoint memory regions.
+
+### 5.2 The Separation Logic Specification
+
+The specification using separation logic notation:
+
+$$\{a \mapsto x \ast b \mapsto y\}\ \texttt{swap(a, b)}\ \{a \mapsto y \ast b \mapsto x\}$$
+
+In Isabelle, using the `sep_conj` notation:
+
+```isabelle
+lemma swap_sep_spec:
+  "\<lbrace> \<lambda>s. (a \<mapsto> x \<and>\<^sup>* b \<mapsto> y) (heap_of s) \<rbrace>
+   swap' a b
+   \<lbrace> \<lambda>_ s. (a \<mapsto> y \<and>\<^sup>* b \<mapsto> x) (heap_of s) \<rbrace>!"
+```
+
+The separating conjunction `\<and>\<^sup>*` does two things simultaneously:
+
+1. **Asserts the values**: `a` points to `x` and `b` points to `y`.
+2. **Asserts disjointness**: the memory regions for `a` and `b` do not overlap.
+
+This is strictly stronger than the precondition `a \<noteq> b`: pointer inequality only means the base addresses differ, but the pointed-to objects could still overlap if they are large (e.g., structs or arrays). The separating conjunction guarantees that the *entire footprints* are disjoint.
+
+### 5.3 The Proof in Detail
+
+After AutoCorres with heap lifting, `swap'` has approximately this definition:
+
+```isabelle
+definition swap' :: "32 word ptr \<Rightarrow> 32 word ptr \<Rightarrow> (lifted_globals, unit) nondet_monad"
+where
+  "swap' a b \<equiv> do {
+    tmp \<leftarrow> gets (\<lambda>s. heap_w32 s a);
+    v_b \<leftarrow> gets (\<lambda>s. heap_w32 s b);
+    modify (\<lambda>s. s\<lparr> heap_w32 := (heap_w32 s)(a := v_b) \<rparr>);
+    modify (\<lambda>s. s\<lparr> heap_w32 := (heap_w32 s)(b := tmp) \<rparr>)
+  }"
+```
+
+The separation logic proof proceeds step by step, tracking how the heap evolves:
+
+```isabelle
+lemma swap_sep_correct:
+  "\<lbrace> \<lambda>s. (a \<mapsto> x \<and>\<^sup>* b \<mapsto> y) (heap_of s) \<and>
+         is_valid_w32 s a \<and> is_valid_w32 s b \<rbrace>
+   swap' a b
+   \<lbrace> \<lambda>_ s. (a \<mapsto> y \<and>\<^sup>* b \<mapsto> x) (heap_of s) \<rbrace>!"
+  unfolding swap'_def
+  apply wp
+  apply (clarsimp simp: sep_conj_def maps_to_def)
+  (* At this point, the proof state contains:
+     - h1, h2: the two disjoint sub-heaps from the precondition
+     - dom h1 \<inter> dom h2 = {}   (disjointness)
+     - h_val h1 a = x, h_val h2 b = y
+     We must construct new sub-heaps for the postcondition. *)
+  apply (rule_tac x="h1(a := to_bytes y)" in exI)
+  apply (rule_tac x="h2(b := to_bytes x)" in exI)
+  apply (intro conjI)
+     (* Disjointness preserved: updates do not change domains *)
+     apply (simp add: dom_fun_upd)
+    (* Combined heap equals updated full heap *)
+    apply (auto simp: map_add_def)
+   (* a \<mapsto> y in updated h1 *)
+   apply (simp add: h_val_heap_update)
+  (* b \<mapsto> x in updated h2 *)
+  apply (simp add: h_val_heap_update h_val_heap_update_disjoint)
+  done
+```
+
+**Key steps explained:**
+
+1. **Unfolding**: we expose `swap'`'s definition so `wp` can process the monadic operations.
+2. **`wp`**: the weakest precondition tactic processes the four monadic operations (two reads, two writes) backwards, producing a single proof obligation about the initial state.
+3. **Unfolding `sep_conj`**: we obtain witness heaps `h1` and `h2` and the disjointness assumption.
+4. **Constructing witnesses**: for the postcondition, we provide updated sub-heaps where `a`'s region now contains `y` and `b`'s region contains `x`.
+5. **Disjointness preservation**: since the updates only change values (not domains), the domains remain disjoint.
+6. **Non-interference**: writing to `a` (in `h1`) does not affect the value at `b` (in `h2`) because the domains are disjoint. This is where separation logic pays off --- we get this fact for free from `dom h1 \<inter> dom h2 = {}`.
+
+### 5.4 The `sep_cancel` Tactic
+
+The `sep_cancel` tactic automates a common proof step: when the goal and a hypothesis both contain separating conjunctions, `sep_cancel` identifies matching conjuncts and cancels them.
+
+**Example.** Suppose the goal is:
+
+```isabelle
+(a \<mapsto> y \<and>\<^sup>* b \<mapsto> x \<and>\<^sup>* R) h
+```
+
+and we have a hypothesis:
+
+```isabelle
+(a \<mapsto> y \<and>\<^sup>* P) h'
+```
+
+where `h` and `h'` are related by some frame. Applying `sep_cancel` will:
+
+1. Match `a \<mapsto> y` in the goal with `a \<mapsto> y` in the hypothesis.
+2. Cancel the matching conjuncts, reducing the goal to showing that the remaining conjuncts (`b \<mapsto> x \<and>\<^sup>* R`) hold in the remainder of the heap.
+
+In Isabelle:
+
+```isabelle
+(* Before sep_cancel: *)
+(* goal: (a \<mapsto> y \<and>\<^sup>* b \<mapsto> x \<and>\<^sup>* c \<mapsto> z) h *)
+(* hypothesis: (a \<mapsto> y \<and>\<^sup>* rest) h *)
+apply sep_cancel
+(* After sep_cancel: *)
+(* goal: (b \<mapsto> x \<and>\<^sup>* c \<mapsto> z) h' *)
+(* where h' is the portion of h not covered by a \<mapsto> y *)
+```
+
+The tactic uses the commutativity and associativity of `\<and>\<^sup>*` (via `sep_conj_ac`) to rearrange conjuncts before matching. This is critical because separating conjunction is commutative and associative, so `a \<mapsto> y \<and>\<^sup>* b \<mapsto> x` and `b \<mapsto> x \<and>\<^sup>* a \<mapsto> y` are logically equivalent but syntactically different.
+
+For proofs with many heap assertions, `sep_cancel` can be applied repeatedly:
+
+```isabelle
+apply sep_cancel+   (* apply sep_cancel one or more times *)
+```
+
+### 5.5 Contrast: Typed-Heap Proof for `swap`
+
+Using AutoCorres's typed heaps (without separation logic), the same `swap` function is verified differently:
+
+```isabelle
+lemma swap_typed_heap:
+  "\<lbrace> \<lambda>s. is_valid_w32 s a \<and> is_valid_w32 s b \<and> a \<noteq> b \<and>
+         heap_w32 s a = x \<and> heap_w32 s b = y \<rbrace>
+   swap' a b
+   \<lbrace> \<lambda>_ s. heap_w32 s a = y \<and> heap_w32 s b = x \<rbrace>!"
+  unfolding swap'_def
+  apply wp
+  apply clarsimp
+  done
+```
+
+**Differences from the separation logic proof:**
+
+1. **Disjointness is explicit**: we must state `a \<noteq> b` as a separate precondition. With separation logic, disjointness is implicit in `\<and>\<^sup>*`.
+2. **Heap is global**: the typed-heap proof reasons about the entire `heap_w32` function. The fact that `(heap_w32 s)(a := v_b) b = y` (writing to `a` does not affect `b`) follows from `a \<noteq> b` via function update simplification. This is straightforward for two pointers but scales poorly to many pointers.
+3. **No frame rule**: if we later embed `swap` in a larger context with additional valid pointers `c`, `d`, ..., the typed-heap proof must be re-done (or a frame-like lemma must be proved manually). With separation logic, the frame rule handles this automatically.
+4. **Simpler for simple cases**: for functions with few pointer arguments, the typed-heap proof is shorter and more direct. Separation logic overhead is justified mainly when pointer structures are complex.
+
+**When to use which approach:**
+
+| Criterion | Typed heaps | Separation logic |
+|-----------|------------|-----------------|
+| Few pointers of known distinct types | Preferred | Overkill |
+| Many same-type pointers | Awkward | Natural |
+| Linked data structures | Very difficult | Designed for this |
+| Frame reasoning needed | Manual | Automatic (frame rule) |
+| Proof automation | `wp` + `clarsimp` | `wp` + `sep_cancel` |
+
+---
+
+## 6. Advanced Topics
+
+### 6.1 The Burstall-Bornat Memory Model
 
 The typed-heap approach used by AutoCorres is sometimes called the *Burstall-Bornat* model (after Rod Burstall's pioneering work on separate arrays for different struct fields). The key idea: instead of a single heap, maintain separate arrays indexed by field names:
 
@@ -396,7 +565,7 @@ heap_y :: point_C ptr \<Rightarrow> int    (* the y-field heap *)
 
 This goes even further than AutoCorres's per-type splitting, splitting within a struct type. The advantage is that updating `p->x` does not affect `q->y` even when `p = q`. The seL4 verification does not use this fine-grained splitting, but it appears in some academic verification frameworks.
 
-### 5.2 Fractional Permissions
+### 6.2 Fractional Permissions
 
 Separation logic can be extended with *fractional permissions* (Boyland, 2003) to model shared read access:
 
@@ -406,7 +575,7 @@ Separation logic can be extended with *fractional permissions* (Boyland, 2003) t
 
 This is useful for concurrent verification where multiple threads may read the same data. The l4v library does not currently use fractional permissions, as seL4 verification focuses on sequential correctness.
 
-### 5.3 AutoCorrode and Crush Tactics
+### 6.3 AutoCorrode and Crush Tactics
 
 **AutoCorrode** (AWS Labs) is a research project exploring Rust verification using techniques related to AutoCorres. It translates Rust's MIR (Mid-level Intermediate Representation) into Isabelle definitions and leverages Rust's ownership type system for automatic separation reasoning.
 
@@ -414,7 +583,7 @@ This is useful for concurrent verification where multiple threads may read the s
 
 ---
 
-## 6. Exercises
+## 7. Exercises
 
 ### Theory
 
