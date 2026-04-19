@@ -1,0 +1,4 @@
+build --cxxopt=-std=c++17
+build --action_env=PATH
+build --sandbox_add_mount_pair=/usr/include
+build --sandbox_add_mount_pair=/usr/lib

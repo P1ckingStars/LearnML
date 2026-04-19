@@ -1,0 +1,450 @@
+/* === Reset & Base === */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 17px;
+  line-height: 1.7;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  color: #1a1a2e;
+  background: #fafafa;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* === Sidebar === */
+
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  background: #f5f5f5;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 2rem;
+}
+
+#sidebar-header {
+  padding: 1.2rem 1rem 0.8rem;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  background: #f5f5f5;
+  z-index: 1;
+}
+
+#site-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: -0.01em;
+}
+
+#toc {
+  padding: 0.5rem 0;
+}
+
+/* TOC sections */
+
+.toc-section {
+  margin: 0;
+}
+
+.toc-section summary {
+  padding: 0.5rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.toc-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.toc-section summary::before {
+  content: "▸ ";
+  font-size: 0.7em;
+  margin-right: 0.2em;
+}
+
+.toc-section[open] > summary::before {
+  content: "▾ ";
+}
+
+.toc-section ul {
+  list-style: none;
+  padding: 0 0 0.3rem;
+}
+
+.toc-section li {
+  margin: 0;
+}
+
+.toc-section a {
+  display: block;
+  padding: 0.25rem 1rem 0.25rem 1.5rem;
+  font-size: 0.85rem;
+  color: #444;
+  text-decoration: none;
+  line-height: 1.4;
+  border-left: 3px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.toc-section a:hover {
+  background: #e8e8e8;
+  color: #1a1a2e;
+}
+
+.toc-section a.active {
+  background: #e3ecf7;
+  border-left-color: #3b7dd8;
+  color: #1a365d;
+  font-weight: 600;
+}
+
+/* Sidebar toggle button */
+
+#sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 200;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+  color: #444;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+#sidebar-toggle:hover {
+  background: #f0f0f0;
+}
+
+/* === Main Content === */
+
+#content {
+  margin-left: 280px;
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#page {
+  max-width: 780px;
+  width: 100%;
+  padding: 2rem 2.5rem 1rem;
+  flex: 1;
+}
+
+/* === Typography === */
+
+#page h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 1.2rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #e0e0e0;
+  color: #1a1a2e;
+  line-height: 1.3;
+}
+
+#page h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 2rem 0 0.8rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid #eee;
+  color: #2c3e50;
+}
+
+#page h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.6rem;
+  color: #34495e;
+}
+
+#page h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1.2rem 0 0.5rem;
+  color: #445;
+}
+
+#page h5, #page h6 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 1rem 0 0.4rem;
+  color: #556;
+}
+
+#page p {
+  margin: 0 0 1rem;
+}
+
+#page a {
+  color: #3b7dd8;
+  text-decoration: none;
+}
+
+#page a:hover {
+  text-decoration: underline;
+}
+
+/* === Lists === */
+
+#page ul, #page ol {
+  margin: 0 0 1rem;
+  padding-left: 1.8rem;
+}
+
+#page li {
+  margin-bottom: 0.25rem;
+}
+
+#page li > ul, #page li > ol {
+  margin-bottom: 0;
+  margin-top: 0.25rem;
+}
+
+/* === Blockquotes === */
+
+#page blockquote {
+  border-left: 4px solid #3b7dd8;
+  margin: 0 0 1rem;
+  padding: 0.6rem 1rem;
+  background: #f0f5fb;
+  color: #2c3e50;
+  border-radius: 0 4px 4px 0;
+}
+
+#page blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* === Code === */
+
+#page code {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  font-size: 0.88em;
+  background: #f0f0f0;
+  padding: 0.15em 0.35em;
+  border-radius: 3px;
+}
+
+#page pre {
+  margin: 0 0 1rem;
+  padding: 1rem 1.2rem;
+  background: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+#page pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+  border-radius: 0;
+}
+
+/* === Tables === */
+
+#page table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  overflow-x: auto;
+  display: block;
+}
+
+#page thead {
+  display: table-header-group;
+}
+
+#page tbody {
+  display: table-row-group;
+}
+
+#page tr {
+  display: table-row;
+}
+
+#page th, #page td {
+  display: table-cell;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dfe2e5;
+  text-align: left;
+}
+
+#page thead th {
+  background: #f6f8fa;
+  font-weight: 600;
+}
+
+#page tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+/* === Horizontal rule === */
+
+#page hr {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 1.5rem 0;
+}
+
+/* === Images === */
+
+#page img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* === Math (KaTeX) === */
+
+#page .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+  margin: 0.5rem 0 1rem;
+}
+
+#page .katex {
+  font-size: 1.05em;
+}
+
+/* === Definition lists (manual via bold + colon pattern) === */
+
+#page dt {
+  font-weight: 600;
+  margin-top: 0.8rem;
+}
+
+#page dd {
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* === Page navigation === */
+
+#page-nav {
+  max-width: 780px;
+  width: 100%;
+  padding: 0 2.5rem 2rem;
+}
+
+.page-nav-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  gap: 1rem;
+}
+
+.nav-prev, .nav-next {
+  display: inline-block;
+  padding: 0.4rem 0;
+  font-size: 0.9rem;
+  color: #3b7dd8;
+  text-decoration: none;
+  max-width: 45%;
+  line-height: 1.4;
+}
+
+.nav-prev:hover, .nav-next:hover {
+  text-decoration: underline;
+}
+
+.nav-next {
+  text-align: right;
+  margin-left: auto;
+}
+
+/* === Responsive: sidebar overlay below 900px === */
+
+@media (max-width: 900px) {
+  #sidebar-toggle {
+    display: block;
+  }
+
+  #sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: none;
+  }
+
+  #sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  }
+
+  #content {
+    margin-left: 0;
+  }
+
+  #page {
+    padding: 3rem 1.5rem 1rem;
+  }
+
+  #page-nav {
+    padding: 0 1.5rem 2rem;
+  }
+}
+
+/* === Print === */
+
+@media print {
+  #sidebar,
+  #sidebar-toggle,
+  #page-nav {
+    display: none !important;
+  }
+
+  #content {
+    margin-left: 0;
+  }
+
+  #page {
+    max-width: none;
+    padding: 0;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+}

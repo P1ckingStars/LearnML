@@ -1,0 +1,54 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load(":qt_config.bzl", "QT_COPTS", "QT_LINKOPTS", "QT_MOC", "QT_MOC_FLAGS", "QT_RCC")
+
+genrule(
+    name = "moc_mainwindow",
+    srcs = ["mainwindow.h"],
+    outs = ["moc_mainwindow.cpp"],
+    cmd = QT_MOC + " " + QT_MOC_FLAGS + " $(location mainwindow.h) -o $@",
+)
+
+genrule(
+    name = "moc_viewerpage",
+    srcs = ["viewerpage.h"],
+    outs = ["moc_viewerpage.cpp"],
+    cmd = QT_MOC + " " + QT_MOC_FLAGS + " $(location viewerpage.h) -o $@",
+)
+
+genrule(
+    name = "rcc_resources",
+    srcs = [
+        "resources.qrc",
+        "resources/viewer.html",
+        "resources/viewer.css",
+        "resources/viewer.js",
+    ],
+    outs = ["qrc_resources.cpp"],
+    cmd = QT_RCC + " $(location resources.qrc) -o $@",
+)
+
+cc_binary(
+    name = "viewer",
+    srcs = [
+        "main.cpp",
+        "mainwindow.cpp",
+        "mainwindow.h",
+        "manifest.cpp",
+        "manifest.h",
+        "viewerpage.cpp",
+        "viewerpage.h",
+        ":moc_mainwindow",
+        ":moc_viewerpage",
+        ":rcc_resources",
+    ],
+    copts = QT_COPTS,
+    linkopts = QT_LINKOPTS,
+)
+
+sh_binary(
+    name = "install",
+    srcs = ["install.sh"],
+    data = [":viewer"],
+)
+
